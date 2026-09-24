@@ -3,7 +3,7 @@ doc_id: OHP-STD-001
 title: Documentation and drawing standard
 project: Open Hardware Portfolio
 doc_type: Standard
-version: "1.0"
+version: "1.1"
 status: Released
 date: 2026-09-24
 author: Amish Chadha
@@ -13,6 +13,10 @@ revisions:
     date: 2026-09-24
     author: Amish Chadha
     change: First release of the standard
+  - version: "1.1"
+    date: 2026-09-24
+    author: Amish Chadha
+    change: Adopt Technology Readiness Levels (section 9) for project maturity
 ---
 
 # Documentation and drawing standard
@@ -36,7 +40,7 @@ Every controlled document has a unique ID in the form `PRJ-TYP-NNN`.
 | DDR | Design decision record | `docs/decisions/*.md` |
 | BOM | Bill of materials | `bom/bom.csv` |
 | DWG | Drawing or sketch sheet | `cad/drawings/*.svg` |
-| TST | Test plan or test report | `docs/05-tests/*.md` |
+| TST | Test plan or test report (front matter adds `environment: lab` or `relevant`) | `docs/05-tests/*.md` |
 
 Example: `TBK-PRC-001` is the ThermaBrick design precis.
 
@@ -130,3 +134,25 @@ Quote version numbers so YAML keeps `1.0` as text instead of turning it into a n
 - `python .kit/render.py` checks every controlled document and renders it to `docs/pdf/<doc_id>_v<version>.pdf`.
 - `python .kit/drawing.py` (called from each project's `cad/src/sheets.py`) builds drawing sheets as SVG and PDF in `cad/drawings/`.
 - The GitHub Action in `.github/workflows/docs.yml` runs the checks on every push and attaches PDFs to a GitHub Release whenever a release tag is pushed.
+
+## 9. Technology Readiness Level (TRL)
+
+Each project states its maturity as a Technology Readiness Level on the NASA and US DOE 1 to 9 scale. The TRL rates this specific design, not the underlying technology. A sand battery is commercial elsewhere, but a new sand battery design starts at TRL 2 until evidence shows otherwise.
+
+| TRL | Definition | Evidence the repo must contain |
+| --- | --- | --- |
+| 1 | Basic principles observed | Problem statement (PRB) |
+| 2 | Technology concept formulated | Draft precis (PRC) and requirements (REQ) |
+| 3 | Analytical or experimental proof of concept | Calculation note (CAL), working build123d model with STEP export, drawing sheet (DWG), priced BOM with every unit cost filled in |
+| 4 | Components validated in the lab | Test report (TST) with `environment: lab`, build log entries |
+| 5 | Validated in a relevant environment | Test report (TST) with `environment: relevant` |
+| 6 | System prototype demonstrated in a relevant environment | Precis at version 1.0 or later with status Released, a drawing at a lettered revision (Rev A or later), and a system-level TST with `environment: relevant` |
+| 7 to 9 | Operational demonstration through proven in service | Beyond portfolio scope; claim only with a named deployment partner and evidence |
+
+Rules:
+
+- `project.yaml` records `trl` (current level), `trl_target` (the level the current effort aims for) and `trl_evidence` (the files that support the claim).
+- `python .kit/render.py --check` fails if the evidence for the claimed TRL is missing. CI runs this check on every push.
+- Documentation alone cannot go past TRL 3. TRL 4 and above require hardware and a test report.
+- TRL and visibility are independent. A repo can be public at TRL 3 as a documented design ready to build.
+- A change of TRL is recorded in the build log with the date and the evidence that justified it.

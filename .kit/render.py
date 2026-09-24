@@ -74,6 +74,60 @@ def repo_url() -> str:
     return f"github.com/BoujeeEnjinia1701/{slug}"
 
 
+TRL_NAMES = {1: "Basic principles observed", 2: "Technology concept formulated",
+             3: "Proof of concept", 4: "Validated in the lab", 5: "Validated in a relevant environment",
+             6: "System prototype demonstrated", 7: "System prototype in operational environment",
+             8: "System complete and qualified", 9: "Proven in operation"}
+
+
+def project_meta() -> dict:
+    y = ROOT / "project.yaml"
+    return yaml.safe_load(y.read_text()) if y.exists() else {}
+
+
+def trl_check(docs) -> list[str]:
+    """Verify that the evidence required for the claimed TRL exists (STANDARDS section 9)."""
+    pm = project_meta()
+    if "trl" not in pm:
+        return ["project.yaml has no 'trl' field"]
+    trl, errs = int(pm["trl"]), []
+    if not 1 <= trl <= 9:
+        return [f"trl {trl} must be between 1 and 9"]
+    if int(pm.get("trl_target", trl)) < trl:
+        errs.append("trl_target is below the current trl")
+    by_type = {}
+    for p, m, _ in docs:
+        by_type.setdefault(str(m["doc_id"]).split("-")[1], []).append((p, m))
+    def need(level, ok, what):
+        if trl >= level and not ok:
+            errs.append(f"TRL {trl} claimed but TRL {level} evidence is missing: {what}")
+    need(1, "PRB" in by_type, "problem statement (PRB)")
+    need(2, "PRC" in by_type and "REQ" in by_type, "precis (PRC) and requirements (REQ)")
+    if trl >= 3:
+        model = ROOT / "cad/src/model.py"
+        need(3, "CAL" in by_type, "calculation note (CAL)")
+        need(3, model.exists() and "NotImplementedError" not in model.read_text(), "working cad/src/model.py")
+        need(3, any((ROOT / "cad/step").glob("*.step")), "STEP export in cad/step")
+        need(3, any((ROOT / "cad/drawings").glob("*-DWG-*.svg")), "drawing sheet in cad/drawings")
+        bom = ROOT / "bom/bom.csv"
+        import csv
+        rows = list(csv.DictReader(bom.open())) if bom.exists() else []
+        need(3, rows and all((r.get("unit_cost_usd") or "").strip() for r in rows), "every BOM row priced")
+    envs = [str(m.get("environment", "")) for _, m in by_type.get("TST", [])]
+    need(4, bool(envs), "test report (TST)")
+    need(4, len(list((ROOT / "build-log").glob("*.md"))) > 1, "build log entries")
+    need(5, "relevant" in envs, "TST with environment: relevant")
+    if trl >= 6:
+        prc = [m for _, m in by_type.get("PRC", [])]
+        need(6, any(m["status"] == "Released" and float(m["version"]) >= 1.0 for m in prc), "precis released at v1.0+")
+        need(6, any(re.search(r"rev[A-Z]", f.name) or "Rev A" in f.read_text(errors="ignore")
+                    for f in (ROOT / "cad/drawings").glob("*-DWG-*.svg")), "drawing at a lettered revision")
+    for f in pm.get("trl_evidence") or []:
+        if not (ROOT / f).exists():
+            errs.append(f"trl_evidence lists a missing file: {f}")
+    return errs
+
+
 def controlled_docs():
     for p in sorted(ROOT.rglob("*.md")):
         if any(part.startswith(".") for part in p.relative_to(ROOT).parts[:-1]):
@@ -97,6 +151,15 @@ def main():
                 print(f"     - {e}")
         else:
             print(f"ok   {rel}  {meta['doc_id']} v{meta['version']} {meta['status']}")
+    terrs = trl_check(docs)
+    if terrs:
+        failed = True
+        print("FAIL project.yaml TRL")
+        for e in terrs:
+            print(f"     - {e}")
+    else:
+        pm = project_meta()
+        print(f"ok   TRL {pm['trl']} ({TRL_NAMES[int(pm['trl'])]}), target TRL {pm.get('trl_target', pm['trl'])}")
     if failed:
         sys.exit(1)
     if only_check or not docs:
@@ -113,7 +176,7 @@ def main():
             r["version"] = str(r["version"])
         html_body = markdown.markdown(body, extensions=["tables", "fenced_code", "attr_list", "sane_lists", "toc"])
         html = tpl.render(m=meta, body=html_body, css=(KIT / "style" / "doc.css").as_uri(),
-                          repo=repo_url(), source=str(p.relative_to(ROOT)), commit=commit)
+                          repo=repo_url(), trl=project_meta().get("trl"), trl_name=TRL_NAMES.get(int(project_meta().get("trl") or 0), ""), source=str(p.relative_to(ROOT)), commit=commit)
         for old in OUT.glob(f"{meta['doc_id']}_v*.pdf"):
             old.unlink()
         target = OUT / f"{meta['doc_id']}_v{meta['version']}.pdf"

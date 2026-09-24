@@ -17,6 +17,7 @@
     <tr><th>Document ID</th><td class="mono">{{ m.doc_id }}</td><th>Version</th><td class="mono">{{ m.version }}</td></tr>
     <tr><th>Status</th><td><span class="pill {{ m.status | replace(' ', '-') }}">{{ m.status }}</span></td><th>Date</th><td>{{ m.date }}</td></tr>
     <tr><th>Author</th><td>{{ m.author }}</td><th>License</th><td>{{ m.license }}</td></tr>
+    {% if trl %}<tr><th>Project TRL</th><td colspan="3"><span class="pill Released">TRL {{ trl }}</span> {{ trl_name }}</td></tr>{% endif %}
     <tr><th>Repository</th><td colspan="3" class="mono">{{ repo }}</td></tr>
     <tr><th>Source</th><td colspan="3" class="mono">{{ source }} @ {{ commit }}</td></tr>
   </table>
