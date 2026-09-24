@@ -1,0 +1,17 @@
+# Card metadata consumed by https://amishchadha.com
+name: HelioLite
+slug: heliolite
+area: CleanTech
+status: concept          # concept | design | prototype | tested | released
+shortlisted: false
+pitch: >-
+  Two-axis mini heliostat on a mast that redirects sunlight to a fixed target, using a sun-position algorithm with no sensors.
+problem: >-
+  North-facing rooms and greenhouses lack daylight and solar heat.
+budget_usd: 400
+difficulty: 3  # 1 easiest, 5 hardest
+hero_image: media/hero.png
+licenses:
+  hardware: CERN-OHL-S-2.0
+  software: MIT
+tags: [cleantech, open-hardware, cern-ohl-s]

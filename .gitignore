@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.ipynb_checkpoints/
+# FreeCAD backups
+*.FCStd1
+*.FCBak
+# KiCad
+*-backups/
+*.kicad_prl
+fp-info-cache
+# OS
+.DS_Store
