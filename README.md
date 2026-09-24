@@ -42,6 +42,10 @@ The working bill of materials is in [bom/bom.csv](bom/bom.csv).
 | `media/` | Renders, perspectives and photos |
 | `build-log/` | Dated prototyping notes |
 
+## Documentation
+
+Controlled documents follow the portfolio [documentation standard](.kit/STANDARDS.md). Each carries a document ID (HLT-PRC-001 for the precis), a version and a revision history. Branded PDFs are built with `python .kit/render.py` and attached to GitHub Releases when a document is tagged, for example `HLT-PRC-001/v1.0`.
+
 ## Licenses
 
 - **Hardware** (CAD, drawings, BOM, electronics): [CERN-OHL-S v2](LICENSE)

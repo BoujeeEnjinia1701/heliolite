@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>{{ m.doc_id }} {{ m.title }}</title>
+<link rel="stylesheet" href="{{ css }}"></head>
+<body>
+<span class="run-docid">{{ m.doc_id }} · v{{ m.version }}</span>
+<span class="run-title">{{ m.project }} · {{ m.title }}</span>
+<span class="run-footer">{{ m.doc_id }} v{{ m.version }} {{ m.status }} · {{ m.license }} · amishchadha.com</span>
+{% if m.status != "Released" %}<div class="band">{{ m.status | upper }} · NOT FOR FABRICATION</div>{% endif %}
+
+<section class="cover">
+  <div class="kicker">{{ m.project }} · {{ m.doc_type }}</div>
+  <h1>{{ m.title }}</h1>
+  <div class="sub">Open Hardware Portfolio · amishchadha.com</div>
+
+  <div class="control-title">Document control</div>
+  <table class="control">
+    <tr><th>Document ID</th><td class="mono">{{ m.doc_id }}</td><th>Version</th><td class="mono">{{ m.version }}</td></tr>
+    <tr><th>Status</th><td><span class="pill {{ m.status | replace(' ', '-') }}">{{ m.status }}</span></td><th>Date</th><td>{{ m.date }}</td></tr>
+    <tr><th>Author</th><td>{{ m.author }}</td><th>License</th><td>{{ m.license }}</td></tr>
+    <tr><th>Repository</th><td colspan="3" class="mono">{{ repo }}</td></tr>
+    <tr><th>Source</th><td colspan="3" class="mono">{{ source }} @ {{ commit }}</td></tr>
+  </table>
+
+  <div class="control-title">Revision history</div>
+  <table class="control revs">
+    <tr><th style="width:12%">Version</th><th style="width:16%">Date</th><th style="width:20%">Author</th><th>Change</th></tr>
+    {% for r in m.revisions | reverse %}
+    <tr><td class="mono">{{ r.version }}</td><td>{{ r.date }}</td><td>{{ r.author }}</td><td>{{ r.change }}</td></tr>
+    {% endfor %}
+  </table>
+</section>
+
+<section class="content">
+{{ body }}
+</section>
+</body></html>

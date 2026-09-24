@@ -1,0 +1,69 @@
+/* Open Hardware Portfolio document style. Kit version in ../KIT_VERSION */
+@font-face { font-family: "Plex"; src: url("../fonts/IBMPlexSans-Regular.ttf"); font-weight: 400; }
+@font-face { font-family: "Plex"; src: url("../fonts/IBMPlexSans-Italic.ttf"); font-weight: 400; font-style: italic; }
+@font-face { font-family: "Plex"; src: url("../fonts/IBMPlexSans-Medium.ttf"); font-weight: 500; }
+@font-face { font-family: "Plex"; src: url("../fonts/IBMPlexSans-SemiBold.ttf"); font-weight: 600; }
+@font-face { font-family: "PlexMono"; src: url("../fonts/IBMPlexMono-Regular.ttf"); }
+
+:root {
+  --ink: #111827; --muted: #4B5563; --rule: #D1D5DB; --accent: #0F766E; --tint: #F0FDFA;
+}
+
+@page {
+  size: letter; margin: 22mm 20mm 20mm 20mm;
+  @top-left { content: string(docid); font: 500 7.5pt "Plex"; color: var(--muted); letter-spacing: .06em; }
+  @top-right { content: string(doctitle); font: 400 7.5pt "Plex"; color: var(--muted); }
+  @bottom-left { content: string(footer); font: 400 7pt "Plex"; color: var(--muted); }
+  @bottom-right { content: "Page " counter(page) " of " counter(pages); font: 400 7pt "Plex"; color: var(--muted); }
+}
+@page :first { @top-left { content: none; } @top-right { content: none; } }
+
+html { font: 400 9.6pt/1.5 "Plex", sans-serif; color: var(--ink); }
+body { margin: 0; }
+.run-docid { string-set: docid content(); display: none; }
+.run-title { string-set: doctitle content(); display: none; }
+.run-footer { string-set: footer content(); display: none; }
+
+/* Status band for anything not Released */
+.band { position: fixed; top: -14mm; left: 0; right: 0; text-align: center;
+  font: 600 7pt "Plex"; letter-spacing: .25em; color: #B45309; }
+
+/* Cover */
+.cover { border-top: 3pt solid var(--accent); padding-top: 10mm; margin-bottom: 8mm; }
+.cover .kicker { font: 600 8pt "Plex"; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+.cover h1 { font: 600 22pt/1.15 "Plex"; margin: 3mm 0 2mm; }
+.cover .sub { color: var(--muted); font-size: 10pt; }
+
+table.control, table.revs { width: 100%; border-collapse: collapse; margin: 4mm 0; font-size: 8.4pt; }
+table.control th { width: 22%; text-align: left; font-weight: 500; color: var(--muted); }
+table.control td, table.control th { padding: 1.6mm 2mm; border-bottom: .5pt solid var(--rule); }
+table.control td.mono { font-family: "PlexMono"; }
+.control-title { font: 600 8pt "Plex"; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-top: 6mm; }
+.pill { display: inline-block; padding: .4mm 2.2mm; border-radius: 3mm; font-weight: 600; font-size: 7.6pt; }
+.pill.Draft, .pill.In-review { background: #FEF3C7; color: #92400E; }
+.pill.Released { background: var(--tint); color: var(--accent); }
+.pill.Superseded { background: #F3F4F6; color: var(--muted); }
+
+/* Body */
+.content { page-break-before: always; }
+h1, h2, h3, h4 { font-weight: 600; line-height: 1.25; page-break-after: avoid; }
+.content h1 { font-size: 16pt; margin: 0 0 4mm; border-bottom: .75pt solid var(--rule); padding-bottom: 2mm; }
+.content h2 { font-size: 12.5pt; margin: 7mm 0 2mm; color: var(--ink); }
+.content h2::before { content: ""; display: inline-block; width: 2.2mm; height: 2.2mm; background: var(--accent); margin-right: 2.2mm; vertical-align: .4mm; }
+.content h3 { font-size: 10.5pt; margin: 5mm 0 1.5mm; }
+p { margin: 0 0 2.6mm; orphans: 3; widows: 3; }
+ul, ol { margin: 0 0 3mm; padding-left: 5mm; }
+li { margin-bottom: 1mm; }
+a { color: var(--accent); text-decoration: none; }
+code { font-family: "PlexMono"; font-size: 8.4pt; background: #F3F4F6; padding: .2mm 1mm; border-radius: 1mm; }
+pre { font-family: "PlexMono"; font-size: 8pt; background: #F9FAFB; border: .5pt solid var(--rule); border-left: 2pt solid var(--accent);
+  padding: 3mm; white-space: pre-wrap; page-break-inside: avoid; }
+pre code { background: none; padding: 0; }
+blockquote { margin: 3mm 0; padding: 2.5mm 4mm; background: #FFFBEB; border-left: 2pt solid #D97706; }
+blockquote p:last-child { margin: 0; }
+.content table { width: 100%; border-collapse: collapse; margin: 3mm 0 4mm; font-size: 8.4pt; page-break-inside: avoid; }
+.content th { text-align: left; font-weight: 600; border-bottom: 1pt solid var(--ink); padding: 1.5mm 2mm; }
+.content td { border-bottom: .5pt solid var(--rule); padding: 1.5mm 2mm; vertical-align: top; }
+img { max-width: 100%; }
+figure { margin: 4mm 0; page-break-inside: avoid; text-align: center; }
+figcaption, .caption { font-size: 8pt; color: var(--muted); margin-top: 1.5mm; }
