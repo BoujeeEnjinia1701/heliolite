@@ -2,18 +2,28 @@
 name: HelioLite
 slug: heliolite
 area: CleanTech
-trl: 2                   # Technology Readiness Level, see .kit/STANDARDS.md section 9
+trl: 3                   # Technology Readiness Level, see .kit/STANDARDS.md section 9
 trl_target: 3
 trl_evidence:
   - docs/01-problem.md
   - docs/02-concept.md
   - docs/03-requirements.md
+  - docs/decisions/0001-trl2-review-decisions.md
+  - docs/04-calcs/01-sizing.md
+  - docs/04-calcs/sizing.py
+  - cad/src/model.py
+  - cad/step/heliolite-tracking.step
+  - cad/step/heliolite-stowed.step
+  - cad/drawings/HLT-DWG-001.svg
+  - cad/drawings/HLT-DWG-001.pdf
+  - bom/bom.csv
+  - bom/bom-notes.md
 shortlisted: false
 pitch: >-
-  Two-axis mini heliostat on a mast that redirects sunlight to a fixed target, using a sun-position algorithm with no sensors.
+  Two-axis mini heliostat on a mast that redirects sunlight to a fixed target, using a sun-position algorithm with no sun sensors.
 problem: >-
   North-facing rooms and greenhouses lack daylight and solar heat.
-budget_usd: 400
+budget_usd: 430
 difficulty: 3  # 1 easiest, 5 hardest
 hero_image: media/hero.png
 licenses:
