@@ -1,0 +1,5 @@
+# Portfolio phase. Set by Amish Chadha. Claude must not change this file.
+phase: populate          # populate: bring every repo to TRL 2-3 with concept media
+trl_cap: 3               # no repo may claim or target a TRL above this
+media_required_from_trl: 2
+since: 2026-09-24

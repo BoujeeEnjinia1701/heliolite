@@ -128,6 +128,36 @@ def trl_check(docs) -> list[str]:
     return errs
 
 
+MEDIA_REQUIRED = ["media/concept-blueprint.png", "media/hero.png"]
+MEDIA_OPTIONAL = ["media/cutaway.png", "media/exploded.png"]
+BEYOND_CAP_PATHS = ["docs/05-tests", "docs/07-build", "bom/purchasing-checklist.md", "build-log/TEMPLATE.md"]
+
+
+def phase_check(docs) -> tuple[list[str], list[str]]:
+    """Portfolio phase rules (.kit/PHASE.yaml): TRL cap and concept media. Returns (errors, warnings)."""
+    ph_file = KIT / "PHASE.yaml"
+    if not ph_file.exists():
+        return [], []
+    ph = yaml.safe_load(ph_file.read_text()) or {}
+    cap = int(ph.get("trl_cap", 9))
+    pm = project_meta()
+    errs, warns = [], []
+    trl, target = int(pm.get("trl", 0) or 0), int(pm.get("trl_target", 0) or 0)
+    if trl > cap:
+        errs.append(f"trl {trl} exceeds the portfolio cap of TRL {cap} (.kit/PHASE.yaml)")
+    if target > cap:
+        errs.append(f"trl_target {target} exceeds the portfolio cap of TRL {cap} (.kit/PHASE.yaml)")
+    tst = [p for p, m, _ in docs if "-TST-" in str(m["doc_id"])]
+    extra = [str(p.relative_to(ROOT)) for p in tst] + [b for b in BEYOND_CAP_PATHS if (ROOT / b).exists()]
+    if cap < 4 and extra:
+        warns.append("work beyond the TRL %d cap is present (keep, but do not extend): %s" % (cap, ", ".join(sorted(set(extra)))))
+    missing = [m for m in MEDIA_REQUIRED if not (ROOT / m).exists()]
+    if trl >= int(ph.get("media_required_from_trl", 2)) and missing:
+        msg = "concept media missing: " + ", ".join(missing) + " (see CLAUDE.md section 5)"
+        (errs if trl >= 3 else warns).append(msg)
+    return errs, warns
+
+
 def controlled_docs():
     for p in sorted(ROOT.rglob("*.md")):
         if any(part.startswith(".") for part in p.relative_to(ROOT).parts[:-1]):
@@ -160,6 +190,14 @@ def main():
     else:
         pm = project_meta()
         print(f"ok   TRL {pm['trl']} ({TRL_NAMES[int(pm['trl'])]}), target TRL {pm.get('trl_target', pm['trl'])}")
+    perrs, pwarns = phase_check(docs)
+    for w in pwarns:
+        print(f"warn {w}")
+    if perrs:
+        failed = True
+        print("FAIL portfolio phase")
+        for e in perrs:
+            print(f"     - {e}")
     if failed:
         sys.exit(1)
     if only_check or not docs:

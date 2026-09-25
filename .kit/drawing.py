@@ -28,6 +28,9 @@ INK, MUTED, RULE, ACCENT = "#111827", "#4B5563", "#9CA3AF", "#0F766E"
 FONT = "IBM Plex Sans, Helvetica, Arial, sans-serif"
 MONO = "IBM Plex Mono, Menlo, monospace"
 KIT = Path(__file__).resolve().parent
+BLUEPRINT = {"#FFFFFF": "#143F73", INK: "#EEF5FF", "#4B5563": "#AFC8EC", "#9CA3AF": "#6F93C4",
+             ACCENT: "#8FE3D6", "#F3F4F6": "#1D4F8A", "#B45309": "#FFD37F",
+             "rgb(17,23,39)": "rgb(238,245,255)", "rgb(106,113,128)": "rgb(175,200,236)"}
 
 # Title block geometry (bottom right)
 TB_W, TB_H = 190.0, 56.0
@@ -104,6 +107,7 @@ class Sheet:
     material: str = ""
     license: str = "CERN-OHL-S-2.0"
     concept: bool = True
+    theme: str = "technical"            # "technical" (white) or "blueprint" (white lines on blue)
     revisions: list = field(default_factory=list)   # [(rev, description, date, by)]
     notes: list = field(default_factory=list)
     _layers: list = field(default_factory=list)
@@ -163,6 +167,27 @@ class Sheet:
         x = M + 8 + 258; y = M + 8 + 22
         self.add_svg(svg_path, x, y, W - M - 8 - x, TB_Y - y - 26, label=label, sublabel=sublabel)
 
+    def add_notes(self, title, lines, x=None, y=None, width=150):
+        """Key-figures box, e.g. capacity, mass, power. Placed above the title block by default."""
+        x = TB_X if x is None else x
+        n = len(lines); h = 8 + 4.6 * n
+        y = TB_Y - h - 6 if y is None else y
+        self._layers.append(f'<rect x="{x}" y="{y}" width="{width}" height="{h}" fill="#FFFFFF" stroke="{INK}" stroke-width="0.35"/>')
+        self._layers.append(_t(x + 3, y + 5, title.upper(), 2.3, 600, ACCENT))
+        for i, line in enumerate(lines):
+            self._layers.append(_t(x + 3, y + 10 + 4.6 * i, line, 2.6, 400, INK))
+
+    def add_image(self, png_path, x, y, w, h, label=None, sublabel=None):
+        """Embed a raster render (hero, cutaway, exploded) on the sheet."""
+        import base64
+        data = base64.b64encode(Path(png_path).read_bytes()).decode()
+        self._layers.append(f'<image x="{x}" y="{y}" width="{w}" height="{h}" preserveAspectRatio="xMidYMid meet" '
+                            f'href="data:image/png;base64,{data}"/>')
+        if label:
+            self._layers.append(_t(x + w / 2, y + h + 6, label.upper(), 2.8, 600, INK, "middle"))
+            if sublabel:
+                self._layers.append(_t(x + w / 2, y + h + 10, sublabel, 2.2, 400, MUTED, "middle"))
+
     # ---------- frame ----------
     def _frame(self):
         f = [f'<rect x="0" y="0" width="{W}" height="{H}" fill="#FFFFFF"/>',
@@ -172,6 +197,11 @@ class Sheet:
             x = M + i * (W - 2 * M) / 8
             f += [f'<line x1="{x:.1f}" y1="{M}" x2="{x:.1f}" y2="{M+3}" stroke="{INK}" stroke-width="0.35"/>',
                   f'<line x1="{x:.1f}" y1="{H-M}" x2="{x:.1f}" y2="{H-M-3}" stroke="{INK}" stroke-width="0.35"/>']
+        if self.theme == "blueprint":
+            for gx in range(int(M) + 10, int(W - M), 10):
+                f.append(f'<line x1="{gx}" y1="{M}" x2="{gx}" y2="{H-M}" stroke="#2E5C94" stroke-width="0.12"/>')
+            for gy in range(int(M) + 10, int(H - M), 10):
+                f.append(f'<line x1="{M}" y1="{gy}" x2="{W-M}" y2="{gy}" stroke="#2E5C94" stroke-width="0.12"/>')
         if self.concept:
             f.append(_t(M + 6, M + 9, "CONCEPT, NOT FOR FABRICATION", 3.2, 600, "#B45309"))
         return f
@@ -251,8 +281,12 @@ class Sheet:
     # ---------- output ----------
     def svg(self) -> str:
         parts = self._frame() + self._layers + self._rev_table() + self._title_block()
-        return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}mm" height="{H}mm" viewBox="0 0 {W} {H}">'
-                + "".join(parts) + "</svg>")
+        svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}mm" height="{H}mm" viewBox="0 0 {W} {H}">'
+               + "".join(parts) + "</svg>")
+        if self.theme == "blueprint":
+            for a, b in BLUEPRINT.items():
+                svg = svg.replace(a, b)
+        return svg
 
     def save(self, stem, png_dpi=110):
         stem = Path(stem); stem.parent.mkdir(parents=True, exist_ok=True)

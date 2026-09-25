@@ -3,7 +3,7 @@ doc_id: OHP-STD-001
 title: Documentation and drawing standard
 project: Open Hardware Portfolio
 doc_type: Standard
-version: "1.1"
+version: "1.2"
 status: Released
 date: 2026-09-24
 author: Amish Chadha
@@ -17,6 +17,10 @@ revisions:
     date: 2026-09-24
     author: Amish Chadha
     change: Adopt Technology Readiness Levels (section 9) for project maturity
+  - version: "1.2"
+    date: 2026-09-24
+    author: Amish Chadha
+    change: Portfolio phase cap (section 10), concept media standard (section 11), CLAUDE.md guardrails
 ---
 
 # Documentation and drawing standard
@@ -127,7 +131,12 @@ Quote version numbers so YAML keeps `1.0` as text instead of turning it into a n
 | DWD | DewDrive | SSK | StillStack | PPR | PotPress |
 | WWT | WaterWatch | LMF | LumaFlow | FCL | FieldCell |
 | CNP | ConePro | CVC | CulvertCrawl | EGD | EmberGuard |
-| SNF | SnapFrame | OHP | Portfolio-wide | | |
+| SNF | SnapFrame | CGM | CargoMule | SCM | StepClimber |
+| SWC | SwapCell | PLP | PalletPilot | FTK | FlatTrike |
+| WWK | WaterWalker | GRR | GrowRider | SSP | SunSpoke |
+| SGN | StepGen | PBX | PowerBox | WML | WasteWise-ml |
+| WSC | WasteWise Scan | RFE | ReflowEconomy | | |
+| OHP | Portfolio-wide | | | | |
 
 ## 8. Build and publish
 
@@ -156,3 +165,22 @@ Rules:
 - Documentation alone cannot go past TRL 3. TRL 4 and above require hardware and a test report.
 - TRL and visibility are independent. A repo can be public at TRL 3 as a documented design ready to build.
 - A change of TRL is recorded in the build log with the date and the evidence that justified it.
+
+## 10. Portfolio phase and TRL cap
+
+`.kit/PHASE.yaml` sets the current phase. During the **populate** phase every repo is capped at **TRL 3**: `trl` and `trl_target` may not exceed 3, and the check fails if they do. Work that belongs to TRL 4 or later (test articles, test plans and reports, build procedures, purchasing lists, PCB layouts) must not be started. Where it already exists it is kept, flagged in the check output, and not extended. Only Amish changes `PHASE.yaml`.
+
+Every repo carries a `CLAUDE.md` with the working rules for AI sessions: the TRL cap, decision rights (nothing is recorded as decided unless Amish decided it), one step per session, and a mandatory `docs/REVIEW.md` before stopping.
+
+## 11. Concept media
+
+Every repo at TRL 2 or above explains its idea visually. Media are generated from a build123d massing model with `.kit/concept.py`, never drawn by hand, so they stay in step with the design.
+
+| File | Required | Purpose |
+| --- | --- | --- |
+| `media/concept-blueprint.png` and `.pdf` | TRL 2+ | Blueprint concept sheet: orthographic and isometric views, scale, key figures, title block |
+| `media/hero.png` | TRL 2+ | Shaded isometric render; the website card image |
+| `media/cutaway.png` | When the inside matters | Section view showing internal parts |
+| `media/exploded.png` | Recommended | Exploded view with numbered callouts matching the BOM |
+
+At TRL 2 a massing model is enough: correct overall proportions and main components. All concept media carry "CONCEPT, NOT FOR FABRICATION". The check warns when required media are missing at TRL 2 and fails at TRL 3.
