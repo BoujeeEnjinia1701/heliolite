@@ -99,7 +99,7 @@ def _zbuffer(tris, cols, elev, azim, W, H, pad=0.06):
     return img, np.isfinite(zb), (lambda pts: to_px((np.asarray(pts) @ P.T)[..., :2]))
 
 
-def _render(parts, out, elev=24, azim=-58, offsets=False, labels=False, size=(8, 6), dpi=160, title=None, ss=2):
+def _render(parts, out, elev=24, azim=-58, offsets=False, labels=False, size=(8, 6), dpi=160, title=None, ss=2, note=None):
     W, H = int(size[0] * dpi), int(size[1] * dpi)
     tris_all, cols_all, items = [], [], []
     for p in parts:
@@ -134,6 +134,8 @@ def _render(parts, out, elev=24, azim=-58, offsets=False, labels=False, size=(8,
     if title:
         fig.text(0.02, 0.97, title, fontsize=9, fontweight="bold", color=INK, va="top")
         fig.text(0.02, 0.93, "CONCEPT, NOT FOR FABRICATION", fontsize=6.5, color="#B45309", va="top")
+    if note:
+        fig.text(0.02, 0.03, note, fontsize=7.5, color="#4B5563", va="bottom")
     out = Path(out); out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out, facecolor="white"); plt.close(fig)
     return out
@@ -157,15 +159,95 @@ def cutaway_parts(parts, keep="+Y"):
     return out
 
 
+def human_figure(height=1750.0, x=0.0, y=0.0, z=0.0):
+    """Simple standing mannequin for scale (default 1.75 m), feet at z. Returns a Part."""
+    from build123d import Cylinder, Sphere, Pos, Box
+    k = height / 1750.0
+    leg = lambda dx: Pos(x + dx * k, y, z + 430 * k) * Cylinder(62 * k, 860 * k)
+    torso = Pos(x, y, z + 1160 * k) * Box(360 * k, 200 * k, 600 * k)
+    arm = lambda dx: Pos(x + dx * k, y, z + 1130 * k) * Cylinder(42 * k, 620 * k)
+    head = Pos(x, y, z + 1620 * k) * Sphere(115 * k)
+    body = leg(-95) + leg(95) + torso + arm(-230) + arm(230) + head
+    return Part(f"Person, {height / 1000:.2f} m (scale)", body, "#9CA3AF", None)
+
+
+def with_scale_figure(parts, height=1750.0, gap=350.0):
+    """Place a mannequin to the right of the assembly, standing on the same floor."""
+    from build123d import Compound
+    bb = Compound(children=[p.shape for p in parts]).bounding_box()
+    fig = human_figure(height, x=bb.max.X + gap + 230 * height / 1750.0, y=(bb.min.Y + bb.max.Y) / 2, z=bb.min.Z)
+    return parts + [fig]
+
+
+def export_web_model(parts, media_dir="media", poster="hero.png", title="3D model"):
+    """Export a colored glTF (model.glb) and an interactive viewer page (viewer.html) for the website."""
+    from build123d import Compound, Color, export_gltf
+    import matplotlib.colors as mc
+    md = ROOT / media_dir; md.mkdir(parents=True, exist_ok=True)
+    kids = []
+    for p in parts:
+        sh = p.shape
+        sh.color = Color(*mc.to_rgb(p.color))
+        sh.label = p.name
+        kids.append(sh)
+    export_gltf(Compound(children=kids), str(md / "model.glb"), binary=True)
+    (md / "viewer.html").write_text(f"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title}</title>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3/dist/model-viewer.min.js"></script>
+<style>body{{margin:0;font-family:system-ui,sans-serif;background:#F9FAFB}}model-viewer{{width:100vw;height:100vh}}
+.tag{{position:fixed;left:12px;top:10px;font-size:12px;color:#B45309;letter-spacing:.06em}}</style></head>
+<body><div class="tag">CONCEPT, NOT FOR FABRICATION</div>
+<model-viewer src="model.glb" poster="{poster}" alt="{title}" camera-controls auto-rotate shadow-intensity="0.6"
+  exposure="1.0" camera-orbit="-35deg 70deg auto" interaction-prompt="auto"></model-viewer></body></html>
+""")
+    return md / "model.glb"
+
+
+def flow_diagram(stages, out, title, unit="kWh", losses=()):
+    """System or energy/material flow diagram.
+    stages: [(name, value)] left to right; losses: [(after_stage_index, name, value)] drawn as branches down.
+    Example: stages=[("Surplus PV", 21.9), ("Heaters", 21.9), ("Sand store", 18.3), ("Warm air", 14.5)],
+             losses=[(2, "Standby loss", 3.8)]."""
+    from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
+    n = len(stages)
+    fig, ax = plt.subplots(figsize=(10, 3.6), dpi=160)
+    ax.set_xlim(0, n * 3); ax.set_ylim(-2.6, 2); ax.set_axis_off()
+    vmax = max(v for _, v in stages) or 1
+    for i, (name, v) in enumerate(stages):
+        x = i * 3 + 0.3
+        ax.add_patch(FancyBboxPatch((x, -0.5), 1.9, 1.2, boxstyle="round,pad=0.02,rounding_size=0.12",
+                                    fc="#F0FDFA", ec=ACCENT, lw=1.4))
+        ax.text(x + 0.95, 0.28, name, ha="center", va="center", fontsize=9, fontweight="bold", color=INK)
+        ax.text(x + 0.95, -0.15, f"{v:g} {unit}", ha="center", va="center", fontsize=9, color=ACCENT)
+        if i < n - 1:
+            w = 1 + 6 * v / vmax
+            ax.add_patch(FancyArrowPatch((x + 1.95, 0.1), (x + 3.05, 0.1), arrowstyle="-|>", mutation_scale=14,
+                                         lw=w, color="#0F766E", alpha=0.55))
+    for i, name, v in losses:
+        x = i * 3 + 0.3 + 0.95
+        ax.add_patch(FancyArrowPatch((x, -0.55), (x, -1.7), arrowstyle="-|>", mutation_scale=12,
+                                     lw=1 + 6 * v / vmax, color="#C2410C", alpha=0.6))
+        ax.text(x, -2.05, f"{name}: {v:g} {unit}", ha="center", va="center", fontsize=8.5, color="#C2410C")
+    fig.text(0.01, 0.97, title, fontsize=10, fontweight="bold", color=INK, va="top")
+    fig.text(0.01, 0.9, "CONCEPT, NOT FOR FABRICATION", fontsize=6.5, color="#B45309", va="top")
+    out = Path(out); out.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out, facecolor="white", bbox_inches="tight"); plt.close(fig)
+    return out
+
+
 def render_all(parts, project, title, dwg_no, key_figures, author="Amish Chadha", date=None,
-               media_dir="media", rev="P1", cut=True):
+               media_dir="media", rev="P1", cut=True, scale_figure=True, web_model=True, flow=None):
+    """flow: optional dict for flow_diagram, e.g. {"stages": [...], "losses": [...], "unit": "kWh"}."""
     import datetime, sys
     sys.path.insert(0, str(Path(__file__).parent))
     from drawing import Sheet, project_views
     from build123d import Compound
     date = date or datetime.date.today().isoformat()
     md = ROOT / media_dir
-    hero = _render(parts, md / "hero.png", title=f"{project}")
+    shown = with_scale_figure(parts) if scale_figure else parts
+    hero = _render(shown, md / "hero.png", title=f"{project}",
+                   note="Grey figure: 1.75 m person for scale" if scale_figure else None)
     outs = {"hero": hero}
     if cut:
         outs["cutaway"] = _render(cutaway_parts(parts), md / "cutaway.png", azim=-90, elev=18,
@@ -173,13 +255,20 @@ def render_all(parts, project, title, dwg_no, key_figures, author="Amish Chadha"
     if any(any(p.explode) for p in parts):
         outs["exploded"] = _render(parts, md / "exploded.png", offsets=True, labels=True,
                                    title=f"{project}: exploded view")
-    whole = Compound(children=[p.shape for p in parts])
-    views = project_views(whole, md / "_views")
+    if web_model:
+        outs["web"] = export_web_model(parts, media_dir, title=f"{project}: {title}")
+    if flow:
+        outs["flow"] = flow_diagram(flow["stages"], md / "flow.png", f"{project}: {flow.get('title', 'system flow')}",
+                                    flow.get("unit", "kWh"), flow.get("losses", ()))
+    views = project_views(Compound(children=[p.shape for p in parts]), md / "_views")
+    if scale_figure:  # figure only in the isometric view, so it never overlaps orthographic views
+        views["iso"] = project_views(Compound(children=[p.shape for p in shown]), md / "_views_fig")["iso"]
     s = Sheet(project=project, title=title, dwg_no=dwg_no, rev=rev, author=author, date=date,
               theme="blueprint", material="Massing model for concept communication",
               revisions=[(rev, "Concept sheet", date, "".join(w[0] for w in author.split()))])
     s.add_ortho(views)
-    s.add_svg(views["iso"], 276, 32, 140, 118, label="Isometric view", sublabel="Not to scale")
+    s.add_svg(views["iso"], 276, 32, 140, 118, label="Isometric view",
+              sublabel="Not to scale; figure is a 1.75 m person" if scale_figure else "Not to scale")
     s.add_notes("Key figures", key_figures, x=276, y=168, width=140)
     s.save(md / "concept-blueprint")
     outs["blueprint"] = md / "concept-blueprint.png"

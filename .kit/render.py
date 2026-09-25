@@ -128,8 +128,8 @@ def trl_check(docs) -> list[str]:
     return errs
 
 
-MEDIA_REQUIRED = ["media/concept-blueprint.png", "media/hero.png"]
-MEDIA_OPTIONAL = ["media/cutaway.png", "media/exploded.png"]
+MEDIA_REQUIRED = ["media/concept-blueprint.png", "media/hero.png", "media/model.glb"]
+MEDIA_OPTIONAL = ["media/cutaway.png", "media/exploded.png", "media/flow.png", "media/viewer.html"]
 BEYOND_CAP_PATHS = ["docs/05-tests", "docs/07-build", "bom/purchasing-checklist.md", "build-log/TEMPLATE.md"]
 
 

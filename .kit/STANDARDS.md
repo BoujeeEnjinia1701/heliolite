@@ -3,7 +3,7 @@ doc_id: OHP-STD-001
 title: Documentation and drawing standard
 project: Open Hardware Portfolio
 doc_type: Standard
-version: "1.2"
+version: "1.3"
 status: Released
 date: 2026-09-24
 author: Amish Chadha
@@ -21,6 +21,10 @@ revisions:
     date: 2026-09-24
     author: Amish Chadha
     change: Portfolio phase cap (section 10), concept media standard (section 11), CLAUDE.md guardrails
+  - version: "1.3"
+    date: 2026-09-24
+    author: Amish Chadha
+    change: Scale figure, interactive 3D viewer and flow diagrams added to concept media; session slash commands
 ---
 
 # Documentation and drawing standard
@@ -178,9 +182,13 @@ Every repo at TRL 2 or above explains its idea visually. Media are generated fro
 
 | File | Required | Purpose |
 | --- | --- | --- |
+| `media/hero.png` | TRL 2+ | Shaded isometric render with a 1.75 m person for scale; the website card image |
 | `media/concept-blueprint.png` and `.pdf` | TRL 2+ | Blueprint concept sheet: orthographic and isometric views, scale, key figures, title block |
-| `media/hero.png` | TRL 2+ | Shaded isometric render; the website card image |
+| `media/model.glb` and `media/viewer.html` | TRL 2+ | Interactive 3D viewer (glTF plus model-viewer) for the website |
 | `media/cutaway.png` | When the inside matters | Section view showing internal parts |
 | `media/exploded.png` | Recommended | Exploded view with numbered callouts matching the BOM |
+| `media/flow.png` | When energy or material moves | System, energy or material flow diagram with losses |
+
+Session commands in `.claude/commands/` (`/populate`, `/advance-trl3`, `/rein-in`, `/refresh-media`) carry the standard prompts, so every Claude Code session starts from the same instructions.
 
 At TRL 2 a massing model is enough: correct overall proportions and main components. All concept media carry "CONCEPT, NOT FOR FABRICATION". The check warns when required media are missing at TRL 2 and fails at TRL 3.

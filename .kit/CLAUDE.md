@@ -35,16 +35,22 @@ Then commit, push and **stop**. Do not continue into the next step without a new
 
 ## 5. Required concept media (all repos, TRL 2 and up)
 
-Every repo needs visuals that explain the idea. Generate them from `cad/src/` with `.kit/concept.py`:
+Every repo needs visuals that explain the idea. Generate them from `cad/src/concept_media.py` with `.kit/concept.py` (`render_all`):
 
-| File | What it shows |
-| --- | --- |
-| `media/concept-blueprint.png` (+ `.pdf`) | Blueprint-style concept sheet: views, key dimensions, callouts |
-| `media/hero.png` | Shaded isometric render for the website card |
-| `media/cutaway.png` | Section view when the inside matters (storage, flow, mechanisms) |
-| `media/exploded.png` | Exploded view with numbered callouts matching the BOM |
+| File | What it shows | When |
+| --- | --- | --- |
+| `media/hero.png` | Shaded isometric render with a 1.75 m person for scale; the website card | Always |
+| `media/concept-blueprint.png` (+ `.pdf`) | Blueprint concept sheet: views, scale, key figures | Always |
+| `media/model.glb` + `media/viewer.html` | Interactive 3D viewer for the website | Always |
+| `media/cutaway.png` | Section view | When the inside matters |
+| `media/exploded.png` | Exploded view with numbered callouts matching the BOM | Recommended |
+| `media/flow.png` | System, energy or material flow diagram | When the concept moves energy or material |
 
-At TRL 2 the model may be a simple massing model: correct proportions and main parts, not detailed geometry. Label concept media "CONCEPT, NOT FOR FABRICATION".
+At TRL 2 the model may be a simple massing model: correct proportions and main parts, not detailed geometry. Label concept media "CONCEPT, NOT FOR FABRICATION". Mark estimated flow values as estimates.
+
+## 5a. Session commands
+
+Use the repo's slash commands rather than improvising scope: `/populate` (strong TRL 2 with media), `/advance-trl3` (only after Amish approves), `/rein-in` (stop and review), `/refresh-media`.
 
 ## 6. Standards
 
