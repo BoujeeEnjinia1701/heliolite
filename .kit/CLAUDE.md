@@ -46,7 +46,7 @@ Every repo needs visuals that explain the idea. Generate them from `cad/src/conc
 | `media/exploded.png` | Exploded view with numbered callouts matching the BOM | Recommended |
 | `media/flow.png` | System, energy or material flow diagram | When the concept moves energy or material |
 
-At TRL 2 the model may be a simple massing model: correct proportions and main parts, not detailed geometry. Label concept media "CONCEPT, NOT FOR FABRICATION". Mark estimated flow values as estimates.
+For small objects (wearables, handheld tools) use a context part such as a hand or forearm instead of the 1.75 m person (`scale_figure=False, context=[...]`); see `tremortrace` for a worked example. At TRL 2 the model may be a simple massing model: correct proportions and main parts, not detailed geometry. Label concept media "CONCEPT, NOT FOR FABRICATION". Mark estimated flow values as estimates.
 
 ## 5a. Session commands
 

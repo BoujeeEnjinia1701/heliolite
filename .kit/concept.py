@@ -205,24 +205,26 @@ def export_web_model(parts, media_dir="media", poster="hero.png", title="3D mode
 
 
 def flow_diagram(stages, out, title, unit="kWh", losses=()):
-    """System or energy/material flow diagram.
+    """System, data, energy or material flow diagram. Values may be numbers (scaled arrows) or text labels.
     stages: [(name, value)] left to right; losses: [(after_stage_index, name, value)] drawn as branches down.
     Example: stages=[("Surplus PV", 21.9), ("Heaters", 21.9), ("Sand store", 18.3), ("Warm air", 14.5)],
              losses=[(2, "Standby loss", 3.8)]."""
     from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
     n = len(stages)
-    fig, ax = plt.subplots(figsize=(10, 3.6), dpi=160)
+    fig, ax = plt.subplots(figsize=(max(10, 2.7 * n), 3.6), dpi=160)
     ax.set_xlim(0, n * 3); ax.set_ylim(-2.6, 2); ax.set_axis_off()
-    vmax = max(v for _, v in stages) or 1
+    nums = [v for _, v in stages if isinstance(v, (int, float))]
+    vmax = max(nums) if nums else 1
     for i, (name, v) in enumerate(stages):
         x = i * 3 + 0.3
-        ax.add_patch(FancyBboxPatch((x, -0.5), 1.9, 1.2, boxstyle="round,pad=0.02,rounding_size=0.12",
+        ax.add_patch(FancyBboxPatch((x - 0.15, -0.5), 2.3, 1.2, boxstyle="round,pad=0.02,rounding_size=0.12",
                                     fc="#F0FDFA", ec=ACCENT, lw=1.4))
-        ax.text(x + 0.95, 0.28, name, ha="center", va="center", fontsize=9, fontweight="bold", color=INK)
-        ax.text(x + 0.95, -0.15, f"{v:g} {unit}", ha="center", va="center", fontsize=9, color=ACCENT)
+        ax.text(x + 0.95, 0.28, name, ha="center", va="center", fontsize=8.5, fontweight="bold", color=INK)
+        label = f"{v:g} {unit}".strip() if isinstance(v, (int, float)) else str(v)
+        ax.text(x + 0.95, -0.15, label, ha="center", va="center", fontsize=9, color=ACCENT)
         if i < n - 1:
-            w = 1 + 6 * v / vmax
-            ax.add_patch(FancyArrowPatch((x + 1.95, 0.1), (x + 3.05, 0.1), arrowstyle="-|>", mutation_scale=14,
+            w = 1 + 6 * v / vmax if isinstance(v, (int, float)) else 3
+            ax.add_patch(FancyArrowPatch((x + 2.2, 0.1), (x + 2.8, 0.1), arrowstyle="-|>", mutation_scale=14,
                                          lw=w, color="#0F766E", alpha=0.55))
     for i, name, v in losses:
         x = i * 3 + 0.3 + 0.95
@@ -237,20 +239,24 @@ def flow_diagram(stages, out, title, unit="kWh", losses=()):
 
 
 def render_all(parts, project, title, dwg_no, key_figures, author="Amish Chadha", date=None,
-               media_dir="media", rev="P1", cut=True, scale_figure=True, web_model=True, flow=None):
-    """flow: optional dict for flow_diagram, e.g. {"stages": [...], "losses": [...], "unit": "kWh"}."""
+               media_dir="media", rev="P1", cut=True, scale_figure=True, web_model=True, flow=None, context=(), cut_exclude=()):
+    """flow: optional dict for flow_diagram, e.g. {"stages": [...], "losses": [...], "unit": "kWh"}.
+    cut_exclude: part names left out of the cutaway (e.g. a strap that hides the section).
+    context: Parts shown only in the hero render for scale (e.g. a forearm for a wearable). For small
+    objects set scale_figure=False and pass a context part instead of the 1.75 m person."""
     import datetime, sys
     sys.path.insert(0, str(Path(__file__).parent))
     from drawing import Sheet, project_views
     from build123d import Compound
     date = date or datetime.date.today().isoformat()
     md = ROOT / media_dir
-    shown = with_scale_figure(parts) if scale_figure else parts
+    shown = (with_scale_figure(parts) if scale_figure else parts) + list(context)
     hero = _render(shown, md / "hero.png", title=f"{project}",
-                   note="Grey figure: 1.75 m person for scale" if scale_figure else None)
+                   note="Grey figure: 1.75 m person for scale" if scale_figure else
+                   ("Grey: " + ", ".join(c.name for c in context) + " for scale" if context else None))
     outs = {"hero": hero}
     if cut:
-        outs["cutaway"] = _render(cutaway_parts(parts), md / "cutaway.png", azim=-90, elev=18,
+        outs["cutaway"] = _render(cutaway_parts([p for p in parts if p.name not in cut_exclude]), md / "cutaway.png", azim=-90, elev=18,
                                   title=f"{project}: cutaway")
     if any(any(p.explode) for p in parts):
         outs["exploded"] = _render(parts, md / "exploded.png", offsets=True, labels=True,
@@ -261,14 +267,15 @@ def render_all(parts, project, title, dwg_no, key_figures, author="Amish Chadha"
         outs["flow"] = flow_diagram(flow["stages"], md / "flow.png", f"{project}: {flow.get('title', 'system flow')}",
                                     flow.get("unit", "kWh"), flow.get("losses", ()))
     views = project_views(Compound(children=[p.shape for p in parts]), md / "_views")
-    if scale_figure:  # figure only in the isometric view, so it never overlaps orthographic views
+    if scale_figure or context:  # scale reference only in the isometric view, never overlapping orthographic views
         views["iso"] = project_views(Compound(children=[p.shape for p in shown]), md / "_views_fig")["iso"]
     s = Sheet(project=project, title=title, dwg_no=dwg_no, rev=rev, author=author, date=date,
               theme="blueprint", material="Massing model for concept communication",
               revisions=[(rev, "Concept sheet", date, "".join(w[0] for w in author.split()))])
     s.add_ortho(views)
     s.add_svg(views["iso"], 276, 32, 140, 118, label="Isometric view",
-              sublabel="Not to scale; figure is a 1.75 m person" if scale_figure else "Not to scale")
+              sublabel="Not to scale; figure is a 1.75 m person" if scale_figure else
+              ("Not to scale; grey is for scale" if context else "Not to scale"))
     s.add_notes("Key figures", key_figures, x=276, y=168, width=140)
     s.save(md / "concept-blueprint")
     outs["blueprint"] = md / "concept-blueprint.png"
