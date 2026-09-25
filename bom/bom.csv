@@ -1,6 +1,14 @@
 item,qty,spec,supplier,unit_cost_usd,make_buy,notes
-Glass mirror 60 x 60 cm,,,,,,
-NEMA17 steppers with worm gears (2),,,,,,
-ESP32 with RTC,,,,,,
-Aluminum extrusion mast,,,,,,
-Printed gimbal,,,,,,
+1 Glass mirror,1,"600 x 600 x 3 mm silvered float glass mirror, seamed edges, safety backing film",Local glazier,25.00,buy,Indicative price; acrylic mirror is a cheaper but less flat option
+2 Backing panel and torque tube,1,"4 mm aluminum composite panel 600 x 600 mm, two 25 x 20 mm aluminum ribs, 25 x 25 x 2 mm aluminum square tube 680 mm with trunnion ends, structural silicone",Metal supplier and hardware shop,30.00,buy,Indicative price; mirror balanced about the tube axis
+3 Printed gimbal yoke,1,"ASA base plate, crossbar and two arms (about 1 kg filament), heat-set inserts, M5 and M6 bolts",Makerspace or home printer,30.00,make,Indicative material cost; UV-stable filament needed outdoors
+4 Elevation drive,1,"NEMA17 stepper, 1.8 degree, about 0.4 N m, on a 50:1 worm gearbox with output shaft",Stepper motor distributor,55.00,buy,Indicative price; output holding torque to be confirmed (R9)
+5 Azimuth drive,1,"NEMA17 stepper on a 50:1 worm gearbox, with mast clamp and output flange",Stepper motor distributor,60.00,buy,Indicative price; same gearbox as item 4 plus flange
+6 Azimuth turntable and bearings,1,"Printed or aluminum disc, one radial and one thrust ball bearing",Bearing supplier,20.00,buy,Indicative price
+7 Mast,1,"60.3 mm OD x 3.9 mm galvanized steel pipe (2 in), 1.71 m, with cap",Hardware or steel supplier,35.00,buy,Indicative price; proposed in place of aluminum extrusion (awaiting Amish)
+8 Ground anchor and flange,1,"Ground screw for 60 mm posts, about 800 mm long, or concrete footing with a bolted flange",Fencing or hardware supplier,35.00,buy,Indicative price; check for buried services
+9 Controller box,1,"ESP32 module, DS3231 RTC with coin cell, two TMC2209 stepper drivers, 12 V to 5 V buck converter, IP65 box, glands and terminals",Electronics distributor,45.00,buy,Indicative price
+10 Homing Hall switches,2,"Unipolar Hall switch with potted lead and small neodymium magnet",Electronics distributor,3.00,buy,Indicative price; axis homing only
+11 Cabling,1,"Two 1.5 m shielded 4-core motor leads, 15 m of 2-core 1.0 mm2 outdoor cable, cable glands and clips",Electronics distributor,20.00,buy,Indicative price; 12 V feed from indoors
+12 Power adapter,1,"Listed 12 V 3 A plug-in adapter for indoor use",Electronics retailer,15.00,buy,Indicative price; no exploded-view callout; stays indoors
+13 Hardware and consumables,1,"U-bolt clamps, stainless fasteners, thread locker, cable ties",Local hardware shop,15.00,buy,Indicative price; no exploded-view callout

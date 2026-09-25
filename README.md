@@ -6,13 +6,19 @@
 
 Two-axis mini heliostat on a mast that redirects sunlight to a fixed target, using a sun-position algorithm with no sensors.
 
+![HelioLite concept](media/hero.png)
+
+[Interactive 3D model](media/viewer.html) · [Concept blueprint (PDF)](media/concept-blueprint.pdf) · [Review note](docs/REVIEW.md)
+
 ## Problem
 
-North-facing rooms and greenhouses lack daylight and solar heat.
+North-facing rooms and greenhouses lack daylight and solar heat. On a clear winter day a 0.36 m² mirror can send about 160 W of sunlight (about 15,000 lm) through a window, enough to add roughly 500 lx to a small room, while its heat contribution is modest (estimates in the [problem statement](docs/01-problem.md) and [precis](docs/02-concept.md)).
 
 ## Concept
 
 Two-axis mini heliostat on a mast that redirects sunlight to a fixed target, using a sun-position algorithm with no sensors.
+
+An ESP32 computes the sun's position from a real-time clock and the site location every 30 s, and two worm-driven steppers turn the mirror so its normal bisects the directions to the sun and to the target. A phone-based calibration fits the mount alignment, and the mirror stows face-down at night.
 
 Full design precis: [docs/02-concept.md](docs/02-concept.md)
 
@@ -21,14 +27,14 @@ Full design precis: [docs/02-concept.md](docs/02-concept.md)
 - Glass mirror 60 x 60 cm
 - NEMA17 steppers with worm gears (2)
 - ESP32 with RTC
-- Aluminum extrusion mast
+- Mast: aluminum extrusion in the scaffold; a 60.3 mm steel pipe is proposed for stiffness (awaiting Amish)
 - Printed gimbal
 
 The working bill of materials is in [bom/bom.csv](bom/bom.csv).
 
 ## Safety
 
-> Concentrated sunlight can cause eye injury and fire. Never aim at people, vehicles or aircraft.
+> **Safety:** The reflected beam is nearly as bright as the sun and can cause eye injury; several mirrors aimed at one spot can start a fire. Never aim at people, vehicles or aircraft. The gimbal moves with high torque, the mirror is glass 2 m above the ground, and the mast must be anchored and stowed before storms. Only 12 V DC runs outdoors. See the safety section of the [precis](docs/02-concept.md).
 
 ## Repository layout
 
