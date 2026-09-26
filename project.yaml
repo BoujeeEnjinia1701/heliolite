@@ -1,6 +1,7 @@
 # Card metadata consumed by https://designmolecule.com
 name: HelioLite
 slug: heliolite
+repo: BoujeeEnjinia1701/heliolite         # GitHub repository, shown on every drawing and render
 area: CleanTech
 trl: 3                   # Technology Readiness Level, see .kit/STANDARDS.md section 9
 trl_target: 3

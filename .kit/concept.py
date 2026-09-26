@@ -99,6 +99,14 @@ def _zbuffer(tris, cols, elev, azim, W, H, pad=0.06):
     return img, np.isfinite(zb), (lambda pts: to_px((np.asarray(pts) @ P.T)[..., :2]))
 
 
+def _repo():
+    try:
+        from drawing import repo_ref
+        return repo_ref()
+    except Exception:
+        return None
+
+
 def _render(parts, out, elev=24, azim=-58, offsets=False, labels=False, size=(8, 6), dpi=160, title=None, ss=2, note=None):
     W, H = int(size[0] * dpi), int(size[1] * dpi)
     tris_all, cols_all, items = [], [], []
@@ -134,6 +142,8 @@ def _render(parts, out, elev=24, azim=-58, offsets=False, labels=False, size=(8,
     if title:
         fig.text(0.02, 0.97, title, fontsize=9, fontweight="bold", color=INK, va="top")
         fig.text(0.02, 0.93, "CONCEPT, NOT FOR FABRICATION", fontsize=6.5, color="#B45309", va="top")
+        if _repo():
+            fig.text(0.98, 0.97, _repo(), fontsize=7, color=ACCENT, va="top", ha="right", family="monospace")
     if note:
         fig.text(0.02, 0.03, note, fontsize=7.5, color="#4B5563", va="bottom")
     out = Path(out); out.parent.mkdir(parents=True, exist_ok=True)
@@ -233,6 +243,8 @@ def flow_diagram(stages, out, title, unit="kWh", losses=()):
         ax.text(x, -2.05, f"{name}: {v:g} {unit}", ha="center", va="center", fontsize=8.5, color="#C2410C")
     fig.text(0.01, 0.97, title, fontsize=10, fontweight="bold", color=INK, va="top")
     fig.text(0.01, 0.9, "CONCEPT, NOT FOR FABRICATION", fontsize=6.5, color="#B45309", va="top")
+    if _repo():
+        fig.text(0.99, 0.97, _repo(), fontsize=7, color=ACCENT, va="top", ha="right", family="monospace")
     out = Path(out); out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out, facecolor="white", bbox_inches="tight"); plt.close(fig)
     return out
@@ -251,16 +263,20 @@ def render_all(parts, project, title, dwg_no, key_figures, author="Amish Chadha"
     date = date or datetime.date.today().isoformat()
     md = ROOT / media_dir
     shown = (with_scale_figure(parts) if scale_figure else parts) + list(context)
+    scale_note = ("Grey figure: 1.75 m person for scale" if scale_figure else
+                  ("Grey: " + ", ".join(c.name for c in context) + " for scale" if context else None))
+    view_note = "Seen from the front right and above, 24 deg elevation"
     hero = _render(shown, md / "hero.png", title=f"{project}",
-                   note="Grey figure: 1.75 m person for scale" if scale_figure else
-                   ("Grey: " + ", ".join(c.name for c in context) + " for scale" if context else None))
+                   note=f"{view_note}. {scale_note}" if scale_note else view_note)
     outs = {"hero": hero}
     if cut:
         outs["cutaway"] = _render(cutaway_parts([p for p in parts if p.name not in cut_exclude]), md / "cutaway.png", azim=-90, elev=18,
-                                  title=f"{project}: cutaway")
+                                  title=f"{project}: cutaway",
+                                  note="Front half removed; seen from the front and above, 18 deg elevation")
     if any(any(p.explode) for p in parts):
         outs["exploded"] = _render(parts, md / "exploded.png", offsets=True, labels=True,
-                                   title=f"{project}: exploded view")
+                                   title=f"{project}: exploded view",
+                                   note="Seen from the front right and above, 24 deg elevation; numbers match bom/bom.csv")
     if web_model:
         outs["web"] = export_web_model(parts, media_dir, title=f"{project}: {title}")
     if flow:

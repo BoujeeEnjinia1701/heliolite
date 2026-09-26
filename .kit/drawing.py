@@ -48,6 +48,16 @@ def install_fonts():
         subprocess.run(["fc-cache", "-f", str(dest)], capture_output=True)
 
 
+def repo_ref(root=None):
+    """'github.com/<owner>/<repo>' from the repo's project.yaml ('repo: owner/name'), or None."""
+    p = Path(root or Path.cwd()) / "project.yaml"
+    try:
+        m = re.search(r"^repo:\s*[\"']?([\w.-]+/[\w.-]+)", p.read_text(), re.M)
+    except OSError:
+        return None
+    return f"github.com/{m.group(1)}" if m else None
+
+
 def _t(x, y, s, size=2.6, weight=400, color=INK, anchor="start", mono=False):
     fam = MONO if mono else FONT
     return (f'<text x="{x:.2f}" y="{y:.2f}" font-family="{fam}" font-size="{size}" font-weight="{weight}" '
@@ -66,12 +76,55 @@ def _inner(svg_text: str) -> str:
     return re.sub(r"</svg>\s*$", "", body.strip())
 
 
-def project_views(part, workdir: str | Path, line_weight=0.35):
-    """Project a build123d part to front/top/right/iso SVGs (third-angle). Returns {name: path}."""
-    from build123d import ExportSVG, LineType, Unit
+def _center_lines(part, name, c, bb, min_r):
+    """ISO 128 centre lines for cylindrical faces, in the 2D frame project_to_viewport uses."""
+    from build123d import GeomType
+    view = {"front": (0, 1, 0), "top": (0, 0, 1), "right": (1, 0, 0)}[name]
+    to2d = {"front": lambda p: (p[0] - c.X, p[2] - c.Z), "top": lambda p: (p[0] - c.X, p[1] - c.Y),
+            "right": lambda p: (p[1] - c.Y, p[2] - c.Z)}[name]
+    lo = to2d((bb.min.X, bb.min.Y, bb.min.Z)); hi = to2d((bb.max.X, bb.max.Y, bb.max.Z))
+    def clip(u, v):
+        return (min(max(u, lo[0]), hi[0]), min(max(v, lo[1]), hi[1]))
+    segs = set()
+    for f in part.faces():
+        if f.geom_type != GeomType.CYLINDER:
+            continue
+        try:
+            ax, r = f.axis_of_rotation, f.radius
+        except Exception:
+            continue
+        if r is None or r < min_r:
+            continue
+        a = (ax.direction.X, ax.direction.Y, ax.direction.Z)
+        dot = abs(sum(i * j for i, j in zip(a, view)))
+        fb = f.bounding_box()
+        if dot > 0.99:            # seen end on: a cross through the circle centre
+            o = ax.position
+            u, v = to2d((o.X, o.Y, o.Z)); e = r * 1.25
+            segs.add((clip(u - e, v), clip(u + e, v))); segs.add((clip(u, v - e), clip(u, v + e)))
+        elif dot < 0.01:          # seen side on: a line along the axis over the face length
+            o = ax.position; d = ax.direction
+            t = [(p - o).dot(d) for p in (fb.min, fb.max)]
+            t0, t1 = min(t), max(t); ext = 0.06 * (t1 - t0) + r * 0.3
+            p0 = o + d * (t0 - ext); p1 = o + d * (t1 + ext)
+            segs.add((clip(*to2d((p0.X, p0.Y, p0.Z))), clip(*to2d((p1.X, p1.Y, p1.Z)))))
+    out = []
+    for (a, b) in segs:
+        a = tuple(round(x, 2) for x in a); b = tuple(round(x, 2) for x in b)
+        if a != b:
+            out.append((a, b))
+    return sorted(set(out))
+
+
+def project_views(part, workdir: str | Path, line_weight=0.35, center_lines=True):
+    """Project a build123d part to front/top/right/iso SVGs (third-angle). Returns {name: path}.
+    Ortho views carry visible lines, hidden lines (ISO dashed) and, for cylinders of useful
+    size, ISO 128 centre lines (long dash dot)."""
+    from build123d import ExportSVG, LineType, Unit, Edge, Vector
     workdir = Path(workdir); workdir.mkdir(parents=True, exist_ok=True)
     bb = part.bounding_box()
     c = bb.center(); d = max(bb.size.X, bb.size.Y, bb.size.Z) * 10
+    min_r = 0.006 * max(bb.size.X, bb.size.Y, bb.size.Z)
     setups = {
         "front": ((c.X, c.Y - d, c.Z), (0, 0, 1)),
         "top":   ((c.X, c.Y, c.Z + d), (0, 1, 0)),
@@ -84,9 +137,15 @@ def project_views(part, workdir: str | Path, line_weight=0.35):
         ex = ExportSVG(unit=Unit.MM, line_weight=line_weight)
         ex.add_layer("Visible", line_color=0x111827)
         ex.add_layer("Hidden", line_color=0x6B7280, line_type=LineType.ISO_DASH, line_weight=line_weight / 2)
+        ex.add_layer("Center", line_color=0x6B7280, line_type=LineType.ISO_LONG_DASH_DOT, line_weight=line_weight / 2)
         ex.add_shape(visible, layer="Visible")
         if name != "iso":
             ex.add_shape(hidden, layer="Hidden")
+            if center_lines:
+                lines = [Edge.make_line(Vector(a[0], a[1], 0), Vector(b[0], b[1], 0))
+                         for a, b in _center_lines(part, name, c, bb, min_r)]
+                if lines:
+                    ex.add_shape(lines, layer="Center")
         p = workdir / f"{name}.svg"
         ex.write(str(p))
         out[name] = p
@@ -110,11 +169,41 @@ class Sheet:
     theme: str = "technical"            # "technical" (white) or "blueprint" (white lines on blue)
     revisions: list = field(default_factory=list)   # [(rev, description, date, by)]
     notes: list = field(default_factory=list)
+    repo: str | None = None             # 'github.com/owner/name'; read from project.yaml when not given
     _layers: list = field(default_factory=list)
 
+    def __post_init__(self):
+        if self.repo is None:
+            self.repo = repo_ref()
+
     # ---------- content ----------
+    VIEW_DIRECTIONS = {
+        "top": "looking down (along -Z)",
+        "front": "looking at the front (along +Y)",
+        "right": "looking at the right side (along -X)",
+        "left": "looking at the left side (along +X)",
+        "rear": "looking at the back (along -Y)",
+        "bottom": "looking up (along +Z)",
+        "isometric": "seen from the front right and above, about 30 deg elevation",
+    }
+
+    @classmethod
+    def with_direction(cls, label, sublabel):
+        """Every view label states where it is seen from (standard section 6)."""
+        if not label:
+            return sublabel
+        import re as _re
+        tokens = _re.findall(r"[a-z]+", label.lower())
+        key = "isometric" if "isometric" in tokens else (tokens[0] if tokens else "")
+        words = (sublabel or "").lower()
+        if key in cls.VIEW_DIRECTIONS and not any(k in words for k in ("looking", "seen from", "from the", "along")):
+            direction = cls.VIEW_DIRECTIONS[key]
+            return f"{sublabel}; {direction}" if sublabel else direction[0].upper() + direction[1:]
+        return sublabel
+
     def add_svg(self, svg_path, x, y, w=None, h=None, scale=None, label=None, sublabel=None):
         """Place an SVG with its origin box centered in (x, y, w, h). With scale, size is exact."""
+        sublabel = self.with_direction(label, sublabel)
         txt = Path(svg_path).read_text()
         vx, vy, vw, vh = _viewbox(txt)
         if scale is not None:
@@ -137,21 +226,46 @@ class Sheet:
 
     STD_SCALES = [5, 2, 1, 1/2, 1/5, 1/10, 1/20, 1/25, 1/50, 1/100]
 
-    def add_ortho(self, views: dict, names=("front", "top", "right")):
+    def _dim(self, x1, y1, x2, y2, value, side, off=7.0):
+        """Linear dimension between two sheet points (mm). side: 'above', 'below', 'left' or 'right'.
+        ISO 129 style: thin extension lines with a small gap, filled arrowheads, value in mm."""
+        g, ov, lw, al, aw = 1.2, 1.8, 0.18, 2.6, 0.9
+        out = []
+        if side in ("above", "below"):
+            s_ = -1 if side == "above" else 1
+            yb = (min(y1, y2) if s_ < 0 else max(y1, y2)); yd = yb + s_ * off
+            for x, y in ((x1, y1), (x2, y2)):
+                out.append(f'<line x1="{x:.2f}" y1="{y + s_ * g:.2f}" x2="{x:.2f}" y2="{yd + s_ * ov:.2f}" stroke="{INK}" stroke-width="{lw}"/>')
+            out.append(f'<line x1="{x1:.2f}" y1="{yd:.2f}" x2="{x2:.2f}" y2="{yd:.2f}" stroke="{INK}" stroke-width="{lw}"/>')
+            out.append(f'<path d="M{x1:.2f} {yd:.2f} l{al} {-aw/2} l0 {aw} Z M{x2:.2f} {yd:.2f} l{-al} {-aw/2} l0 {aw} Z" fill="{INK}"/>')
+            out.append(_t((x1 + x2) / 2, yd - 1.0, value, 2.5, 500, INK, "middle"))
+        else:
+            s_ = -1 if side == "left" else 1
+            xb = (min(x1, x2) if s_ < 0 else max(x1, x2)); xd = xb + s_ * off
+            for x, y in ((x1, y1), (x2, y2)):
+                out.append(f'<line x1="{x + s_ * g:.2f}" y1="{y:.2f}" x2="{xd + s_ * ov:.2f}" y2="{y:.2f}" stroke="{INK}" stroke-width="{lw}"/>')
+            out.append(f'<line x1="{xd:.2f}" y1="{y1:.2f}" x2="{xd:.2f}" y2="{y2:.2f}" stroke="{INK}" stroke-width="{lw}"/>')
+            out.append(f'<path d="M{xd:.2f} {y1:.2f} l{-aw/2} {al} l{aw} 0 Z M{xd:.2f} {y2:.2f} l{-aw/2} {-al} l{aw} 0 Z" fill="{INK}"/>')
+            ym = (y1 + y2) / 2; xt = xd - 1.0
+            out.append(f'<g transform="translate({xt:.2f} {ym:.2f}) rotate(-90)">{_t(0, 0, value, 2.5, 500, INK, "middle")}</g>')
+        self._layers += out
+
+    def add_ortho(self, views: dict, names=("front", "top", "right"), dims=True):
         """Third-angle layout: top above front, right beside front, aligned, at one scale.
         If the sheet scale is None, the largest standard scale that fits is chosen."""
         ax, ay, aw, ah = M + 10, M + 16, 245, TB_Y - M - 20
         gap, lab = 14, 12
-        dims = {n: _viewbox(Path(views[n]).read_text())[2:] for n in names}
-        fw, fh = dims.get("front", (0, 0)); tw, th = dims.get("top", (0, 0)); rw, rh = dims.get("right", (0, 0))
+        vb = {n: _viewbox(Path(views[n]).read_text())[2:] for n in names}
+        fw, fh = vb.get("front", (0, 0)); tw, th = vb.get("top", (0, 0)); rw, rh = vb.get("right", (0, 0))
+        dl = 11 if dims else 0          # room for overall dimensions left of and above the views
         def fits(k):
-            return k * (max(fw, tw) + rw) + gap <= aw and k * (th + max(fh, rh)) + gap + 2 * lab <= ah
+            return k * (max(fw, tw) + rw) + gap + dl <= aw and k * (th + max(fh, rh)) + gap + 2 * lab + dl <= ah
         if self.scale is None:
             self.scale = next((k for k in self.STD_SCALES if fits(k)), self.STD_SCALES[-1])
         k = self.scale
         sc = f"1:{1/k:g}" if k < 1 else f"{k:g}:1"
-        ax += (aw - (k * (max(fw, tw) + rw) + gap)) / 2          # center the view group
-        ay += (ah - (k * (th + max(fh, rh)) + gap + 2 * lab)) / 2
+        ax += (aw - (k * (max(fw, tw) + rw) + gap + dl)) / 2 + dl     # center the view group
+        ay += (ah - (k * (th + max(fh, rh)) + gap + 2 * lab + dl)) / 2 + dl
         colw = k * max(fw, tw)
         top_h = k * th
         front_y = ay + top_h + lab + gap
@@ -162,6 +276,19 @@ class Sheet:
         for n in names:
             x, y, w, h = cells[n]
             self.add_svg(views[n], x, y, w, h, scale=k, label=f"{n} view", sublabel=f"Scale {sc}")
+        if dims:
+            # overall sizes, each shown once: length and depth on the top view, height on the front view
+            def box(n):   # sheet box of the view's geometry (the SVG is centered in its cell)
+                x, y, w, h = cells[n]; vw, vh = dims_[n]
+                return x + (w - k * vw) / 2, y + (h - k * vh) / 2, k * vw, k * vh
+            dims_ = {n: (vb[n][0] - 0.35, vb[n][1] - 0.35) for n in vb}
+            if "top" in cells and "top" in names:
+                x, y, w, h = box("top")
+                self._dim(x, y, x + w, y, f"{dims_['top'][0]:.0f}", "above")
+                self._dim(x, y, x, y + h, f"{dims_['top'][1]:.0f}", "left")
+            if "front" in names:
+                x, y, w, h = box("front")
+                self._dim(x, y, x, y + h, f"{dims_['front'][1]:.0f}", "left")
 
     def add_iso(self, svg_path, label="Isometric view", sublabel="Not to scale"):
         x = M + 8 + 258; y = M + 8 + 22
@@ -204,6 +331,9 @@ class Sheet:
                 f.append(f'<line x1="{M}" y1="{gy}" x2="{W-M}" y2="{gy}" stroke="#2E5C94" stroke-width="0.12"/>')
         if self.concept:
             f.append(_t(M + 6, M + 9, "CONCEPT, NOT FOR FABRICATION", 3.2, 600, "#B45309"))
+        # project and repository on every sheet, so a printed or forwarded sheet is never anonymous
+        ref = self.project + (f"  ·  {self.repo}" if self.repo else "")
+        f.append(_t(M + 80, M + 9, ref, 3.2, 600, INK))
         return f
 
     def _title_block(self):
@@ -221,6 +351,8 @@ class Sheet:
 
         # Row 0: project + title
         g.append(_t(x + 6, y + 5, self.project.upper(), 2.2, 600, ACCENT))
+        if self.repo:
+            g.append(_t(x + w - 3, y + 5, self.repo, 2.2, 500, ACCENT, "end", mono=True))
         g.append(_t(x + 6, y + 11, self.title, 4.4, 600, INK))
         # Row 1: drawing no / rev / sheet
         cx = x + 3
@@ -288,7 +420,7 @@ class Sheet:
                 svg = svg.replace(a, b)
         return svg
 
-    def save(self, stem, png_dpi=110):
+    def save(self, stem, png_dpi=300):
         stem = Path(stem); stem.parent.mkdir(parents=True, exist_ok=True)
         svg = self.svg()
         svg_path = stem.with_suffix(".svg"); svg_path.write_text(svg)
