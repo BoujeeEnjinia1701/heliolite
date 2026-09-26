@@ -3,9 +3,9 @@ doc_id: HLT-REQ-001
 title: HelioLite requirements
 project: HelioLite
 doc_type: Requirements
-version: "0.4"
+version: "0.5"
 status: Draft
-date: '2026-09-25'
+date: '2026-09-26'
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -25,11 +25,15 @@ revisions:
   date: '2026-09-25'
   author: Amish Chadha
   change: Recommendations accepted by Amish (DDR-002)
+- version: "0.5"
+  date: '2026-09-26'
+  author: Amish Chadha
+  change: Budget top-up approved by Amish
 ---
 
 # HelioLite requirements
 
-These are the requirements for the concept, checked by calculation at TRL 3 in HLT-CAL-001 v0.2. Targets are proposals, not yet validated with users. "Met" means met on paper only. On 2026-09-25 Amish decided to raise the budget to $430 (HLT-DDR-001, D4), so R15 reads $430, and R5 names the weather anemometer decided in D2 as allowed. Later the same day he accepted the TRL 3 recommendations (HLT-DDR-002): R13 is relaxed from 10 kg to 13 kg (N3), R7 now counts hands-on time spread over one clear day (N4), and R10 now allows the beam to move only downward during a stow (N5). No other target has changed.
+These are the requirements for the concept, checked by calculation at TRL 3 in HLT-CAL-001 v0.3. Targets are proposals, not yet validated with users. "Met" means met on paper only. On 2026-09-25 Amish decided to raise the budget to $430 (HLT-DDR-001, D4), so R15 reads $430, and R5 names the weather anemometer decided in D2 as allowed. Later the same day he accepted the TRL 3 recommendations (HLT-DDR-002): R13 is relaxed from 10 kg to 13 kg (N3), R7 now counts hands-on time spread over one clear day (N4), and R10 now allows the beam to move only downward during a stow (N5). On 2026-09-26 Amish approved a budget top-up to $455 (HLT-DDR-002 v0.2, P1), so R15 now reads $455 and is met on paper. No other target has changed.
 
 The **design point** used throughout is a clear winter day at 45° N, DNI 800 W/m², a mirror-to-target distance of 10 m and an angle of incidence on the mirror of about 32° (cosine factor 0.85).
 
@@ -51,11 +55,10 @@ Table 1. Requirements and TRL 3 status (tags refer to lines printed by `docs/04-
 | R12 | Outdoor life | Operate from -20 to +45 °C; UV-stable plastics (ASA or better); corrosion-resistant mast; 10-year mirror life with cleaning | Not verifiable at TRL 3 | Materials review; later exposure test |
 | R13 | Mass and install | 13 kg or less on the mast top (relaxed from 10 kg, decided by Amish 2026-09-25, HLT-DDR-002 N3); installed by two people with hand tools in 4 h or less | Met, thinly: 12.95 kg on the mast top, 0.05 kg margin on assumed masses [H3]; install time not verifiable at TRL 3 | Mass estimate (done) |
 | R14 | Standby power | 3 W or less average from the 12 V supply | Met: 0.60 W [I1] | Power budget (done) |
-| R15 | Cost | Parts $430 or less (budget raised from $400, decided by Amish 2026-09-25) | **Not met:** $451, $21 over, after the decided preload springs and stow latch [J1] | Priced BOM (`bom/bom.csv`) |
+| R15 | Cost | Parts $455 or less (budget raised from $400 to $430 by Amish on 2026-09-25, then to $455 by a top-up he approved on 2026-09-26) | Met: $451, $4 margin, with the decided preload springs and stow latch [J1] | Priced BOM (`bom/bom.csv`) |
 
 ## Requirements not met or at risk
 
-- **R15 (cost) not met.** The decided preload springs ($6) and stow stop and latch ($20) take the BOM from $425 to $451 against $430. No budget figure was recommended with these decisions; a budget change is proposed, awaiting Amish (HLT-DDR-002).
 - **R3 (daily energy) at risk.** Site dependent: met at site A with no margin on the solstice, missed at site B.
 - **R4 (pointing) at risk.** 0.31° typical, but the 95th percentile of four-point calibration sits at the 0.5° limit; it relies on the decided preload springs against the gearbox's 1° backlash.
 - **R12 (outdoor life) not verifiable at TRL 3.**

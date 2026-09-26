@@ -24,7 +24,7 @@ pitch: >-
   Two-axis mini heliostat on a mast that redirects sunlight to a fixed target, using a sun-position algorithm with no sun sensors.
 problem: >-
   North-facing rooms and greenhouses lack daylight and solar heat.
-budget_usd: 430
+budget_usd: 455
 difficulty: 3  # 1 easiest, 5 hardest
 hero_image: media/hero.png
 licenses:

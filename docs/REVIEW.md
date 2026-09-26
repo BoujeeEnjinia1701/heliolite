@@ -188,7 +188,7 @@ No accepted recommendation carried a budget figure, so `budget_usd` stays at $43
 
 1. First site and user for the co-design checklist (O1); co-design partners stay open.
 2. Local rules on glare and structures at that site (O2) and a siting survey of real yards (O3).
-3. **New: budget for the $451 BOM (P1).** Options: (a) raise `budget_usd` to $455; (b) keep $430 and cut cost elsewhere (printed turntable, cheaper anemometer); (c) make the anemometer optional where a reliable forecast exists. Recommendation: (a), because both additions are safety or accuracy items.
+3. **New: budget for the $451 BOM (P1).** Options: (a) raise `budget_usd` to $455; (b) keep $430 and cut cost elsewhere (printed turntable, cheaper anemometer); (c) make the anemometer optional where a reliable forecast exists. Recommendation: (a), because both additions are safety or accuracy items. **Decided by Amish, 2026-09-26: budget top-up to $455 (option a), applied in the session below.**
 
 ### Cross-repo actions
 
@@ -208,3 +208,29 @@ None. No decision here needs another repo to change.
 ### TRL 4
 
 TRL 4 remains on hold by Amish's instruction. Building and testing the latch (holding moment, pad compliance, engagement on a power-loss stow), the springs and the drives are TRL 4 work and were not started.
+
+## Session 2026-09-26: sources strengthened
+
+### Sources replaced
+
+Every link in "Concept rationale", "Burning platform", "Where it could be used" and "What sparked the idea" was fetched and checked against its sentence. Kept and confirmed: US EPA (about 90 % of time indoors), IEA (lighting about 8 % of global electricity, about 2,200 TWh, 2024), WHO Housing and Health Guidelines (18 °C), Hong, Wang and Zhang 2024 (Chinese sunlight rules), World Bank 2018 (Ulaanbaatar ger districts).
+
+| Where | Old source | New source |
+| --- | --- | --- |
+| What sparked the idea | Viganella, Italy (Vice) | Rjukan, Norway, sun mirrors first used in 2013 ([NPR, 2013](https://www.npr.org/2013/11/03/242789411/as-mirrors-beam-light-to-town-norwegians-share-patch-of-sun)). No BBC, Times or CBC account of Viganella could be opened (blocked or refused), and the municipal tourism page supports only the 83 sunless days, so the inspiration was changed. INSPIRATIONS.md line replaced |
+| Concept rationale | No citation | NPR, 2013 (civic mirrors); jremington/Arduino_heliostat (clock-driven open heliostat) |
+| Region row: United Kingdom and northern Europe | ClimateStudio and SageGlass (vendor pages on EN 17037) | Replaced by a European Union row: Eurostat, 2 February 2026 (9.2 % could not keep their home adequately warm in 2024; 19.0 % in Bulgaria and Greece) |
+| Region row: Canada and the northern United States | No citation | Replaced by a United States row: US EIA "Use of energy in homes" (heating and cooling 52 % of household energy in 2020; higher use in the Northeast and Midwest) |
+| Region row: Chile and Argentina | No citation | Replaced by a Chile row: UNEP "Chile takes action on air pollution" (firewood up to 94 % of PM2.5 emissions in some cities) |
+| Region row: Norway | NPR, 2013 | Removed, because Rjukan is now the inspiration; the rows cover North America, Europe, East Asia, Central Asia and South America |
+| HLT-PRB-001 v0.4, "The problem" item 1 | ClimateStudio and SageGlass (EN 17037 targets) | US EPA (about 90 % of time indoors). The EN 17037 figures were removed because the standard is paywalled and no primary summary could be opened |
+
+Not changed and still weak, outside the README sections in scope: HLT-PRB-001 "Prior work" cites Inhabitat and Solar Power World for the Sunflower home heliostat, and Visit Rjukan for the mirror details.
+
+### Budget
+
+- P1 decided by Amish, 2026-09-26 ("I am ok with the budget top ups"): `budget_usd` $430 to $455 in `project.yaml`.
+- `docs/04-calcs/sizing.py` hard-codes the budget; `BUDGET` is now 455.0 and the script was re-run: [J1] "total $451.00 against $455 budget; margin $4.00"; [K3] 0 not met, 2 at risk, 1 not verifiable, 12 met.
+- R15 not met to met. Documents revised: HLT-REQ-001 v0.5, HLT-CAL-001 v0.3, HLT-DDR-002 v0.2, HLT-PRC-001 v0.5, HLT-PRB-001 v0.4 (sources and budget); `README.md` budget line and status; `bom/bom-notes.md`.
+- Concept media: the blueprint key figure in `cad/src/concept_media.py` now reads "Parts $451 against $455 budget, R15 met"; all of `media/` was regenerated and the temporary `_views` folders deleted.
+- Still awaiting Amish: O1, O2 and O3.

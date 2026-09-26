@@ -3,9 +3,9 @@ doc_id: HLT-CAL-001
 title: HelioLite sizing calculations
 project: HelioLite
 doc_type: Calculation
-version: "0.2"
+version: "0.3"
 status: Draft
-date: '2026-09-25'
+date: '2026-09-26'
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -17,11 +17,15 @@ revisions:
   date: '2026-09-25'
   author: Amish Chadha
   change: Recommendations accepted by Amish (DDR-002)
+- version: "0.3"
+  date: '2026-09-26'
+  author: Amish Chadha
+  change: "Budget top-up approved by Amish: R15 target $455, script re-run"
 ---
 
 # HelioLite sizing calculations
 
-On paper, HelioLite meets eleven of its fifteen requirements, misses one and has two at risk; one cannot be verified at TRL 3. This version applies the decisions Amish took on 2026-09-25 (HLT-DDR-002): a stow stop and latch that carries the stowed hinge moment, preload springs on both drives, R13 relaxed to 13 kg, R7 and R10 reworded, and four calibration points over about 4 h as the default. The optics work: at the design point the mirror delivers about 211 W to the outside of the glazing and 159 W (about 15,000 lm) into the room, and a reference site at 45° N receives 0.50 kWh through the glazing on the winter solstice and 1.0 kWh on 1 February. Stowed wind survival (R9) is now met on paper, because the latch rather than the gearbox carries the stowed moment, with a factor of 2 on the assumed coefficient. The new miss is cost (R15): the two added lines take the BOM to $451 against the $430 budget. Pointing (R4) stays at risk at the 95th percentile of calibration, and daily energy (R3) depends on siting. Every number in this note is printed by `docs/04-calcs/sizing.py`; the tag in brackets, for example [D5], is the line of that script's output that carries it.
+On paper, HelioLite meets twelve of its fifteen requirements and has two at risk; one cannot be verified at TRL 3. This version applies the decisions Amish took on 2026-09-25 (HLT-DDR-002): a stow stop and latch that carries the stowed hinge moment, preload springs on both drives, R13 relaxed to 13 kg, R7 and R10 reworded, and four calibration points over about 4 h as the default. The optics work: at the design point the mirror delivers about 211 W to the outside of the glazing and 159 W (about 15,000 lm) into the room, and a reference site at 45° N receives 0.50 kWh through the glazing on the winter solstice and 1.0 kWh on 1 February. Stowed wind survival (R9) is now met on paper, because the latch rather than the gearbox carries the stowed moment, with a factor of 2 on the assumed coefficient. The two added lines take the BOM to $451; in version 0.3 the budget is $455, a top-up Amish approved on 2026-09-26 (HLT-DDR-002 v0.2), so cost (R15) is met with $4 to spare. Pointing (R4) stays at risk at the 95th percentile of calibration, and daily energy (R3) depends on siting. Every number in this note is printed by `docs/04-calcs/sizing.py`; the tag in brackets, for example [D5], is the line of that script's output that carries it.
 
 > **Safety:** These calculations concern a reflected beam of nearly one sun, a glass mirror 2.2 m above the ground, worm drives with high output torque, and a mast in storm winds. They are first-principles estimates for a paper proof of concept and are not a substitute for datasheets, a structural review or test. See HLT-PRC-001, Safety.
 
@@ -147,7 +151,7 @@ Average draw is 0.60 W: idle 0.4 W, moves 0.17 W and 0.029 W in the stow reserve
 
 ## J. Cost (R15)
 
-The BOM has 17 lines, all priced, totaling $451.00 against the $430 budget decided on 2026-09-25, $21.00 over [J1]. The preload springs (line 16, $6) and the stow stop and latch (line 17, $20, of which the solenoid is about $8) take it over. R15 is **not met**. No budget figure was recommended with these decisions, so the budget stays at $430 and a change is proposed, awaiting Amish (HLT-DDR-002). Tools, printer time and shipping are not included [J2].
+The BOM has 17 lines, all priced, totaling $451.00 against the $455 budget, a $4.00 margin [J1]. The preload springs (line 16, $6) and the stow stop and latch (line 17, $20, of which the solenoid is about $8) took it $21 over the earlier $430 budget; Amish approved a top-up to $455 on 2026-09-26 (HLT-DDR-002 v0.2). R15 is met. Tools, printer time and shipping are not included [J2].
 
 ## K. Results
 
@@ -157,7 +161,6 @@ The yoke sweeps: at site A the normal stays within 46° of the target direction 
 
 | ID | Requirement | Value | Target | Status |
 | --- | --- | --- | --- | --- |
-| R15 | Cost | $451, $21 over | $430 or less | **Not met** |
 | R3 | Daily energy | 0.50 kWh (21 Dec) and 1.00 kWh (1 Feb) at site A; 0.40 kWh at site B on 21 Dec | 0.5 kWh or more on a clear winter day | At risk |
 | R4 | Pointing | 0.31° beam typical, 0.50° at the 95th percentile, with the decided preload springs; 1.04° without preload | 0.5° beam up to 8 m/s | At risk |
 | R12 | Outdoor life | ASA, galvanized steel, glass with backing film, by selection | -20 to +45 °C, UV, corrosion, 10 years | Not verifiable at TRL 3 |
@@ -172,8 +175,9 @@ The yoke sweeps: at site A the normal stays within 46° of the target direction 
 | R11 | Electrical safety | 12 V SELV outdoors, IP65 box, listed indoor adapter | SELV, IP65, listed adapter | Met |
 | R13 | Mass and install | 12.95 kg on the mast top, 0.05 kg margin | 13 kg or less; two people, hand tools, 4 h | Met (install time not verifiable at TRL 3) |
 | R14 | Standby power | 0.60 W average | 3 W or less | Met |
+| R15 | Cost | $451, $4 margin | $455 or less | Met |
 
-Totals: 1 not met, 2 at risk, 1 not verifiable at TRL 3, 11 met [K3].
+Totals: 0 not met, 2 at risk, 1 not verifiable at TRL 3, 12 met [K3].
 
 ## Checks against earlier figures
 
@@ -185,5 +189,6 @@ Totals: 1 not met, 2 at risk, 1 not verifiable at TRL 3, 11 met [K3].
 - **Wind.** The face-on figures match TRL 2 (40 N·m hinge moment; mast stress now 87 MPa including drag on the pipe, up from 78 MPa). Stowed loads were not estimated at TRL 2 and are new.
 - **Mass.** TRL 2 quoted about 8 kg on the mast top; now 12.5 kg [H3].
 - **Power.** 0.6 W, unchanged [I1].
-- **Cost.** TRL 2 quoted $391 against $400; v0.1 of this note gave $425 against the decided $430; with lines 16 and 17 it is now $451 [J1].
+- **Cost.** TRL 2 quoted $391 against $400; v0.1 of this note gave $425 against the decided $430; with lines 16 and 17 it is now $451, against $455 after the 2026-09-26 top-up [J1].
 - **Changes in v0.2 (HLT-DDR-002).** R9 moved from not met (24.3 N·m on the gearbox against 22 N·m maximum) to met (moment carried by the stow latch); R13 moved from not met (12.5 kg against 10 kg) to met (12.95 kg against 13 kg); R7 and R10 moved from at risk to met after rewording; R15 moved from met ($425) to not met ($451 against $430). R3, R4 and R12 are unchanged.
+- **Changes in v0.3 (budget top-up).** `BUDGET` in `sizing.py` is $455; R15 moves from not met ($451 against $430) to met ($451 against $455). No other figure changes.

@@ -3,9 +3,9 @@ doc_id: HLT-DDR-002
 title: HelioLite recommendations accepted
 project: HelioLite
 doc_type: Design decision record
-version: "0.1"
+version: "0.2"
 status: Draft
-date: '2026-09-25'
+date: '2026-09-26'
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -13,6 +13,10 @@ revisions:
   date: '2026-09-25'
   author: Amish Chadha
   change: Recommendations accepted by Amish (DDR-002); record the TRL 3 review items now decided, what changed in the repo and the items still open
+- version: "0.2"
+  date: '2026-09-26'
+  author: Amish Chadha
+  change: Budget top-up to $455 decided by Amish (P1)
 ---
 
 # 0002: Recommendations accepted
@@ -39,7 +43,9 @@ The ten TRL 2 items (D1 to D10) were already decided in HLT-DDR-001 and are unch
 | N5 | R10 wording | During a stow the beam may move only downward, toward the ground | HLT-REQ-001 R10 reworded; R10 moves from at risk to met (stow in 23 s, beam never above -4°) |
 | N6 | Calibration points | Four points over about 4 h as the default, within D7's "three or more" | HLT-PRC-001 and HLT-CAL-001 use four points over about 4 h as the default (95th percentile residual 0.23° on the normal) |
 
-Consequences for the budget: the recommendations for N1 and N2 carried no budget figure. Lines 16 and 17 take the BOM from $425 to $451 against the $430 in `project.yaml`, so R15 moves from met to **not met**. `budget_usd` stays at $430; see P1 below.
+Consequences for the budget: the recommendations for N1 and N2 carried no budget figure. Lines 16 and 17 take the BOM from $425 to $451 against the $430 in `project.yaml`, so R15 moves from met to **not met**. `budget_usd` stayed at $430 until P1 below was decided.
+
+Budget top-up to $455: decided by Amish, 2026-09-26 (P1, option a). `budget_usd` $430 to $455; HLT-REQ-001 v0.5 and HLT-CAL-001 v0.3: R15 moves from not met to met ($451, $4 margin).
 
 *Table 2. Items still open (Proposed, awaiting Amish).*
 
@@ -48,11 +54,11 @@ Consequences for the budget: the recommendations for N1 and N2 carried no budget
 | O1 | First site and user for the co-design checklist (house, greenhouse or school) | No recommendation was made; co-design partners stay open by Amish's instruction |
 | O2 | Local rules on glare and structures at the first site | Depends on O1 |
 | O3 | Siting survey of real yards | No recommendation was made |
-| P1 | Budget for the $451 BOM (R15) | New. Options: (a) raise `budget_usd` to $455; (b) keep $430 and cut cost elsewhere, for example print the turntable and source a cheaper anemometer; (c) treat the anemometer as optional where a reliable forecast is available. Recommendation: (a), because both additions are safety or accuracy items, as with D4. Not decided here, because the recommendations Amish accepted named no budget figure |
+| P1 | Budget for the $451 BOM (R15) | New. Options: (a) raise `budget_usd` to $455; (b) keep $430 and cut cost elsewhere, for example print the turntable and source a cheaper anemometer; (c) treat the anemometer as optional where a reliable forecast is available. Recommendation: (a), because both additions are safety or accuracy items, as with D4. **Decided by Amish, 2026-09-26: budget top-up to $455 (option a)** |
 
 ## Consequences
 
 - HLT-PRB-001 is unchanged. HLT-PRC-001 and HLT-REQ-001 move to v0.4, HLT-CAL-001 to v0.2, drawing HLT-DWG-001 to Rev P2; the model, STEP, STL and media were regenerated.
-- Requirement status: 11 met, 1 not met (R15), 2 at risk (R3, R4), 1 not verifiable at TRL 3 (R12).
+- Requirement status: 11 met, 1 not met (R15), 2 at risk (R3, R4), 1 not verifiable at TRL 3 (R12). After the 2026-09-26 budget top-up (P1): 12 met, 0 not met, 2 at risk, 1 not verifiable.
 - No cross-repo action arises from these items.
 - The latch, springs and solenoid are paper design only. Building and testing them (holding moment, pad compliance, latch engagement on a power-loss stow) is TRL 4 work and stays on hold by Amish's instruction.

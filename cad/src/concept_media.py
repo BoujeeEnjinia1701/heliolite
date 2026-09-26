@@ -44,7 +44,7 @@ render_all(
                  "Open loop: sun-position algorithm and RTC, no sun sensor",
                  "Beam error 0.31° typical against 0.5° with preload springs [D5]",
                  "Face-down stow in 23 s; latch carries the storm load [F1, E7]",
-                 "Parts $451 against $430 budget, R15 not met [J1]"],
+                 "Parts $451 against $455 budget, R15 met [J1]"],
     cut=False, context=context,
     flow={"title": "instantaneous power, sun to room at the design point, W (all values are estimates)",
           "unit": "W",

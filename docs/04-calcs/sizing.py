@@ -459,12 +459,12 @@ out("I1", f"Average power {p_avg:.2f} W (idle {P_IDLE} W, moves {P_MOVE * T_MOVE
 RES["R14"] = (f"{p_avg:.2f} W average", "3 W or less", "Met" if p_avg <= 3 else "Not met")
 
 # ---------------------------------------------------------------- J. cost
-BUDGET = 430.0
+BUDGET = 455.0  # budget_usd; top-up approved by Amish 2026-09-26 (HLT-DDR-002 v0.2)
 rows_b = list(csv.DictReader((ROOT / "bom" / "bom.csv").open()))
 total = sum(float(r["qty"]) * float(r["unit_cost_usd"]) for r in rows_b)
 out("J1", f"BOM {len(rows_b)} lines, all priced: total ${total:,.2f} against ${BUDGET:.0f} budget; margin ${BUDGET - total:.2f}")
 out("J2", "Not in the BOM: tools, printer time, shipping. Preload springs (line 16) and stow stop and latch (line 17) added under HLT-DDR-002")
-RES["R15"] = (f"${total:,.0f} ({BUDGET - total:+.0f} against the budget)", "$430 or less (budget decided 2026-09-25)",
+RES["R15"] = (f"${total:,.0f} ({BUDGET - total:+.0f} against the budget)", "$455 or less (budget top-up approved 2026-09-26)",
               "Met" if total <= BUDGET else "Not met")
 
 # ---------------------------------------------------------------- K. remaining requirements and summary

@@ -3,9 +3,9 @@ doc_id: HLT-PRC-001
 title: HelioLite design precis
 project: HelioLite
 doc_type: Design precis
-version: "0.4"
+version: "0.5"
 status: Draft
-date: '2026-09-25'
+date: '2026-09-26'
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -25,6 +25,10 @@ revisions:
   date: '2026-09-25'
   author: Amish Chadha
   change: Recommendations accepted by Amish (DDR-002)
+- version: "0.5"
+  date: '2026-09-26'
+  author: Amish Chadha
+  change: "Budget top-up approved by Amish: parts within the $455 budget"
 ---
 
 # HelioLite design precis
@@ -146,7 +150,7 @@ A worst-case stow takes 18 s of motion plus 5 s to detect the loss and needs 87 
 
 - **Power:** 0.60 W average, about 14 Wh per day (R14 met) [I1].
 - **Mass:** mirror assembly 6.0 kg, yoke 2.7 kg, two drives 3.3 kg, turntable 0.5 kg, stow stop and latch 0.27 kg and springs 0.16 kg make 12.95 kg on the mast top against the relaxed 13 kg limit (R13 met, 0.05 kg margin); the mast adds 9.2 kg [H1 to H3].
-- **Cost:** $451 in parts against the $430 budget (R15 not met, $21 over) [J1]. A budget change is proposed, awaiting Amish (HLT-DDR-002).
+- **Cost:** $451 in parts against the $455 budget (R15 met, $4 margin) [J1], after a budget top-up Amish approved on 2026-09-26 (HLT-DDR-002 v0.2).
 
 ## Key design choices
 
@@ -155,7 +159,7 @@ Decided by Amish on 2026-09-25, going with the recommendation (HLT-DDR-001):
 - **Mast (D1):** 60.3 mm galvanized steel pipe, rather than an 80 x 80 mm extrusion or a guyed 40 x 40 mm extrusion. The pipe tilts 0.040° at 8 m/s; a 40 x 40 mm extrusion would tilt 0.37°.
 - **Storm awareness (D2):** a Wi-Fi wind forecast plus a cup anemometer, counted as a weather sensor, not a tracking sensor.
 - **Safe state on power loss (D3):** a supercapacitor stow reserve.
-- **Budget (D4):** $430.
+- **Budget (D4):** $430, raised to $455 by a top-up Amish approved on 2026-09-26 (HLT-DDR-002, P1).
 - **Pitch (D5):** "with no sun sensors".
 - **Face-down stow (D6)** at night, on a fault and before storms, rather than face-up (which sends the beam into the sky toward aircraft) or edge-on.
 - **Calibration by jogged spot points (D7)**, three or more; four points over about 4 h are used in the budget.
@@ -174,7 +178,7 @@ Decided by Amish on 2026-09-25, going with the recommendation (HLT-DDR-002):
 - **Stow transient (N5):** R10 allows the beam to move only downward during a stow.
 - **Calibration points (N6):** four points over about 4 h as the default, within D7.
 
-Proposed, awaiting Amish: a budget figure that covers the $451 BOM (no figure was recommended with the decisions above).
+Decided by Amish on 2026-09-26: a budget top-up to $455 that covers the $451 BOM (HLT-DDR-002, P1).
 
 ## Safety
 

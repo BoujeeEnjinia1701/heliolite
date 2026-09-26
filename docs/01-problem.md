@@ -3,9 +3,9 @@ doc_id: HLT-PRB-001
 title: HelioLite problem statement
 project: HelioLite
 doc_type: Problem statement
-version: "0.3"
+version: "0.4"
 status: Draft
-date: '2026-09-25'
+date: '2026-09-26'
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -21,17 +21,21 @@ revisions:
   date: '2026-09-25'
   author: Amish Chadha
   change: TRL 3 update; budget $430 and no-sun-sensor constraint as decided by Amish (HLT-DDR-001); siting findings from HLT-CAL-001; open items listed; EN 17037 sunlight citation corrected
+- version: "0.4"
+  date: '2026-09-26'
+  author: Amish Chadha
+  change: Stronger sources
 ---
 
 # HelioLite problem statement
 
-Rooms that face away from the equator (north-facing in the Northern Hemisphere) and the shaded back of many greenhouses never receive direct sun in winter, so they stay dim and cold while sunlight falls a few meters away. A small two-axis mirror that follows the sun can send that sunlight through a chosen window all day, but the heliostats on the market are either large power-plant or civic installations or discontinued consumer products. HelioLite aims to be a garage-buildable, open design at about $430 in parts.
+Rooms that face away from the equator (north-facing in the Northern Hemisphere) and the shaded back of many greenhouses never receive direct sun in winter, so they stay dim and cold while sunlight falls a few meters away. A small two-axis mirror that follows the sun can send that sunlight through a chosen window all day, but the heliostats on the market are either large power-plant or civic installations or discontinued consumer products. HelioLite aims to be a garage-buildable, open design at about $455 in parts.
 
 ## The problem
 
 In the Northern Hemisphere a north-facing window sees only diffuse skylight. At 45° N the noon sun stands only about 21.6° above the horizon at the winter solstice (90° minus latitude minus 23.44°), so neighboring buildings, trees and the house itself also shade many south, east and west openings for much of the winter. The result is:
 
-1. **Too little daylight.** The European daylight standard EN 17037 sets a target of 300 lx over half of a room's reference plane for half of the daylight hours ([EN 17037:2018 summary, ClimateStudio documentation](https://climatestudiodocs.com/docs/daylightEN17037.html)), and recommends from 1.5 h (minimum) to 4 h (high) of possible sunlight in a habitable room on a chosen date such as 21 March ([SageGlass summary of EN 17037](https://www.sageglass.com/industry-insights/first-european-standard-daylight-buildings)). Deep, north-facing rooms often fall short of both.
+1. **Too little daylight.** People in the United States spend, on average, about 90 % of their time indoors ([US EPA](https://www.epa.gov/report-environment/indoor-air-quality)), so a room without winter sun leaves its occupants with little daylight for much of the season.
 2. **No passive solar gain.** Those rooms get no free winter heat, and greenhouse beds on the north side grow slowly.
 3. **Electric light as the fallback.** Occupants turn on lamps during the day.
 
@@ -57,7 +61,7 @@ A heliostat is a mirror turned by two motors so that the reflection of the sun s
 
 ## Constraints
 
-- Garage-buildable prototype, about $430 USD in parts (`project.yaml` budget, raised from $400 by Amish on 2026-09-25, HLT-DDR-001 D4).
+- Garage-buildable prototype, about $455 USD in parts (`project.yaml` budget, raised from $400 to $430 by Amish on 2026-09-25, HLT-DDR-001 D4, then to $455 by a top-up he approved on 2026-09-26, HLT-DDR-002 P1).
 - Open-loop tracking from time and location (a sun-position algorithm), with no sun sensor or camera. Homing switches for the axes and a weather anemometer for storm stow are allowed (HLT-DDR-001 D2, D5).
 - Only extra-low voltage (12 V DC) outdoors; the mains adapter stays indoors.
 - Parts available from general hardware, electronics and 3D-printing suppliers; one mirror cut to size by a local glazier.
