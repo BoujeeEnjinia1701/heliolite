@@ -111,7 +111,7 @@ Quote version numbers so YAML keeps `1.0` as text instead of turning it into a n
 | Accent (one only) | `#0F766E` teal |
 | Document page | US Letter, 20 mm margins |
 | Drawing sheet | ANSI B landscape (431.8 x 279.4 mm) |
-| Footer | Document ID, version, status, license and amishchadha.com on every page |
+| Footer | Document ID, version, status, license and designmolecule.com on every page |
 
 ## 6. Drawing and sketch conventions
 

@@ -1,4 +1,5 @@
 """HelioLite parametric model (build123d), TRL 3, massing-plus level of detail.
+Revised 2026-09-25 for HLT-DDR-002: stow stop and latch (R9) and drive preload springs (R4) added.
 
 Run from the repo root:  python cad/src/model.py
 Exports STEP and STL into cad/step and cad/stl:
@@ -10,7 +11,8 @@ Axes: Z up, ground at Z = 0, mast on the Z axis. In the yoke frame the elevation
 (torque tube) lies along X at Z = axis_z; the mirror normal is -Y at elevation 0, +Z
 at +90 degrees and -Z (face-down stow) at -90 degrees. The yoke turns about Z for azimuth.
 Main dimensions and interfaces only (mirror, torque tube and trunnions, yoke arm spacing,
-NMRV030-class worm gearbox envelopes, mast pipe, cap plate, anchor, enclosures). Gearbox
+NMRV030-class worm gearbox envelopes, mast pipe, cap plate, anchor, enclosures, stow stop and
+latch, preload spring cans). Gearbox and spring envelopes
 envelopes are estimates to confirm against the chosen part's drawing. Not for fabrication.
 The same PARAMS feed docs/04-calcs/sizing.py (HLT-CAL-001).
 """
@@ -49,6 +51,14 @@ PARAMS = {
     # controller and weather sensor (decided 2026-09-25: anemometer and stow reserve)
     "ctrl": (180.0, 80.0, 180.0), "ctrl_z": 1100.0,
     "anemo_z": 1500.0, "anemo_reach": 550.0,
+    # stow stop and latch (decided 2026-09-25, HLT-DDR-002: carries the stowed hinge moment in both directions)
+    "lug_r0": 15.0, "lug_r1": 75.0,         # steel stow lug on the torque tube, radial extent from the elevation axis
+    "lug_w": 25.0, "lug_t": 8.0,            # lug width (in the direction of rotation) and thickness (X)
+    "lug_x": -307.0,                        # lug mid-plane, between the mirror edge (-300) and the -X arm (-320)
+    "stop_r": 55.0,                         # contact radius of the stop pad and latch pawl
+    "pad_t": 3.0,                           # polyurethane (90A) stop pad thickness
+    # drive preload springs (decided 2026-09-25, HLT-DDR-002: about 3 N m each, biasing toward stow)
+    "spring_d": 50.0, "spring_l": 30.0,     # spiral spring can envelope
     # poses shown
     "track_el": 25.0,         # mirror normal elevation in the tracking pose
     "track_az": -36.9,        # yoke rotation about Z in the tracking pose
@@ -178,6 +188,26 @@ def parts(el=None, az=None, P=PARAMS, below_ground=True):
              + _rod((0, ar, za + 90), (-35, ar - 61, za + 90), 3))
     for dx, dy in [(70, 0), (-35, 61), (-35, -61)]:
         anemo = anemo + _cyl(20, za + 78, za + 102, dx, ar + dy)
+    # 16 Drive preload springs: elevation spiral spring can on the -X trunnion outboard of the -X arm;
+    # azimuth spring can inside the mast top on the turntable shaft (envelopes only)
+    xo = -ax_ - at / 2
+    sp_el = on_yoke(_rod((xo - 5, 0, 0), (xo - 5 - P["spring_l"], 0, 0), P["spring_d"] / 2))
+    sp_az = _cyl(ri - 1, D["mast_top"] - P["spring_l"] - 20, D["mast_top"] - 20)
+    springs = sp_el + sp_az
+    # 17 Stow stop and latch: steel lug on the torque tube (turns with the mirror); on the -X arm a steel bracket
+    # carrying a polyurethane stop pad below the stowed lug, a sprung latch pawl above it and a 12 V pull solenoid
+    lx, lt = P["lug_x"], P["lug_t"]
+    lug = _box(lx - lt / 2, lx + lt / 2, P["lug_r0"], P["lug_r1"], -P["lug_w"] / 2, P["lug_w"] / 2)
+    lug = on_yoke(Rot(90 - el, 0, 0) * lug)          # mirror frame: lug along +Y, so it lies along -Y when stowed
+    wlo, whi = -(P["lug_r1"] + 10), -35.0                       # bracket extent in Y (yoke frame), stowed lug along -Y
+    xa_in = -ax_ + at / 2                                          # inner face of the -X arm
+    hw = P["lug_w"] / 2
+    bracket = (_box(xa_in, xa_in + 4, wlo, whi + 15, -hw - P["pad_t"] - 12, hw + 22)
+               + _box(xa_in + 4, lx + lt / 2 + 2, wlo, wlo + 10, -hw - P["pad_t"] - 12, hw + 22))
+    pad = _box(xa_in + 4, lx + lt / 2 + 2, -P["stop_r"] - 12, -P["stop_r"] + 12, -hw - P["pad_t"] - 0.5, -hw - 0.5)
+    pawl = _box(xa_in + 4, lx + lt / 2 + 2, -P["stop_r"] - 12, -P["stop_r"] + 12, hw + 0.5, hw + 8)
+    sol = _box(xa_in - 30, xa_in - 2, wlo, wlo + 22, hw + 8, hw + 34)
+    latch = lug + on_yoke(bracket + pad + pawl + sol)
     return [
         (1, "Glass mirror, 600 x 600 mm", glass, "#A9C7DA", (-250, -200, 700)),
         (2, "Backing panel and torque tube", back, "#6B7280", (-100, -100, 420)),
@@ -191,6 +221,8 @@ def parts(el=None, az=None, P=PARAMS, below_ground=True):
         (10, "Homing Hall switches (2)", homing, "#C2410C", (-380, -300, 120)),
         (11, "Cabling, 12 V and motor leads", cable, "#111827", (-250, -650, -100)),
         (14, "Cup anemometer on side arm", anemo, "#7C3AED", (0, 450, 0)),
+        (16, "Drive preload springs (2)", springs, "#BE185D", (-520, 0, 360)),
+        (17, "Stow stop and latch", latch, "#B91C1C", (-300, -520, 380)),
     ]
 
 
@@ -210,7 +242,7 @@ if __name__ == "__main__":
     }
     ps = {p[0]: p[2] for p in parts()}
     groups["mirror-assembly"] = Compound(children=[ps[1], ps[2]])
-    groups["gimbal"] = Compound(children=[ps[3], ps[4], ps[5], ps[6], ps[10]])
+    groups["gimbal"] = Compound(children=[ps[3], ps[4], ps[5], ps[6], ps[10], ps[16], ps[17]])
     groups["mast-and-anchor"] = Compound(children=[ps[7], ps[8], ps[9], ps[14]])
     for name, shape in groups.items():
         export_step(shape, str(out / "step" / f"{name}.step"))

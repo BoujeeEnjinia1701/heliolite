@@ -248,7 +248,7 @@ class Sheet:
         # Row 3: material / notes
         cell(x + 3, y + row[3], w, "Material / notes", self.material or "; ".join(self.notes) or "See BOM", 2.6, 400)
         # Row 4: license + site
-        g.append(_t(x + 5, y + row[4] + 5.8, f"Licensed {self.license} · Open Hardware Portfolio · amishchadha.com", 2.1, 400, MUTED))
+        g.append(_t(x + 5, y + row[4] + 5.8, f"Licensed {self.license} · Design Molecule Lab · designmolecule.com", 2.1, 400, MUTED))
         g.append(_t(x + w - 3, y + row[4] + 5.8, "Generated from cad/src; do not edit by hand", 1.9, 400, MUTED, "end"))
         return g
 

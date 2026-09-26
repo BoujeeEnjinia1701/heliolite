@@ -40,17 +40,17 @@ Requirements not met or at risk:
 
 ### Proposed, awaiting Amish
 
-1. **Mast.** The scaffold's aluminum extrusion mast is too flexible: a 40 x 40 mm profile at 2.2 m tilts about 0.37° at 8 m/s, more than the whole pointing budget. Options: (A) 60.3 mm galvanized steel pipe, about $35; (B) 80 x 80 mm aluminum extrusion, about $70 to $90, over budget; (C) 40 x 40 mm extrusion with guy wires. Recommendation: A. This changes a key component listed in the README, where it is marked as proposed.
-2. **Storm awareness (R9).** Options: (A) Wi-Fi wind forecast; (B) cup anemometer, about $20; (C) slip clutch. Recommendation: A plus B, with the anemometer treated as a weather sensor, not a tracking sensor.
-3. **Safe state on power loss (R10).** Options: (A) supercapacitor stow reserve, about $10 to $15; (B) supervised sites only. Recommendation: A.
-4. **Budget.** With the recommendations for items 2 and 3 the parts total becomes about $425 against $400. Options: (a) raise `budget_usd` to $430; (b) keep $400 and drop to a cheaper gearbox or print the turntable; (c) treat the anemometer as optional where a forecast is available. Recommendation: (a), because the fixes are safety items. `project.yaml` is unchanged.
-5. **Pitch wording.** The pitch says "with no sensors", but the design uses two axis homing switches and may add an anemometer. Recommendation: change to "with no sun sensors". `project.yaml` is unchanged.
-6. Face-down stow at night, on faults and before storms, rather than face-up or edge-on.
-7. Calibration by jogging the sun spot onto the target at three or more times of day, rather than a compass, inclinometer or GPS survey.
-8. Grena algorithm 5 at 30 s updates (NREL SPA as an alternative), with weekly network time when Wi-Fi is available.
-9. Indoor listed 12 V adapter with only SELV outdoors, rather than a solar panel and battery on the mast.
-10. Glass mirror with safety backing film, rather than acrylic or film mirror.
-11. First site and user for the co-design checklist (house, greenhouse or school).
+1. **Mast.** The scaffold's aluminum extrusion mast is too flexible: a 40 x 40 mm profile at 2.2 m tilts about 0.37° at 8 m/s, more than the whole pointing budget. Options: (A) 60.3 mm galvanized steel pipe, about $35; (B) 80 x 80 mm aluminum extrusion, about $70 to $90, over budget; (C) 40 x 40 mm extrusion with guy wires. Recommendation: A. This changes a key component listed in the README, where it is marked as proposed. **Decided by Amish, 2026-09-25: go with recommendation** (HLT-DDR-001 D1).
+2. **Storm awareness (R9).** Options: (A) Wi-Fi wind forecast; (B) cup anemometer, about $20; (C) slip clutch. Recommendation: A plus B, with the anemometer treated as a weather sensor, not a tracking sensor. **Decided by Amish, 2026-09-25: go with recommendation** (HLT-DDR-001 D2).
+3. **Safe state on power loss (R10).** Options: (A) supercapacitor stow reserve, about $10 to $15; (B) supervised sites only. Recommendation: A. **Decided by Amish, 2026-09-25: go with recommendation** (HLT-DDR-001 D3).
+4. **Budget.** With the recommendations for items 2 and 3 the parts total becomes about $425 against $400. Options: (a) raise `budget_usd` to $430; (b) keep $400 and drop to a cheaper gearbox or print the turntable; (c) treat the anemometer as optional where a forecast is available. Recommendation: (a), because the fixes are safety items. `project.yaml` is unchanged. **Decided by Amish, 2026-09-25: go with recommendation** (HLT-DDR-001 D4).
+5. **Pitch wording.** The pitch says "with no sensors", but the design uses two axis homing switches and may add an anemometer. Recommendation: change to "with no sun sensors". `project.yaml` is unchanged. **Decided by Amish, 2026-09-25: go with recommendation** (HLT-DDR-001 D5).
+6. Face-down stow at night, on faults and before storms, rather than face-up or edge-on. **Decided by Amish, 2026-09-25: go with recommendation** (HLT-DDR-001 D6).
+7. Calibration by jogging the sun spot onto the target at three or more times of day, rather than a compass, inclinometer or GPS survey. **Decided by Amish, 2026-09-25: go with recommendation** (HLT-DDR-001 D7).
+8. Grena algorithm 5 at 30 s updates (NREL SPA as an alternative), with weekly network time when Wi-Fi is available. **Decided by Amish, 2026-09-25: go with recommendation** (HLT-DDR-001 D8).
+9. Indoor listed 12 V adapter with only SELV outdoors, rather than a solar panel and battery on the mast. **Decided by Amish, 2026-09-25: go with recommendation** (HLT-DDR-001 D9).
+10. Glass mirror with safety backing film, rather than acrylic or film mirror. **Decided by Amish, 2026-09-25: go with recommendation** (HLT-DDR-001 D10).
+11. First site and user for the co-design checklist (house, greenhouse or school). No recommendation; stays Proposed, awaiting Amish.
 
 ### Safety concerns
 
@@ -121,12 +121,12 @@ Still open from TRL 2 (no recommendation was made):
 
 New from TRL 3:
 
-3. **Stowed wind survival (R9).** Options: (A) NMRV040-class elevation gearbox (more mass and cost); (B) rubber stow stops on the yoke that carry the stowed hinge moment in both directions; (C) find published stowed coefficients for small heliostats that justify a lower load. Recommendation: B, checked against C.
-4. **Drive preload (R4).** A torsion spring of about 3 N·m on each axis (about $6 for two, not yet in the BOM or model). Recommendation: adopt.
-5. **Mass limit (R13).** Options: (a) relax R13 to 13 kg; (b) lighter drives, which conflicts with R9; (c) aluminum yoke arms. Recommendation: (a).
-6. **R7 wording.** "30 min or less of hands-on time, spread over one clear day". Recommendation: adopt.
-7. **R10 wording.** Allow the beam to move only downward, toward the ground, during a stow. Recommendation: adopt.
-8. **Calibration points.** Use four points over about 4 h as the default (within decision D7's "three or more"). Recommendation: adopt.
+3. **Stowed wind survival (R9).** Options: (A) NMRV040-class elevation gearbox (more mass and cost); (B) rubber stow stops on the yoke that carry the stowed hinge moment in both directions; (C) find published stowed coefficients for small heliostats that justify a lower load. Recommendation: B, checked against C. **Decided by Amish, 2026-09-25: go with recommendation** (HLT-DDR-002 N1).
+4. **Drive preload (R4).** A torsion spring of about 3 N·m on each axis (about $6 for two, not yet in the BOM or model). Recommendation: adopt. **Decided by Amish, 2026-09-25: go with recommendation** (HLT-DDR-002 N2).
+5. **Mass limit (R13).** Options: (a) relax R13 to 13 kg; (b) lighter drives, which conflicts with R9; (c) aluminum yoke arms. Recommendation: (a). **Decided by Amish, 2026-09-25: go with recommendation** (HLT-DDR-002 N3).
+6. **R7 wording.** "30 min or less of hands-on time, spread over one clear day". Recommendation: adopt. **Decided by Amish, 2026-09-25: go with recommendation** (HLT-DDR-002 N4).
+7. **R10 wording.** Allow the beam to move only downward, toward the ground, during a stow. Recommendation: adopt. **Decided by Amish, 2026-09-25: go with recommendation** (HLT-DDR-002 N5).
+8. **Calibration points.** Use four points over about 4 h as the default (within decision D7's "three or more"). Recommendation: adopt. **Decided by Amish, 2026-09-25: go with recommendation** (HLT-DDR-002 N6).
 
 ### Safety concerns
 
@@ -148,3 +148,63 @@ New from TRL 3:
 Stay at TRL 3. TRL 4 is on hold by Amish's instruction. Decide items 3 to 8 above, starting with R9 (stow stops or a larger gearbox) and the R13 mass limit, get the chosen gearbox's drawing (mass, static holding torque, backlash), then revise HLT-CAL-001, the model and the BOM on paper. Name the first site (item 1) so the hourly model can be run for a real yard.
 
 For reference only, TRL 4 would need: a lab test report (TST, `environment: lab`) on a built gimbal and drive set (holding torque and backlash under load, preload behavior, stow timing on the supercapacitor reserve, calibration residual on a bench or yard setup, beam spot size), build-log entries, and the purchasing and build work that goes with them. None of this has been started.
+
+## Session 2026-09-25: recommendations accepted
+
+Amish's instruction (2026-09-25, in chat): "i accept all your recommendations, go with them across all repos." Every open item with a recommendation is now decided by Amish, 2026-09-25: go with recommendation. Items without a recommendation stay open. TRL 4 remains on hold.
+
+### Decisions applied and what changed
+
+Recorded in `docs/decisions/0002-recommendations-accepted.md` (HLT-DDR-002 v0.1). HLT-DDR-001 moves to v0.2 (O4 marked decided).
+
+| # | Decision | Before | After |
+| --- | --- | --- | --- |
+| N1 | Stow stops on the yoke carrying the stowed moment in both directions (option B, checked against C) | R9 not met: 24.3 N·m stowed moment on a gearbox rated 17 N·m, 22 N·m listed maximum | Steel lug on the torque tube trapped between a 3 mm polyurethane stop pad and a sprung latch pawl on the -X arm, released by a 12 V pull solenoid; designed for 48.6 N·m (2x, a coefficient up to 0.30); pad deflection 0.28 mm against 0.48 mm free travel at mid-backlash, so the gearbox carries no stowed moment. R9 met on paper. BOM line 17, $20 |
+| N2 | Spiral preload spring of about 3 N·m on each axis | Not in BOM or model | BOM line 16, $6 for two; model part 16; elevation spring biases toward stow. R4 still at risk (0.31° typical, 0.50° at the 95th percentile) |
+| N3 | Relax R13 to 13 kg | 12.5 kg against 10 kg, not met | 12.95 kg against 13 kg, met with 0.05 kg margin on assumed masses |
+| N4 | R7: 30 min hands-on, spread over one clear day | At risk (19 min hands-on, 4 h elapsed) | Met |
+| N5 | R10: beam may move only downward during a stow | At risk (2.8 s sweep beyond 3 m) | Met |
+| N6 | Four calibration points over about 4 h as the default | Used in the budget, not decided | Default in HLT-PRC-001 and HLT-CAL-001 |
+
+Files changed: `cad/src/model.py` (parts 16 and 17, STEP and STL re-exported); `cad/src/sheets.py` and `cad/drawings/HLT-DWG-001.*` (Rev P1 to P2, new notes, same drawing number); `cad/src/concept_media.py` and all of `media/` (regenerated and checked by eye; `media/_views*` deleted); `bom/bom.csv` (17 lines, $425 to $451) and `bom/bom-notes.md`; `docs/04-calcs/sizing.py` and `01-sizing.md` (HLT-CAL-001 v0.1 to v0.2, new tags [E6] to [E8], results table rebuilt); HLT-REQ-001 and HLT-PRC-001 v0.3 to v0.4; `project.yaml` (DDR-002 added to the TRL evidence; `budget_usd` stays 430, `trl: 3`, `trl_target: 3`); `README.md` (status, components, and the new sections Concept rationale, Burning platform, Where it could be used and What sparked the idea). HLT-PRB-001 did not attribute the idea to a brainstorm and is unchanged. All PDFs in `docs/pdf/`, the drawing and the media were regenerated so no generated file still shows the old personal domain.
+
+### Budget
+
+No accepted recommendation carried a budget figure, so `budget_usd` stays at $430. The two added lines take the BOM to $451, $21 over, and R15 moves from met to **not met**.
+
+### Requirement status (HLT-CAL-001 v0.2, Table 6)
+
+11 met, 1 not met, 2 at risk, 1 not verifiable at TRL 3.
+
+| ID | Status | Value against target |
+| --- | --- | --- |
+| R15 | **Not met** | $451 against $430 |
+| R3 | At risk | 0.50 kWh (21 Dec) and 1.00 kWh (1 Feb) at site A; 0.40 kWh at site B |
+| R4 | At risk | 0.31° beam typical, 0.50° at the 95th percentile of calibration |
+| R12 | Not verifiable at TRL 3 | Materials chosen for outdoor life |
+| R1, R2, R5, R6, R7, R8, R9, R10, R11, R13, R14 | Met | R9 via the stow latch; R13 with 0.05 kg margin; R7 and R10 as reworded |
+
+### Still awaiting Amish
+
+1. First site and user for the co-design checklist (O1); co-design partners stay open.
+2. Local rules on glare and structures at that site (O2) and a siting survey of real yards (O3).
+3. **New: budget for the $451 BOM (P1).** Options: (a) raise `budget_usd` to $455; (b) keep $430 and cut cost elsewhere (printed turntable, cheaper anemometer); (c) make the anemometer optional where a reliable forecast exists. Recommendation: (a), because both additions are safety or accuracy items.
+
+### Cross-repo actions
+
+None. No decision here needs another repo to change.
+
+### Safety concerns
+
+- New pinch point between the stow lug and the latch bracket (3 to 9 mm); the latch pawl snaps shut under spring force; the preload springs store energy with the drives off and pull the mirror toward stow if a drive is disconnected.
+- The latch is sized on an assumed stowed coefficient and an assumed polyurethane modulus; until tested, remove the mirror if gusts above about 29 m/s are forecast. A failed stow (caught face-on, 40.5 N·m) still exceeds the gearbox.
+- Earlier concerns (beam and glare, stow sweep, glass at height, supercapacitor energy, mast and anchor) are unchanged.
+
+### Notes
+
+- The recommendation "stops in both directions" needed a latch in practice, because a fixed stop can only resist the direction the axis turns into; the latch engages passively so a power-loss stow still latches, and the solenoid is used only to leave stow. This is recorded in HLT-DDR-002 N1 for Amish to see.
+- Solenoid, spring and bracket masses and prices are estimates; R13 margin (0.05 kg) is inside their uncertainty.
+
+### TRL 4
+
+TRL 4 remains on hold by Amish's instruction. Building and testing the latch (holding moment, pad compliance, engagement on a power-loss stow), the springs and the drives are TRL 4 work and were not started.

@@ -3,7 +3,7 @@ doc_id: HLT-DDR-001
 title: HelioLite TRL 2 review decisions
 project: HelioLite
 doc_type: Design decision record
-version: "0.1"
+version: "0.2"
 status: Draft
 date: '2026-09-25'
 author: Amish Chadha
@@ -13,12 +13,16 @@ revisions:
   date: '2026-09-25'
   author: Amish Chadha
   change: Record Amish's decisions on the TRL 2 review items and the items that remain open
+- version: "0.2"
+  date: '2026-09-25'
+  author: Amish Chadha
+  change: Recommendations accepted by Amish (DDR-002)
 ---
 
 # 0001: TRL 2 review decisions
 
 - **Date:** 2026-09-25
-- **Status:** accepted for items D1 to D10; items O1 to O4 remain proposed
+- **Status:** accepted for items D1 to D10; item O4 decided in HLT-DDR-002; items O1 to O3 remain proposed
 
 ## Context
 
@@ -53,14 +57,14 @@ Notes on the decided items:
 - **D5.** Applied to `project.yaml` and `README.md`. The design uses two axis homing Hall switches and, after D2, an anemometer; neither senses the sun.
 - **D7.** HLT-CAL-001 (section D) finds that three points over about 3 h leave a 95th percentile residual of about 0.45° on the mirror normal, and four points over about 4 h about 0.23°. The decision allows "three or more"; four points over about 4 h are used in the pointing budget.
 
-*Table 2. Items that remain open (Proposed, awaiting Amish).*
+*Table 2. Items that remained open after this record (O1 to O3 still Proposed, awaiting Amish).*
 
 | # | Item | Why it stays open |
 | --- | --- | --- |
 | O1 | First site and user for the co-design checklist (house, greenhouse or school) | No recommendation was made; needs Amish. Co-design partners stay open by Amish's instruction |
 | O2 | Local rules on glare and structures at the first site | Depends on O1 |
 | O3 | Siting survey of real yards (how often a mirror can see both the winter sun and a north window) | Listed as an open question with no recommendation |
-| O4 | New TRL 3 proposals: stowed wind survival (R9), mass limit (R13), drive preload (R4), calibration time wording (R7), transient beam path in a stow (R10) | Raised by HLT-CAL-001 after the decision; see `docs/REVIEW.md`, session 2026-09-25: TRL 3 |
+| O4 | New TRL 3 proposals: stowed wind survival (R9), mass limit (R13), drive preload (R4), calibration time wording (R7), transient beam path in a stow (R10), calibration points | Decided by Amish, 2026-09-25: go with recommendation. Recorded in HLT-DDR-002 (N1 to N6) |
 
 ## Consequences
 

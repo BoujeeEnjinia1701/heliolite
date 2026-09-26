@@ -1,4 +1,4 @@
-"""HelioLite general arrangement sheet HLT-DWG-001, Rev P1 (TRL 3).
+"""HelioLite general arrangement sheet HLT-DWG-001, Rev P2 (TRL 3).
 
 Run from the repo root:  python cad/src/sheets.py
 Writes cad/drawings/HLT-DWG-001.svg, .pdf and .png from the parametric model in
@@ -65,10 +65,11 @@ def main():
     views = project_views(stow, work / "stowed")
     views["iso"] = project_views(track, work / "tracking")["iso"]
     bb = stow.bounding_box()
-    s = Sheet(project="HelioLite", title="General arrangement", dwg_no="HLT-DWG-001", rev="P1",
+    s = Sheet(project="HelioLite", title="General arrangement", dwg_no="HLT-DWG-001", rev="P2",
               author="Amish Chadha", date=DATE, scale=None, theme="technical",
               material="Glass mirror on ACP; printed ASA yoke; NMRV030-class drives; 60.3 mm galv. pipe. PRELIMINARY, NOT FOR FABRICATION",
-              revisions=[("P1", "Preliminary GA for TRL 3 (from cad/src/model.py)", DATE, "AC")])
+              revisions=[("P1", "Preliminary GA for TRL 3 (from cad/src/model.py)", DATE, "AC"),
+                         ("P2", "Stow stop and latch, preload springs added (DDR-002)", DATE, "AC")])
     s.add_ortho(views)
     k = s.scale
     c = ortho_cells(s, views)
@@ -115,7 +116,9 @@ def main():
         f"Mast {P['mast_od']} x {P['mast_wall']} galv. pipe, {P['mast_len']:,.0f} long; cap {P['cap']:.0f} sq. x {P['cap_t']:.0f}",
         f"Anchor flange {P['flange_d']:.0f} dia.; ground screw {P['screw_d']:.0f} x {P['screw_len']:.0f} (not shown)",
         f"Anemometer at Z {P['anemo_z']:,.0f}, reach {P['anemo_reach']:.0f}; controller box at Z {P['ctrl_z']:,.0f}",
-        "Top mass about 12.5 kg; stow face-down in 23 s (HLT-CAL-001)",
+        f"Stow lug {P['lug_t']:.0f} thk at X {P['lug_x']:.0f}; stop pad and latch pawl at R {P['stop_r']:.0f} on -X arm",
+        f"Preload spring cans {P['spring_d']:.0f} dia.: -X trunnion and mast top",
+        "Top mass about 12.95 kg; stow face-down in 23 s (HLT-CAL-001)",
         "Orthographic views stowed at azimuth 0; front from -Y, right from +X",
     ], x=276, y=160, width=144)
     out = s.save(ROOT / "cad" / "drawings" / "HLT-DWG-001")

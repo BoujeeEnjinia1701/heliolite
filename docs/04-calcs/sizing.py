@@ -43,7 +43,7 @@ DIST_DP = 10.0                           # design point mirror to target, m
 WIN_W, WIN_H = 1.0, 1.2                  # target window, m
 LAT = 45.0
 
-print("HelioLite sizing, HLT-CAL-001 v0.1")
+print("HelioLite sizing, HLT-CAL-001 v0.2")
 print(f"Model: mirror {P['mirror']:.0f} mm, axis at {P['axis_z']:.0f} mm, mast {P['mast_od']} x {P['mast_wall']} mm, "
       f"length {P['mast_len']:.0f} mm, arms {P['arm_t']:.0f} x {P['arm_w']:.0f} mm")
 
@@ -307,7 +307,7 @@ rss_nopre = sqrt(rss ** 2 - PRELOAD_RESID ** 2 + (BACKLASH / 2) ** 2)
 out("D6", f"Without preload, half the listed {BACKLASH:.0f} deg backlash can appear when the wind reverses the load: "
           f"{2 * rss_nopre:.2f} deg beam")
 Mimb = None  # filled in section H
-RES["R4"] = (f"{2 * rss:.2f} deg beam typical and {2 * rss95:.2f} deg at the 95th percentile with preloaded drives; "
+RES["R4"] = (f"{2 * rss:.2f} deg beam typical and {2 * rss95:.2f} deg at the 95th percentile with the decided preload springs; "
              f"{2 * rss_nopre:.2f} deg without preload",
              "0.5 deg beam at up to 8 m/s", "At risk")
 
@@ -339,9 +339,26 @@ out("E4", f"Worst case, caught face-on at 35 m/s: mast stress {sig_face:.0f} MPa
 TRIG = 15.0
 out("E5", f"Stow trigger: gust {TRIG:.0f} m/s from the anemometer, or a forecast gust above {TRIG:.0f} m/s; hinge moment at the "
           f"trigger {rows[1][4]:.1f} N m, within the rating")
-RES["R9"] = (f"Stowed hinge moment {Mh_stow:.0f} N m at 35 m/s against {GB_RATED:.0f} N m rated ({GB_MAX:.0f} N m max); "
-             f"rating reached at {v_ok:.0f} m/s; mast {sig_face:.0f} MPa worst case", "Hold R4 to 8 m/s; survive 35 m/s in stow",
-             "Not met" if Mh_stow > GB_MAX else "At risk")
+out("E6", f"Without the stow latch the stowed moment would exceed the gearbox's listed maximum by {Mh_stow - GB_MAX:.1f} N m (TRL 3, v0.1 result)")
+# Stow stop and latch (decided 2026-09-25, HLT-DDR-002 N1): lug trapped between a polyurethane stop pad and a sprung latch pawl
+SF_COEF = 2.0                                    # design factor on the assumed stowed hinge moment coefficient
+M_des = SF_COEF * Mh_stow
+F_stop = M_des / (P["stop_r"] / 1000)
+PAD_A = 24.0 * P["lug_t"]                        # pad contact area, mm2 (24 mm wide pad on the 8 mm lug)
+E_PU = 50.0                                      # MPa, polyurethane 90A (assumed)
+d_pad = F_stop * P["pad_t"] / (E_PU * PAD_A)
+d_free = radians(BACKLASH / 2) * P["stop_r"]     # lug travel at mid-backlash before the worm teeth touch
+PIN_D = 8.0
+tau_pin = F_stop / (2 * pi * PIN_D ** 2 / 4)
+out("E7", f"Stow latch design moment {M_des:.1f} N m ({SF_COEF:.0f}x the assumed stowed moment, i.e. a stowed moment coefficient up to "
+          f"{SF_COEF * C_MS:.2f}); force at the {P['stop_r']:.0f} mm contact radius {F_stop:.0f} N")
+out("E8", f"Stop pad {P['pad_t']:.0f} mm PU 90A (E {E_PU:.0f} MPa assumed) on {PAD_A:.0f} mm2: stress {F_stop / PAD_A:.1f} MPa, "
+          f"deflection {d_pad:.2f} mm against {d_free:.2f} mm free travel with the worm backed off to mid-backlash, so the gearbox carries "
+          f"{'no stowed moment' if d_pad < d_free else 'part of the moment'}; pawl pivot pin {PIN_D:.0f} mm in double shear {tau_pin:.0f} MPa")
+RES["R9"] = (f"Stowed moment {Mh_stow:.0f} N m at 35 m/s carried by the stow stop and latch (designed for {M_des:.0f} N m), not the gearbox; "
+             f"stow trigger {rows[1][4]:.1f} N m within the {GB_RATED:.0f} N m rating; mast {sig_face:.0f} MPa worst case",
+             "Hold R4 to 8 m/s; survive 35 m/s in stow",
+             "Met" if (d_pad < d_free and Mh_stow <= M_des) else "Not met")
 
 # ---------------------------------------------------------------- F. stow on power loss
 RATE = 10.0                                      # deg/s output slew in a stow
@@ -378,8 +395,9 @@ init_el = degrees(asin((-s0 + 2 * (n0 @ s0) * n0)[2]))
 out("F4", f"Stow from site A at 11:00 on 21 Dec: beam starts at {init_el:.1f} deg elevation, never rises above {max_up:.1f} deg; "
           f"reflection ends after {t_lit:.1f} s; beam on ground beyond 3 m from the mast (or above ground) for {t_beyond:.1f} s")
 RES["R10"] = (f"Stow in {t_stow + DETECT:.0f} s on stored energy (margin {E_avail / E_need:.1f}x); beam moves only downward, "
-              f"sweeping the ground between target and mast for about {t_beyond:.1f} s", "Target or ground within 3 m; stow within 60 s",
-              "At risk")
+              f"sweeping the ground between target and mast for about {t_beyond:.1f} s",
+              "Target or ground within 3 m when stowed; beam only downward during a stow; stow within 60 s",
+              "Met" if (max_up < 0 and t_stow + DETECT <= 60 and E_avail > E_need) else "Not met")
 
 # ---------------------------------------------------------------- G. calibration time (task analysis)
 tasks = [("Open the web page, enter location and target", 5), ("Jog the spot onto the target, point 1", 3),
@@ -387,8 +405,8 @@ tasks = [("Open the web page, enter location and target", 5), ("Jog the spot ont
 hands_on = sum(m for _, m in tasks)
 out("G1", "Calibration hands-on time: " + "; ".join(f"{n} {m} min" for n, m in tasks) + f"; total {hands_on} min")
 out("G2", "Elapsed time: four or more points spread over about 4 h give a residual near 0.1 deg (D3); over 30 min the fit is poorly conditioned")
-RES["R7"] = (f"{hands_on} min hands-on with a fourth point, but about 4 h elapsed between first and last point", "30 min or less, no survey instrument",
-             "At risk")
+RES["R7"] = (f"{hands_on} min hands-on for four points spread over about 4 h of one day", "30 min hands-on or less, over one clear day; no survey instrument",
+             "Met" if hands_on <= 30 else "Not met")
 
 # ---------------------------------------------------------------- H. mass and balance
 from build123d import Compound  # noqa: E402
@@ -406,14 +424,20 @@ m_yoke = yoke_vol * 1.07e-6 * 0.60
 M_GB, M_MOT, M_ADP = 1.2, 0.36, 0.10
 m_drive = M_GB + M_MOT + M_ADP
 m_tt = 0.5
-m_top = m_mirror + m_yoke + 2 * m_drive + m_tt
+m_lug = P["lug_t"] * P["lug_w"] * (P["lug_r1"] - P["lug_r0"]) * 7.85e-6
+M_LATCH_REST = 0.12 + 0.06                       # bracket, pad and pawl; pull solenoid (assumed)
+M_SPRING = 0.08                                  # each spiral spring in its can (assumed)
+m_latch = m_lug + M_LATCH_REST
+m_top = m_mirror + m_yoke + 2 * m_drive + m_tt + m_latch + 2 * M_SPRING
+M_LIMIT = 13.0                                   # R13 as relaxed on 2026-09-25 (HLT-DDR-002 N3)
 m_mast = pi / 4 * (P["mast_od"] ** 2 - (P["mast_od"] - 2 * P["mast_wall"]) ** 2) * P["mast_len"] * 7.85e-6
 m_cap = P["cap"] ** 2 * P["cap_t"] * 7.85e-6
 out("H1", f"Mirror assembly {m_mirror:.2f} kg (glass {m_glass:.2f}, panel {m_acp:.2f}, tube {m_tube:.2f}, ribs {m_ribs:.2f}, "
           f"trunnions {m_trun:.2f}, adhesive and film {m_glue:.2f})")
 out("H2", f"Yoke {m_yoke:.2f} kg ({yoke_vol / 1e6:.2f} L at 60 % infill ASA); each drive {m_drive:.2f} kg "
           f"(gearbox {M_GB} kg assumed); turntable {m_tt} kg")
-out("H3", f"On the mast top {m_top:.1f} kg against 10 kg; mast pipe {m_mast:.1f} kg; cap plate {m_cap:.1f} kg")
+out("H3", f"Stow stop and latch {m_latch:.2f} kg (lug {m_lug:.2f}); preload springs 2 x {M_SPRING} kg (assumed)")
+out("H3", f"On the mast top {m_top:.2f} kg against {M_LIMIT:.0f} kg (margin {M_LIMIT - m_top:.2f} kg); mast pipe {m_mast:.1f} kg; cap plate {m_cap:.1f} kg")
 zb = P["tube"] / 2
 com = (m_glass * (zb + P["back_t"] + P["glass_t"] / 2) + m_acp * (zb + P["back_t"] / 2) + m_ribs * (zb - 10)
        + m_glue * (zb + P["back_t"])) / m_mirror
@@ -423,8 +447,8 @@ Mpre = Mh8 / 1000 + Mimb
 out("H5", f"Preload to keep the worm on one flank at 8 m/s: more than {Mpre:.1f} N m (hinge {Mh8 / 1000:.1f} plus imbalance "
           f"{Mimb:.1f}); motor torque with a 3 N m spring plus wind and imbalance, worm efficiency 0.4: "
           f"{(3 + Mpre) / 50 / 0.4:.2f} N m")
-RES["R13"] = (f"{m_top:.1f} kg on the mast top", "10 kg or less; two people, hand tools, 4 h",
-              "Met" if m_top <= 10 else "Not met")
+RES["R13"] = (f"{m_top:.2f} kg on the mast top (margin {M_LIMIT - m_top:.2f} kg)", "13 kg or less; two people, hand tools, 4 h",
+              "Met" if m_top <= M_LIMIT else "Not met")
 
 # ---------------------------------------------------------------- I. power
 P_IDLE, P_MOVE, T_MOVE = 0.40, 5.0, 1.0
@@ -439,8 +463,8 @@ BUDGET = 430.0
 rows_b = list(csv.DictReader((ROOT / "bom" / "bom.csv").open()))
 total = sum(float(r["qty"]) * float(r["unit_cost_usd"]) for r in rows_b)
 out("J1", f"BOM {len(rows_b)} lines, all priced: total ${total:,.2f} against ${BUDGET:.0f} budget; margin ${BUDGET - total:.2f}")
-out("J2", "Not in the BOM: drive preload springs (proposed, about $6), tools, printer time, shipping")
-RES["R15"] = (f"${total:,.0f} ({BUDGET - total:+.0f} margin)", "$430 or less (budget decided 2026-09-25)",
+out("J2", "Not in the BOM: tools, printer time, shipping. Preload springs (line 16) and stow stop and latch (line 17) added under HLT-DDR-002")
+RES["R15"] = (f"${total:,.0f} ({BUDGET - total:+.0f} against the budget)", "$430 or less (budget decided 2026-09-25)",
               "Met" if total <= BUDGET else "Not met")
 
 # ---------------------------------------------------------------- K. remaining requirements and summary
@@ -448,7 +472,8 @@ naz = site_res[("A", "21 Dec")]["naz"]
 t_az = degrees(atan2(t_A[0], t_A[1]))
 spread = max(abs(((a - t_az + 180) % 360) - 180) for a in naz) if naz else 0
 out("K1", f"Site A: normal azimuth within {spread:.0f} deg of the target direction (range +/-135 deg); arm gap {D['arm_gap']:.0f} mm, "
-          f"crossbar gap {D['cross_gap']:.0f} mm to the mirror sweep, so face-down stow clears the yoke")
+          f"crossbar gap {D['cross_gap']:.0f} mm to the mirror sweep, so face-down stow clears the yoke; stow lug {-(P['lug_x'] + P['lug_t'] / 2) - P['mirror'] / 2:.0f} mm "
+          f"outside the mirror edge and {(P['lug_x'] - P['lug_t'] / 2) - (-P['arm_x'] + P['arm_t'] / 2):.0f} mm inside the -X arm")
 RES["R5"] = ("Time, location and target only; Hall switches for homing, anemometer for weather", "No sun sensor or camera", "Met")
 RES["R8"] = (f"Mechanical range met; spot plus error fits a 1.0 m window up to {d_max:.0f} m", "3 to 20 m; +/-135 deg; -90 to +90 deg",
              "Met")

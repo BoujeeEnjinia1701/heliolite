@@ -1,4 +1,4 @@
-# Card metadata consumed by https://amishchadha.com
+# Card metadata consumed by https://designmolecule.com
 name: HelioLite
 slug: heliolite
 area: CleanTech
@@ -9,6 +9,7 @@ trl_evidence:
   - docs/02-concept.md
   - docs/03-requirements.md
   - docs/decisions/0001-trl2-review-decisions.md
+  - docs/decisions/0002-recommendations-accepted.md
   - docs/04-calcs/01-sizing.md
   - docs/04-calcs/sizing.py
   - cad/src/model.py
