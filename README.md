@@ -6,9 +6,9 @@
 
 Two-axis mini heliostat on a mast that redirects sunlight to a fixed target, using a sun-position algorithm with no sun sensors.
 
-![HelioLite concept](media/hero.png)
+![HelioLite: two-axis mini heliostat that aims sunlight at a window, product render](media/render-hero.png)
 
-[Interactive 3D model](media/viewer.html) · [Concept blueprint (PDF)](media/concept-blueprint.pdf) · [General arrangement HLT-DWG-001 (PDF)](cad/drawings/HLT-DWG-001.pdf) · [Sizing calculations](docs/04-calcs/01-sizing.md) · [Review note](docs/REVIEW.md)
+[Exploded render](media/render-exploded.png) · [Detail render](media/render-detail.png) · [Interactive 3D model](media/viewer.html) · [Concept blueprint (PDF)](media/concept-blueprint.pdf) · [General arrangement HLT-DWG-001 (PDF)](cad/drawings/HLT-DWG-001.pdf) · [Sizing calculations](docs/04-calcs/01-sizing.md) · [Review note](docs/REVIEW.md)
 
 ## Concept rationale
 

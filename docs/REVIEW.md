@@ -234,3 +234,34 @@ Not changed and still weak, outside the README sections in scope: HLT-PRB-001 "P
 - R15 not met to met. Documents revised: HLT-REQ-001 v0.5, HLT-CAL-001 v0.3, HLT-DDR-002 v0.2, HLT-PRC-001 v0.5, HLT-PRB-001 v0.4 (sources and budget); `README.md` budget line and status; `bom/bom-notes.md`.
 - Concept media: the blueprint key figure in `cad/src/concept_media.py` now reads "Parts $451 against $455 budget, R15 met"; all of `media/` was regenerated and the temporary `_views` folders deleted.
 - Still awaiting Amish: O1, O2 and O3.
+
+## Session 2026-09-26: product appearance model and photoreal renders
+
+Amish chose this repo for the first batch of product renders on 2026-09-26.
+
+### What was added
+
+`cad/src/product_model.py` exposes `product_parts()` (70 parts: 36 shell, 25 internal, 1 accessory, 8 context), `TITLE` and `RENDER_VIEWS` (hero, exploded and a detail view of the two-axis drive with the mirror removed). It reuses PARAMS, derived() and parts() from `cad/src/model.py`; the tracking pose (mirror normal 25° up, yoke turned -36.9°), the 2.2 m axis height, the yoke arm spacing, the gearbox, motor, turntable, cap plate, mast, anchor, controller, anemometer, spring can and stow latch envelopes and positions are as model.py. It adds:
+
+- Mirror assembly: glass with a seamed edge over a thin silvered layer, a rubber edge guard, the painted backing panel, aluminum rib tubes with end plugs, the torque tube with clamp saddles and the steel trunnion stubs.
+- Yoke: filleted ASA base plate and crossbar, arms with rounded heads around the trunnion and shallow face pockets, flanged bearings and M6 bolts.
+- Drives: NMRV030-class gearbox bodies with fillets, output bosses, fins and cover detail; adapter plates with screws; NEMA17 motors with chamfered bodies, aluminum end caps and connectors; the teal turntable with a bearing seam; the galvanized cap plate with bolts; both homing switches.
+- Stow stop and latch: lug, bracket with bolts, orange polyurethane stop pad, pawl with pivot pin and the pull solenoid with plunger; the ribbed elevation spring can.
+- Controller: IP65 box with side ribs and a parting line, a lid with a clear window over the board (ESP32 module, RTC and coin cell, two stepper drivers with heat sinks, buck converter, terminal block and the five supercapacitors of the stow reserve), lid screws, a lit green status light, cable glands and vent, a teal name plate with the HelioLite wordmark, and mast straps.
+- Cabling with stand-off clips on the mast; cup anemometer with hemispherical cups, hub, spokes, body and mast clamp; anchor flange and socket with bolts and set screws; the indoor 12 V power adapter as an accessory in the exploded view.
+- Context (not in the BOM): a compact ground patch with a paver pad, a short section of house wall with the target window, sill and a dark room behind the glazing, and the outdoor feed cable running to a wall entry.
+
+`README.md` now shows `media/render-hero.png` and links `media/render-exploded.png`; the orchestrator produces both files.
+
+### Differences from model.py (Proposed, awaiting Amish)
+
+1. **Target distance in the render.** The concept media place the house wall 2.2 m from the mast, itself closer than a real site. The appearance model puts the wall face 1.0 m from the mast, with a 920 mm wide wall section and an 800 x 1,000 mm window, so the heliostat fills the product render. Proposed, awaiting Amish. Recommendation: keep this as a render-only layout; the hero note says the window is drawn closer than a real site.
+2. **Mirror edge guard.** BOM line 1 specifies seamed edges and a safety backing film but no edge protection. The appearance model adds a black EPDM U-channel around the glass and panel edges (10 mm lip), which protects hands during fitting and the glass edge against chipping. Proposed, awaiting Amish. Recommendation: adopt it and add it to BOM line 1 or 13 at the next BOM revision (a few dollars, within the $4 margin but to be checked); the BOM was not edited.
+3. **Clear window in the controller lid.** BOM line 9 specifies an IP65 box without saying whether the lid is clear. The appearance model uses a lid with a clear polycarbonate window so the board and stow reserve show. Proposed, awaiting Amish. Recommendation: adopt a clear-lid IP65 box (common and similar in price) and add "clear lid" to BOM line 9 at the next revision.
+4. **Torque tube saddles.** model.py joins the torque tube directly to the underside of the backing panel, and BOM line 2 lists structural silicone. The appearance model shows two bolted steel saddles clamping the tube to the panel near the ribs. Proposed, awaiting Amish. Recommendation: keep the saddles as the mechanical attachment, with silicone as the bond, and confirm at TRL 4 design review.
+5. **Finishes.** model.py colours identify parts only. The appearance model uses off-white ASA for the yoke, a teal painted turntable and name plate, silver-grey gearboxes, black motors, galvanized mast and cap plate and a dark painted anchor. Proposed, awaiting Amish. Recommendation: accept as the product finish set.
+6. **Glass layering and small hardware.** The 3 mm glass is split into a 0.4 mm silvered layer and 2.6 mm of glass for rendering; the total thickness is unchanged. Bolts, clips, straps, glands and the name plate are appearance detail under BOM lines 11 and 13; no new BOM lines are implied beyond items 2 and 3.
+
+### Status
+
+This is an appearance model only: no tolerances, no fabrication detail, nothing past TRL 3. `trl: 3` and `trl_target: 3` are unchanged, and TRL 4 remains on hold. model.py, the BOM and the other documents were not edited.
