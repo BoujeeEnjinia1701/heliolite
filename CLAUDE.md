@@ -50,7 +50,15 @@ For small objects (wearables, handheld tools) use a context part such as a hand 
 
 ## 5a. Session commands
 
-Use the repo's slash commands rather than improvising scope: `/populate` (strong TRL 2 with media), `/advance-trl3` (only after Amish approves), `/rein-in` (stop and review), `/refresh-media`.
+Use the repo's slash commands rather than improvising scope: `/populate` (strong TRL 2 with media), `/advance-trl3` (only after Amish approves), `/rein-in` (stop and review), `/refresh-media`, `/render-product` (appearance model, photoreal renders and storefront images), `/release` (release gate and release preparation; never makes the repo public).
+
+## 5b. Product renders and storefront images (TRL 3)
+
+- Build `cad/src/product_model.py` (`product_parts()`, `TITLE`, `RENDER_VIEWS`) with every main dimension taken from `cad/src/model.py`. Record any appearance deviation in `docs/REVIEW.md` as "Proposed, awaiting Amish".
+- Give scale with `.kit/context_parts.py`: a hand or forearm for small objects, `mannequin()` for body-scale products. Never render a floating person.
+- Render with `.kit/export_views.py` and `.kit/photoreal.py`, caption with `.kit/photo_caption.py`, and lead the README with `media/render-hero.png`.
+- Then run `python .kit/cards.py .` for `media/card.png` and `media/social-preview.png`. See `.kit/STANDARDS.md` sections 12 and 13.
+- Run `python .kit/image_qc.py` and look at every image yourself. Text must be inside the image, never overlap other text or the render, and be readable; renders must be sharp. Fix and regenerate anything that fails.
 
 ## 6. Standards
 
@@ -59,3 +67,12 @@ Use the repo's slash commands rather than improvising scope: `/populate` (strong
 - SI units, with imperial in parentheses where useful.
 - Safety notes stay in every document that describes something hazardous. Mains voltage, high temperature, pressure, lithium cells and moving machinery always get a safety section.
 - Run `python .kit/render.py --check` before committing. Do not commit if it fails.
+
+## 7. Release and authorship
+
+- Making a repository public, tagging a release or changing repository settings is Amish's decision. Prepare, then ask.
+- Before any release, `python .kit/release_gate.py` must pass (`.kit/STANDARDS.md` section 14). Fix what fails; report warnings.
+- Author commits as Amish Chadha <amish@designmolecule.com> with a `Co-Authored-By: Claude` trailer. Commits must reach GitHub signed with Amish's key (Verified). Never rewrite history once a repository is public.
+- Keep `CITATION.cff` (Amish first, ORCID 0009-0000-8079-7141), `CONTRIBUTORS.md` and the README Credits section in agreement.
+- OpenRatio and BioMedical repos: soft, non-clinical wording only ("research and educational prototype, not a medical device").
+

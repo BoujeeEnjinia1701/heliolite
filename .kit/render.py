@@ -130,7 +130,10 @@ def trl_check(docs) -> list[str]:
 
 MEDIA_REQUIRED = ["media/concept-blueprint.png", "media/hero.png", "media/model.glb"]
 MEDIA_OPTIONAL = ["media/cutaway.png", "media/exploded.png", "media/flow.png", "media/viewer.html"]
-BEYOND_CAP_PATHS = ["docs/05-tests", "docs/07-build", "bom/purchasing-checklist.md", "build-log/TEMPLATE.md"]
+STOREFRONT = ["media/render-hero.png", "media/card.png", "media/social-preview.png",
+              ".github/ISSUE_TEMPLATE/question.md", ".github/ISSUE_TEMPLATE/build-report.md",
+              ".github/ISSUE_TEMPLATE/design-suggestion.md", "CITATION.cff"]
+BEYOND_CAP_PATHS =["docs/05-tests", "docs/07-build", "bom/purchasing-checklist.md", "build-log/TEMPLATE.md"]
 
 
 def phase_check(docs) -> tuple[list[str], list[str]]:
@@ -155,6 +158,18 @@ def phase_check(docs) -> tuple[list[str], list[str]]:
     if trl >= int(ph.get("media_required_from_trl", 2)) and missing:
         msg = "concept media missing: " + ", ".join(missing) + " (see CLAUDE.md section 5)"
         (errs if trl >= 3 else warns).append(msg)
+    if trl >= 3:
+        store = [m for m in STOREFRONT if not (ROOT / m).exists()]
+        if store:
+            warns.append("storefront items missing (STANDARDS section 13; the release gate will block): " + ", ".join(store))
+        try:
+            sys.path.insert(0, str(KIT))
+            import image_qc
+            qfails, _ = image_qc.run(ROOT)
+            for q in qfails:
+                warns.append("image quality (STANDARDS section 13; the release gate will block): " + q)
+        except Exception as e:  # never let the image check break document control
+            warns.append(f"image quality check could not run: {e}")
     return errs, warns
 
 

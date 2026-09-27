@@ -18,6 +18,7 @@ EXPO = 0.8
 if "--product" in sys.argv: EXPO = 0.5
 RES = None
 FOCUS = None
+HIDE = []
 PRODUCT = "--product" in sys.argv
 az = el = None
 for a in sys.argv:
@@ -25,6 +26,7 @@ for a in sys.argv:
     if a.startswith("--el="): el = float(a[5:])
     if a.startswith("--expo="): EXPO = float(a[7:])
     if a.startswith("--focus="): FOCUS = a[8:].lower().split(",")
+    if a.startswith("--hide="): HIDE = a[7:].lower().split(",")
     if a.startswith("--res="): RES = tuple(int(x) for x in a[6:].split("x"))
 AZ = math.radians(az if az is not None else -58)
 EL = math.radians(el if el is not None else 24)
@@ -134,6 +136,8 @@ def make_material(name, color, cls):
 
 objs = []
 for i, m in enumerate(meta["parts"]):
+    if any(m["name"].lower().startswith(h) for h in HIDE):
+        continue
     v, f = data[f"v{i}"], data[f"f{i}"]
     me = bpy.data.meshes.new(m["name"])
     me.from_pydata(v.tolist(), [], f.tolist())

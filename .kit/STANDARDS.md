@@ -3,9 +3,9 @@ doc_id: OHP-STD-001
 title: Documentation and drawing standard
 project: Open Hardware Portfolio
 doc_type: Standard
-version: "1.4"
+version: "1.5"
 status: Released
-date: 2026-09-26
+date: 2026-09-27
 author: Amish Chadha
 license: CC-BY-SA-4.0
 revisions:
@@ -29,6 +29,10 @@ revisions:
     date: 2026-09-26
     author: Amish Chadha
     change: Every sheet and render names the project and its GitHub repository; overall dimensions, ISO centre lines and 300 dpi PNG on sheets; titles name the device and view labels state the viewing direction; optional photoreal renders with Blender
+  - version: "1.5"
+    date: 2026-09-27
+    author: Amish Chadha
+    change: Product renders (section 12), storefront images and image quality check (section 13), public release and release gate (section 14), authorship, citation and commit signing (section 15)
 ---
 
 # Documentation and drawing standard
@@ -156,6 +160,7 @@ Quote version numbers so YAML keeps `1.0` as text instead of turning it into a n
 - `python .kit/render.py` checks every controlled document and renders it to `docs/pdf/<doc_id>_v<version>.pdf`.
 - `python .kit/drawing.py` (called from each project's `cad/src/sheets.py`) builds drawing sheets as SVG and PDF in `cad/drawings/`.
 - The GitHub Action in `.github/workflows/docs.yml` runs the checks on every push and attaches PDFs to a GitHub Release whenever a release tag is pushed.
+- Public releases follow section 14: `python .kit/release_gate.py` must pass, and the release tag is `v0.<TRL>.0` (for example `v0.3.0` at TRL 3).
 
 ## 9. Technology Readiness Level (TRL)
 
@@ -201,3 +206,79 @@ Every repo at TRL 2 or above explains its idea visually. Media are generated fro
 Session commands in `.claude/commands/` (`/populate`, `/advance-trl3`, `/rein-in`, `/refresh-media`) carry the standard prompts, so every Claude Code session starts from the same instructions.
 
 At TRL 2 a massing model is enough: correct overall proportions and main components. All concept media carry "CONCEPT, NOT FOR FABRICATION". The check warns when required media are missing at TRL 2 and fails at TRL 3.
+
+## 12. Product renders
+
+Every repo at TRL 3 shows the product as it would look, not only as a massing model.
+
+- `cad/src/product_model.py` is the appearance model. It defines `product_parts()` (named parts with a shape and a material), `TITLE` ("Name: what it is") and `RENDER_VIEWS`. It is for renders only: every main dimension comes from `cad/src/model.py`, never typed in again.
+- Where the appearance model departs from `model.py` (a chamfer, a label, a fastener drawn for realism), record the deviation in `docs/REVIEW.md` as "Proposed, awaiting Amish".
+- Scale comes from context, not from a floating figure: a hand or forearm for handheld objects, and the posed mannequin (`mannequin()` in `.kit/context_parts.py`: stand, walk, push, ride, sit, reach) for anything a person uses at body scale.
+- Renders are made with `.kit/export_views.py` (one scene per view) and `.kit/photoreal.py` (Blender Cycles), then captioned with `.kit/photo_caption.py`. Files are `media/render-<view>.png`; `media/render-hero.png` is required.
+- Every caption names the project, the repository and the viewing direction, and carries "CONCEPT, NOT FOR FABRICATION".
+- Captions never sit on the render. `.kit/photo_caption.py` adds a header band (title, concept label, repository) above the render and a footer band (view note) below it, wraps every line to the image width, and steps the font down to a floor before adding a line.
+- The README opens with `media/render-hero.png`.
+- Software-only and scene repositories (no single product) may use a scene render as the hero instead of a product model.
+
+## 13. Storefront images
+
+Two images, both made from `media/render-hero.png` by `python .kit/cards.py .`:
+
+| File | Size | Purpose |
+| --- | --- | --- |
+| `media/card.png` | 800 x 800 | Square thumbnail for the organization profile page |
+| `media/social-preview.png` | 1280 x 640, under 1 MB | GitHub social preview, shown when a repository link is shared |
+
+- The social preview shows the area, name, one-line description, the first sentence of the pitch, the brand line and the repository address. Design Molecule repos read "Design Molecule · open hardware concept, TRL n"; OpenRatio repos read "OpenRatio · research and educational prototype, TRL n".
+- GitHub has no API for the social preview. Upload it under the repository's Settings, Social preview, on release day.
+- Regenerate both images whenever `render-hero.png` changes.
+
+### Image quality
+
+Every render, card and social preview must be clear and readable. `python .kit/image_qc.py` checks each one, and the release gate blocks on any failure:
+
+| Check | Rule |
+| --- | --- |
+| Layout | Made by the current `photo_caption.py` or `cards.py`, which store the text layout in the PNG |
+| Text inside the image | Every line at least 1.2 % of the image width from each edge; nothing runs off the side |
+| No overlap | No line of text touches another line, and no caption text sits on the render |
+| Text size | Render captions at least 1.05 % of the image width in pixel height (17 px at 1600 px); social preview text at least 16 px |
+| Resolution | Renders at least 1200 px wide; card 800 x 800; social preview 1280 x 640 and under 1 MB |
+| Sharpness | The render is not blurred or upscaled (edge sharpness at least 15 on the `image_qc.py` scale) |
+
+Long titles and notes wrap to more lines rather than shrinking below the floor. The social preview shortens the pitch sentence with an ellipsis only if it cannot fit at the smallest size.
+
+## 14. Public release
+
+A repository goes public only when Amish approves it, and only after `python .kit/release_gate.py` passes. The gate checks:
+
+1. `render.py --check` passes (document control, TRL cap, concept media).
+2. Storefront: hero render, card, social preview under 1 MB, README leading with the hero, and every image passing the image quality check (section 13).
+3. Issue templates in `.github/ISSUE_TEMPLATE/`: question, build report, design suggestion. The build report template restates that the design is a TRL 3 concept, not released for fabrication (OpenRatio: a research and educational prototype, not a medical device).
+4. `CITATION.cff` valid, with an author ORCID.
+5. License files match `project.yaml`.
+6. No em dashes in the repository's own text.
+7. BioMedical and OpenRatio repos use soft, non-clinical wording: "research and educational prototype, not a medical device".
+8. No secrets anywhere in the history (gitleaks).
+9. No links to sibling repositories that are still private.
+
+It warns, without blocking, when the README lacks a Safety heading or a "not for fabrication" statement, so a person can confirm.
+
+On release day, per repository:
+
+- A signed, annotated tag `v0.<TRL>.0` on `main`.
+- A GitHub release with short notes (what it is, TRL, status, licenses, how to cite) and a design pack, `<repo>-v0.<TRL>.0-design-pack.zip`, holding `cad/step`, `cad/drawings`, `docs/pdf`, `bom`, README, licenses and `CITATION.cff`.
+- Description from the first sentences of `pitch` (350 characters at most), website `https://designmolecule.com` (OpenRatio: `https://openratio.ai`), topics from `project.yaml`.
+- Visibility switched to public last, after the release exists.
+- The social preview uploaded and the organization profile updated with the new cards.
+
+The internal working files (`CLAUDE.md`, `.kit/CLAUDE.md`, `.claude/commands/`, `docs/REVIEW.md`) stay public, and open "Proposed, awaiting Amish" items stay visible as open questions (Amish, 2026-09-27). No Zenodo DOI at this stage.
+
+## 15. Authorship, citation and signing
+
+- Amish Chadha is the author of every design, ORCID 0009-0000-8079-7141. Commits are authored as Amish Chadha <amish@designmolecule.com>.
+- `CITATION.cff` lists Amish (with ORCID) first, then any credited contributors; `CONTRIBUTORS.md` and the README Credits section agree with it.
+- Work done with Claude carries the trailer `Co-Authored-By: Claude <noreply@anthropic.com>` (with the model name), and the README Credits section says designs are developed with AI assistance.
+- Every commit and tag pushed to GitHub is signed with Amish's SSH signing key, so GitHub shows it as Verified. Commits prepared elsewhere are re-signed on Amish's Mac before they are pushed.
+- Once a repository is public, its history is never rewritten.
+
