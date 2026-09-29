@@ -1,0 +1,31 @@
+version = 1
+SPDX-PackageName = "Design Molecule open hardware"
+SPDX-PackageSupplier = "Amish Chadha <amish@designmolecule.com>"
+SPDX-PackageDownloadLocation = "https://github.com/BoujeeEnjinia1701"
+
+# Hardware designs, documentation, media and data: CERN-OHL-S-2.0
+[[annotations]]
+path = "**"
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Amish Chadha <amish@designmolecule.com>"
+SPDX-License-Identifier = "CERN-OHL-S-2.0"
+
+# Software: scripts, firmware, notebooks, web viewers, workflows and agent commands: MIT
+[[annotations]]
+path = ["**/*.py", "**/*.sh", "**/*.js", "**/*.ipynb", "**/*.html", "**/*.j2", "**/*.css", "firmware/**", ".github/workflows/**", ".claude/**", ".kit/requirements.txt", "requirements.txt"]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Amish Chadha <amish@designmolecule.com>"
+SPDX-License-Identifier = "MIT"
+
+# CAD and electronics sources are hardware design files, even when written as Python: CERN-OHL-S-2.0
+[[annotations]]
+path = ["cad/**", "electronics/**"]
+SPDX-FileCopyrightText = "2026 Amish Chadha <amish@designmolecule.com>"
+SPDX-License-Identifier = "CERN-OHL-S-2.0"
+
+# Bundled IBM Plex fonts
+[[annotations]]
+path = ".kit/fonts/**"
+precedence = "override"
+SPDX-FileCopyrightText = "2017 IBM Corp."
+SPDX-License-Identifier = "OFL-1.1"
