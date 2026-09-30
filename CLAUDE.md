@@ -73,6 +73,8 @@ Use the repo's slash commands rather than improvising scope: `/populate` (strong
 - Making a repository public, tagging a release or changing repository settings is Amish's decision. Prepare, then ask.
 - Before any release, `python .kit/release_gate.py` must pass (`.kit/STANDARDS.md` section 14). Fix what fails; report warnings.
 - Author commits as Amish Chadha <amish@designmolecule.com> with a `Co-Authored-By: Claude` trailer. Commits must reach GitHub signed with Amish's key (Verified). Never rewrite history once a repository is public.
-- Keep `CITATION.cff` (Amish first, ORCID 0009-0000-8079-7141), `CONTRIBUTORS.md` and the README Credits section in agreement.
+- Keep `CITATION.cff` (Amish first, ORCID 0009-0000-8079-7141), `CONTRIBUTORS.md` and the README Credits section in agreement. `CITATION.cff` names one license only (Zenodo rejects a list); the full license split lives in `REUSE.toml`.
+- Keep the repo REUSE compliant: when you add a kind of file that `REUSE.toml` does not cover, add an annotation there and run `reuse lint` before committing (`.kit/STANDARDS.md` section 16).
+- Zenodo and Software Heritage (`.kit/STANDARDS.md` section 17): prepare with `python .kit/archive.py reuse` and `python .kit/archive.py zenodo`. Switching a repo on in Zenodo, publishing releases and requesting archive saves are Amish's decisions. After Zenodo mints the DOIs, record the concept DOI with `python .kit/archive.py zenodo --doi <concept DOI>`.
 - OpenRatio and BioMedical repos: soft, non-clinical wording only ("research and educational prototype, not a medical device").
 

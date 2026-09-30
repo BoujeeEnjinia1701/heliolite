@@ -1,11 +1,12 @@
-"""Release gate (STANDARDS section 14). Run from the repo root before a repository is made public
+"""Release gate (STANDARDS sections 14, 16 and 17). Run from the repo root before a repository is made public
 or a release is tagged:
 
     python .kit/release_gate.py
 
 Prints ok / warn / FAIL lines and exits non-zero if any check fails. Warnings need a human look
 but do not block. Optional tools are used when installed: gitleaks (secret scan of the whole
-history), cffconvert (CITATION.cff schema) and gh (visibility of linked sibling repositories).
+history), cffconvert (CITATION.cff schema), reuse (REUSE lint) and gh (visibility of linked sibling
+repositories).
 """
 import re, shutil, subprocess, sys
 from pathlib import Path
@@ -64,8 +65,13 @@ else:
         fail("CITATION.cff has no author with an ORCID")
     else:
         ok("CITATION.cff names an author with an ORCID")
-    if shutil.which("cffconvert"):
-        v = run("cffconvert", "--validate")
+    try:
+        import cffconvert  # noqa: F401
+        has_cff = True
+    except ImportError:
+        has_cff = bool(shutil.which("cffconvert"))
+    if has_cff:
+        v = run(sys.executable, "-c", "import sys; from cffconvert.cli.cli import cli; sys.argv = ['cffconvert', '--validate']; cli()")
         (ok if v.returncode == 0 else fail)("CITATION.cff schema" + ("" if v.returncode == 0 else ": " + v.stderr.strip()[-200:]))
     else:
         warn("cffconvert not installed; CITATION.cff schema not validated")
@@ -79,9 +85,32 @@ elif lic.get("hardware") and lic.get("software") and not (ROOT / "LICENSE-SOFTWA
 else:
     ok("license files present")
 
+# 4b. Licensing metadata (section 16) and archiving (section 17)
+miss = [f for f in ("REUSE.toml", "LICENSES", ".github/workflows/reuse.yml") if not (ROOT / f).exists()]
+if miss:
+    fail("REUSE files missing: " + ", ".join(miss) + " (python .kit/archive.py reuse)")
+else:
+    try:
+        import reuse  # noqa: F401
+        rl = run(sys.executable, "-m", "reuse", "lint", "-q")
+        (ok if rl.returncode == 0 else fail)("reuse lint" + ("" if rl.returncode == 0 else " fails; run `reuse lint` and fix REUSE.toml"))
+    except ImportError:
+        warn("reuse not installed; REUSE compliance not checked (pip install reuse)")
+if cff.exists():
+    c = yaml.safe_load(cff.read_text()) or {}
+    if not isinstance(c.get("license"), str):
+        fail("CITATION.cff must name one license, not a list; Zenodo rejects a list (python .kit/archive.py zenodo)")
+    else:
+        ok(f"CITATION.cff names one license ({c['license']})")
+    if not c.get("doi"):
+        warn("CITATION.cff has no DOI yet; after the first Zenodo archive run python .kit/archive.py zenodo --doi <concept DOI>")
+for key, label in (("zenodo.org/badge", "Zenodo DOI"), ("reuse.yml/badge.svg", "REUSE"), ("softwareheritage.org/badge", "Software Heritage")):
+    if key not in readme:
+        warn(f"README has no {label} badge (python .kit/archive.py reuse / zenodo)")
+
 # 5. Writing rules: no em dashes anywhere in the repo's own text
 tracked = run("git", "ls-files").stdout.split()
-dash = [f for f in tracked if not f.startswith(".kit/") and Path(f).suffix in TEXT and (ROOT / f).exists()
+dash = [f for f in tracked if not f.startswith((".kit/", "LICENSES/")) and Path(f).suffix in TEXT and (ROOT / f).exists()
         and "\u2014" in (ROOT / f).read_text(encoding="utf-8", errors="ignore")]
 (ok if not dash else fail)("no em dashes" if not dash else "em dashes in: " + ", ".join(dash[:10]))
 

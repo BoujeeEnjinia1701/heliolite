@@ -13,7 +13,8 @@ Shared documentation and drawing kit for every Open Hardware Portfolio repo. The
 | `export_views.py`, `context_parts.py` | One scene per `RENDER_VIEWS` entry; scale context (hand, forearm, posed mannequin) |
 | `cards.py` | Storefront images: `media/card.png` and `media/social-preview.png` from the hero render |
 | `image_qc.py` | Image quality: caption text inside the image, never overlapping, readable size, sharp renders |
-| `release_gate.py` | Checks a repo is ready to go public (STANDARDS section 14) |
+| `release_gate.py` | Checks a repo is ready to go public (STANDARDS sections 14, 16 and 17) |
+| `archive.py` | REUSE licensing metadata, the Zenodo DOI and the archive badges (STANDARDS sections 16 and 17) |
 | `style/` | PDF template and stylesheet |
 | `templates/` | Starting points for new controlled documents; `templates/issue/` and `templates/issue-openratio/` hold the GitHub issue templates |
 | `fonts/` | IBM Plex (SIL Open Font License, see `fonts/OFL.txt`) |
@@ -44,4 +45,14 @@ python .kit/release_gate.py       # must pass before a repo goes public
 ```
 
 Issue templates are copied into `.github/ISSUE_TEMPLATE/` from `templates/issue/` (OpenRatio: `templates/issue-openratio/`).
+
+## Licensing metadata and archiving (kit 1.6)
+
+```
+python .kit/archive.py reuse                             # REUSE.toml, LICENSES/, REUSE workflow, badges
+python .kit/archive.py zenodo                            # one license in CITATION.cff, Zenodo DOI badge
+python .kit/archive.py zenodo --doi 10.5281/zenodo.NNN   # after the first archive: cite the concept DOI
+```
+
+Order on release day: `archive.py reuse`, `archive.py zenodo`, release gate, Amish switches the repo on in Zenodo, signed tag and release, repo made public, concept DOI recorded, Software Heritage save requested. The steps are in STANDARDS sections 16 and 17.
 

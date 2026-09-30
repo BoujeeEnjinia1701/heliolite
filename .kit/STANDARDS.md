@@ -3,9 +3,9 @@ doc_id: OHP-STD-001
 title: Documentation and drawing standard
 project: Open Hardware Portfolio
 doc_type: Standard
-version: "1.5"
+version: "1.6"
 status: Released
-date: 2026-09-27
+date: 2026-09-29
 author: Amish Chadha
 license: CC-BY-SA-4.0
 revisions:
@@ -33,6 +33,10 @@ revisions:
     date: 2026-09-27
     author: Amish Chadha
     change: Product renders (section 12), storefront images and image quality check (section 13), public release and release gate (section 14), authorship, citation and commit signing (section 15)
+  - version: "1.6"
+    date: 2026-09-29
+    author: Amish Chadha
+    change: Licensing metadata with REUSE (section 16), Zenodo DOI and Software Heritage archiving (section 17), release gate checks REUSE and a single CITATION.cff license, archive.py
 ---
 
 # Documentation and drawing standard
@@ -261,24 +265,63 @@ A repository goes public only when Amish approves it, and only after `python .ki
 7. BioMedical and OpenRatio repos use soft, non-clinical wording: "research and educational prototype, not a medical device".
 8. No secrets anywhere in the history (gitleaks).
 9. No links to sibling repositories that are still private.
+10. REUSE files present (`REUSE.toml`, `LICENSES/`, `.github/workflows/reuse.yml`) and `reuse lint` passes (section 16).
+11. `CITATION.cff` names exactly one license, because Zenodo rejects a list (section 17).
 
-It warns, without blocking, when the README lacks a Safety heading or a "not for fabrication" statement, so a person can confirm.
+It warns, without blocking, when the README lacks a Safety heading or a "not for fabrication" statement, when `CITATION.cff` has no DOI yet, and when the README lacks the Zenodo DOI, REUSE or Software Heritage badge, so a person can confirm.
 
 On release day, per repository:
 
 - A signed, annotated tag `v0.<TRL>.0` on `main`.
 - A GitHub release with short notes (what it is, TRL, status, licenses, how to cite) and a design pack, `<repo>-v0.<TRL>.0-design-pack.zip`, holding `cad/step`, `cad/drawings`, `docs/pdf`, `bom`, README, licenses and `CITATION.cff`.
 - Description from the first sentences of `pitch` (350 characters at most), website `https://designmolecule.com` (OpenRatio: `https://openratio.ai`), topics from `project.yaml`.
+- Before the first release, the repository is switched on in Zenodo (section 17), so the release is archived and gets a DOI.
 - Visibility switched to public last, after the release exists.
 - The social preview uploaded and the organization profile updated with the new cards.
+- After the release: the concept DOI written to `CITATION.cff` and a Software Heritage save requested (section 17).
 
-The internal working files (`CLAUDE.md`, `.kit/CLAUDE.md`, `.claude/commands/`, `docs/REVIEW.md`) stay public, and open "Proposed, awaiting Amish" items stay visible as open questions (Amish, 2026-09-27). No Zenodo DOI at this stage.
+The internal working files (`CLAUDE.md`, `.kit/CLAUDE.md`, `.claude/commands/`, `docs/REVIEW.md`) stay public, and open "Proposed, awaiting Amish" items stay visible as open questions (Amish, 2026-09-27).
 
 ## 15. Authorship, citation and signing
 
 - Amish Chadha is the author of every design, ORCID 0009-0000-8079-7141. Commits are authored as Amish Chadha <amish@designmolecule.com>.
 - `CITATION.cff` lists Amish (with ORCID) first, then any credited contributors; `CONTRIBUTORS.md` and the README Credits section agree with it.
+- `CITATION.cff` names one license: the hardware license (CERN-OHL-S-2.0), or the software license in a software-only repository. The full split between hardware and software licenses lives in `REUSE.toml` and the README. Once the repository is archived, `CITATION.cff` carries the concept DOI in `doi:`.
 - Work done with Claude carries the trailer `Co-Authored-By: Claude <noreply@anthropic.com>` (with the model name), and the README Credits section says designs are developed with AI assistance.
 - Every commit and tag pushed to GitHub is signed with Amish's SSH signing key, so GitHub shows it as Verified. Commits prepared elsewhere are re-signed on Amish's Mac before they are pushed.
 - Once a repository is public, its history is never rewritten.
 
+## 16. Licensing metadata (REUSE)
+
+Every file states its copyright and license in a machine-readable way, following the REUSE Specification 3.3 (https://reuse.software). A repository is set up with:
+
+```
+python .kit/archive.py reuse
+```
+
+This writes three things and adds the REUSE and Software Heritage badges to the README badge line:
+
+- `REUSE.toml`, built from the licenses in `project.yaml`. Everything is under the hardware license by default. Scripts, firmware, notebooks, web viewers, workflows and agent commands are under the software license. `cad/` and `electronics/` stay under the hardware license even where they are written as Python. The bundled IBM Plex fonts are OFL-1.1 (IBM Corp.). Copyright is "<first commit year> Amish Chadha".
+- `LICENSES/`, with the full text of each license used (`reuse download`). The root `LICENSE` and `LICENSE-SOFTWARE` files stay for GitHub's license detection.
+- `.github/workflows/reuse.yml`, which runs the REUSE check (fsfe/reuse-action) on every push and drives the README badge.
+
+A new kind of file that falls outside these rules gets a new annotation in `REUSE.toml` rather than a header comment. `reuse lint` must pass before every commit that adds files, and the release gate enforces it.
+
+## 17. Archiving and DOI (Zenodo and Software Heritage)
+
+Every public repository is archived twice, so the design stays citable and retrievable if GitHub changes.
+
+Zenodo (a citable DOI for each release):
+
+1. Amish's Zenodo account is linked to GitHub. Before the first release, Amish switches the repository on in Zenodo (Account, GitHub). Only Amish changes Zenodo or GitHub settings.
+2. Run `python .kit/archive.py zenodo`: it makes sure `CITATION.cff` names one license and adds the Zenodo DOI badge, which uses the GitHub repository ID and always points at the latest version. Zenodo reads its metadata (title, authors with ORCID, license, keywords) from `CITATION.cff`, and rejects the whole archive when that file lists several licenses.
+3. Publish the GitHub release (section 14). Zenodo archives it within minutes and mints two DOIs: a version DOI for that release and a concept DOI that stands for all versions.
+4. Check the Zenodo record: title, author and ORCID, license, keywords. If Zenodo shows "Citation metadata load failed", fix `CITATION.cff`, validate it with cffconvert and publish a new patch release (for example `v0.3.2`); a failed release is never re-used.
+5. Run `python .kit/archive.py zenodo --doi <concept DOI>` and commit, so GitHub's "Cite this repository" and every future archive carry the concept DOI. Every later release gets its own version DOI automatically; the concept DOI never changes.
+
+Software Heritage (permanent source archive):
+
+1. After the repository is public, request a save at https://archive.softwareheritage.org/save/ (origin type git, the repository URL). Anonymous requests are limited to about ten an hour, so batches are spread out.
+2. The Software Heritage badge on the README resolves once the save is accepted and ingested. Later pushes are picked up by its regular crawl.
+
+OpenRatio repositories follow the same steps when Amish approves their release.
