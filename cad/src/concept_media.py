@@ -21,6 +21,12 @@ from model import parts as model_parts  # noqa: E402
 
 parts = [Part(name, shape, color, bom, explode) for bom, name, shape, color, explode in model_parts(below_ground=False)]
 
+# Exploded layout tweak: move the small parts clear of the mirror and each other so each number sits on its own part
+for _p in parts:
+    if _p.bom == 10: _p.explode = (-700, -300, -200)
+    if _p.bom == 16: _p.explode = (-520, 0, 150)
+    if _p.bom == 17: _p.explode = (-300, -520, -100)
+
 
 def box(x0, x1, y0, y1, z0, z1):
     return Pos((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2) * Box(x1 - x0, y1 - y0, z1 - z0)

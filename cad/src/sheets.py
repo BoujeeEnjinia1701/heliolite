@@ -65,11 +65,12 @@ def main():
     views = project_views(stow, work / "stowed")
     views["iso"] = project_views(track, work / "tracking")["iso"]
     bb = stow.bounding_box()
-    s = Sheet(project="HelioLite", title="General arrangement", dwg_no="HLT-DWG-001", rev="P2",
+    s = Sheet(project="HelioLite", title="General arrangement", dwg_no="HLT-DWG-001", rev="P3",
               author="Amish Chadha", date=DATE, scale=None, theme="technical",
               material="Glass mirror on ACP; printed ASA yoke; NMRV030-class drives; 60.3 mm galv. pipe. PRELIMINARY, NOT FOR FABRICATION",
               revisions=[("P1", "Preliminary GA for TRL 3 (from cad/src/model.py)", DATE, "AC"),
-                         ("P2", "Stow stop and latch, preload springs added (DDR-002)", DATE, "AC")])
+                         ("P2", "Stow stop and latch, preload springs added (DDR-002)", DATE, "AC"),
+                         ("P3", "Layout and labels tidied", DATE, "AC")])
     s.add_ortho(views)
     k = s.scale
     c = ortho_cells(s, views)
@@ -79,7 +80,6 @@ def main():
     zg = y + h                                    # ground line on the sheet (bb.min.Z = 0)
     xc = x + (0 - bb.min.X) * k                   # mast axis on the sheet
     L += [ext(x - 22, zg, x, zg)]
-    L += dim_v(x - 4, y, zg, f"{bb.size.Z:,.0f}")
     za = zg - P["axis_z"] * k
     L += [ext(x - 12, za, xc, za)]
     L += dim_v(x - 10, za, zg, f"{P['axis_z']:,.0f} axis")
@@ -88,11 +88,11 @@ def main():
     L += dim_v(x - 16, zt, zg, f"{D['mast_top']:,.0f} mast top")
     # mirror width and arm spacing above the front view
     hm = P["mirror"] / 2
-    L += [ext(xc - hm * k, y - 8, xc - hm * k, za), ext(xc + hm * k, y - 8, xc + hm * k, za)]
-    L += dim_h(xc - hm * k, xc + hm * k, y - 7, f"{P['mirror']:.0f} mirror")
+    L += [ext(xc - hm * k, y - 6, xc - hm * k, za), ext(xc + hm * k, y - 6, xc + hm * k, za)]
+    L += dim_h(xc - hm * k, xc + hm * k, y - 5, f"{P['mirror']:.0f} mirror")
     xa1, xa2 = xc - P["arm_x"] * k, xc + P["arm_x"] * k
-    L += [ext(xa1, y - 3, xa1, za), ext(xa2, y - 3, xa2, za)]
-    L += dim_h(xa1, xa2, y - 2, f"{2 * P['arm_x']:.0f} arms c/c")
+    L += [ext(xa1, y - 1.5, xa1, za), ext(xa2, y - 1.5, xa2, za)]
+    L += dim_h(xa1, xa2, y - 1.2, f"{2 * P['arm_x']:.0f} arms c/c")
     # right view (from +X): Y to the right; controller height and anemometer reach
     x, y, w, h = c["right"]
     yc = x + (0 - bb.min.Y) * k                   # mast axis (the view from +X puts +Y on the right)
@@ -106,7 +106,7 @@ def main():
     L += [ext(xa, zan - 2, xa, zan - 10), ext(yc, zan - 2, yc, zan - 10)]
     L += dim_h(min(xa, yc), max(xa, yc), zan - 9, f"{P['anemo_reach']:.0f}")
     s._layers += L
-    s.add_svg(views["iso"], 276, 32, 140, 106, label="Isometric view, tracking pose", sublabel="Not to scale")
+    s.add_svg(views["iso"], 276, 32, 140, 90, label="Isometric view, tracking pose", sublabel="Not to scale")
     gx, gy, gz = P["gb"]
     s.add_notes("Main dimensions and interfaces (mm)", [
         f"Mirror {P['mirror']:.0f} x {P['mirror']:.0f} x {P['glass_t']:.0f} glass on {P['back_t']:.0f} ACP; sweep radius {D['sweep_r']:.0f}",
@@ -120,7 +120,7 @@ def main():
         f"Preload spring cans {P['spring_d']:.0f} dia.: -X trunnion and mast top",
         "Top mass about 12.95 kg; stow face-down in 23 s (HLT-CAL-001)",
         "Orthographic views stowed at azimuth 0; front from -Y, right from +X",
-    ], x=276, y=160, width=144)
+    ], x=276, y=138, width=144)
     out = s.save(ROOT / "cad" / "drawings" / "HLT-DWG-001")
     shutil.rmtree(work, ignore_errors=True)
     print(f"wrote {out} and .pdf, .png at scale 1:{1 / k:g}")

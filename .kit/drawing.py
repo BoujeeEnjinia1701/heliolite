@@ -18,6 +18,7 @@ Typical use from a project's cad/src/sheets.py:
 """
 from __future__ import annotations
 import re
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from xml.sax.saxutils import escape
@@ -165,7 +166,7 @@ class Sheet:
     units: str = "mm"
     material: str = ""
     license: str = "CERN-OHL-S-2.0"
-    concept: bool = True
+    concept: bool | str = True        # True prints the concept banner; a string prints that banner instead
     theme: str = "technical"            # "technical" (white) or "blueprint" (white lines on blue)
     revisions: list = field(default_factory=list)   # [(rev, description, date, by)]
     notes: list = field(default_factory=list)
@@ -273,9 +274,22 @@ class Sheet:
         cells = {"top": (ax, ay, colw, top_h),
                  "front": (ax, front_y, colw, row_h),
                  "right": (ax + colw + gap, front_y, k * rw, row_h)}
+        # labels under the front and right views share a row; when the right view is narrow its
+        # label is moved right so the two sublabels never overlap (about 0.55 x font per character)
+        lab_x = {n: cells[n][0] + cells[n][2] / 2 for n in names}
+        if "front" in names and "right" in names:
+            sub = {n: self.with_direction(f"{n} view", f"Scale {sc}") or "" for n in ("front", "right")}
+            need = (len(sub["front"]) + len(sub["right"])) * 2.2 * 0.55 / 2 + 4
+            if lab_x["right"] - lab_x["front"] < need:
+                lab_x["right"] = lab_x["front"] + need
         for n in names:
             x, y, w, h = cells[n]
-            self.add_svg(views[n], x, y, w, h, scale=k, label=f"{n} view", sublabel=f"Scale {sc}")
+            self.add_svg(views[n], x, y, w, h, scale=k)
+            sl = self.with_direction(f"{n} view", f"Scale {sc}")
+            ly = y + h + 6
+            self._layers.append(_t(lab_x[n], ly, f"{n} view".upper(), 2.8, 600, INK, "middle"))
+            if sl:
+                self._layers.append(_t(lab_x[n], ly + 4, sl, 2.2, 400, MUTED, "middle"))
         if dims:
             # overall sizes, each shown once: length and depth on the top view, height on the front view
             def box(n):   # sheet box of the view's geometry (the SVG is centered in its cell)
@@ -330,7 +344,8 @@ class Sheet:
             for gy in range(int(M) + 10, int(H - M), 10):
                 f.append(f'<line x1="{M}" y1="{gy}" x2="{W-M}" y2="{gy}" stroke="#2E5C94" stroke-width="0.12"/>')
         if self.concept:
-            f.append(_t(M + 6, M + 9, "CONCEPT, NOT FOR FABRICATION", 3.2, 600, "#B45309"))
+            banner = self.concept if isinstance(self.concept, str) else "CONCEPT, NOT FOR FABRICATION"
+            f.append(_t(M + 6, M + 9, banner, 3.2, 600, "#B45309"))
         # project and repository on every sheet, so a printed or forwarded sheet is never anonymous
         ref = self.project + (f"  ·  {self.repo}" if self.repo else "")
         f.append(_t(M + 80, M + 9, ref, 3.2, 600, INK))
@@ -406,7 +421,13 @@ class Sheet:
             cx = x; ry = y + i * rh
             g.append(f'<line x1="{x}" y1="{ry}" x2="{x+w}" y2="{ry}" stroke="{RULE}" stroke-width="0.3"/>')
             for (name, cw), val in zip(cols, r):
-                g.append(_t(cx + 1.8, ry + 3.6, val, 2.3, 400, INK, mono=(name == "Rev")))
+                val, size = str(val), 2.3
+                room = cw - 3.6
+                if len(val) * size * 0.55 > room:            # shrink to fit, then shorten
+                    size = max(1.8, room / (len(val) * 0.55))
+                    if len(val) * size * 0.55 > room:
+                        val = val[: int(room / (size * 0.55)) - 3].rstrip(" ,;") + "..."
+                g.append(_t(cx + 1.8, ry + 3.6, val, size, 400, INK, mono=(name == "Rev")))
                 cx += cw
         return g
 
@@ -423,6 +444,8 @@ class Sheet:
     def save(self, stem, png_dpi=300):
         stem = Path(stem); stem.parent.mkdir(parents=True, exist_ok=True)
         svg = self.svg()
+        for a, b in text_overlaps(svg):
+            print(f"WARNING {stem.name}: text overlaps text: {a!r} and {b!r}")
         svg_path = stem.with_suffix(".svg"); svg_path.write_text(svg)
         import cairosvg
         install_fonts()
@@ -430,3 +453,48 @@ class Sheet:
         cairosvg.svg2png(bytestring=svg.encode(), write_to=str(stem.with_suffix(".png")),
                          output_width=int(W / 25.4 * png_dpi), output_height=int(H / 25.4 * png_dpi))
         return svg_path
+
+
+def _text_boxes(svg: str):
+    """Approximate sheet-space boxes (x0, y0, x1, y1, text) of the sheet's own text. Text inside
+    placed views (nested <svg>) is ignored. Widths are estimated from the font size."""
+    import html
+    body = re.sub(r"<svg\b[^>]*>.*?</svg>", "", svg[svg.find(">") + 1:], flags=re.S)
+    out = []
+    pat = re.compile(r'(?:<g transform="translate\(([-\d.]+) ([-\d.]+)\) rotate\(-90\)">)?'
+                     r'<text x="([-\d.]+)" y="([-\d.]+)"[^>]*font-size="([\d.]+)" font-weight="(\d+)"[^>]*'
+                     r'text-anchor="(\w+)">(.*?)</text>')
+    for m in pat.finditer(body):
+        tx, ty, x, y, size, weight, anchor, txt = m.groups()
+        txt = html.unescape(txt); size = float(size); x, y = float(x), float(y)
+        k = 0.62 if (int(weight) >= 600 and txt.upper() == txt) else 0.55
+        w = len(txt) * size * k; h = size * 0.75
+        x0 = x - (w / 2 if anchor == "middle" else w if anchor == "end" else 0)
+        box = (x0, y - h, x0 + w, y)
+        if tx is not None:   # rotated -90 about (tx, ty): local (u, v) -> sheet (tx + v, ty - u)
+            u0, v0, u1, v1 = box
+            box = (float(tx) + v0, float(ty) - u1, float(tx) + v1, float(ty) - u0)
+        out.append((*box, txt))
+    return out
+
+
+def text_overlaps(svg: str, shrink=0.12):
+    """Pairs of sheet texts whose estimated boxes overlap (STANDARDS section 13, image quality)."""
+    boxes = _text_boxes(svg)
+    hits = []
+    for i in range(len(boxes)):
+        a = boxes[i]
+        for j in range(i + 1, len(boxes)):
+            b = boxes[j]
+            ix = min(a[2], b[2]) - max(a[0], b[0]); iy = min(a[3], b[3]) - max(a[1], b[1])
+            if ix > shrink * min(a[2] - a[0], b[2] - b[0]) and iy > shrink * min(a[3] - a[1], b[3] - b[1]):
+                hits.append((a[4], b[4]))
+    return hits
+
+
+if __name__ == "__main__" and len(sys.argv) > 2 and sys.argv[1] == "--check-text":
+    bad = 0
+    for f in sys.argv[2:]:
+        for a, b in text_overlaps(Path(f).read_text()):
+            print(f"{f}: {a!r} overlaps {b!r}"); bad += 1
+    sys.exit(1 if bad else 0)

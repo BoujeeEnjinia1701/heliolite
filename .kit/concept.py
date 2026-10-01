@@ -58,7 +58,7 @@ def _shade(hex_color, normals, alpha=1.0):
     return np.hstack([rgb, np.full((len(rgb), 1), alpha)])
 
 
-def _zbuffer(tris, cols, elev, azim, W, H, pad=0.06):
+def _zbuffer(tris, cols, elev, azim, W, H, pad=0.06, ids=None):
     """Orthographic z-buffer rasterizer (numpy). tris: (N,3,3) world mm; cols: (N,4) RGBA. Returns RGB image, mask, projector."""
     e, a = np.radians(elev), np.radians(azim)
     # camera basis: view direction d points from camera toward scene
@@ -75,6 +75,7 @@ def _zbuffer(tris, cols, elev, azim, W, H, pad=0.06):
         return np.stack([(xy[..., 0] - c[0]) * scale + W / 2, H / 2 - (xy[..., 1] - c[1]) * scale], -1)
     px = to_px(q[..., :2]); z = q[..., 2]
     img = np.ones((H, W, 3)); zb = np.full((H, W), -np.inf)
+    idb = np.full((H, W), -1, dtype=np.int32) if ids is not None else None
     for i in range(len(px)):
         (x0, y0), (x1, y1), (x2, y2) = px[i]
         xmin, xmax = int(max(min(x0, x1, x2), 0)), int(min(max(x0, x1, x2) + 1, W))
@@ -96,7 +97,12 @@ def _zbuffer(tris, cols, elev, azim, W, H, pad=0.06):
         m = inside & (zz > sub)
         sub[m] = zz[m]
         img[ymin:ymax, xmin:xmax][m] = cols[i, :3]
-    return img, np.isfinite(zb), (lambda pts: to_px((np.asarray(pts) @ P.T)[..., :2]))
+        if idb is not None:
+            idb[ymin:ymax, xmin:xmax][m] = ids[i]
+    proj = (lambda pts: to_px((np.asarray(pts) @ P.T)[..., :2]))
+    if idb is not None:
+        return img, np.isfinite(zb), proj, idb
+    return img, np.isfinite(zb), proj
 
 
 def _repo():
@@ -122,30 +128,115 @@ def _render(parts, out, elev=24, azim=-58, offsets=False, labels=False, size=(8,
         cam = np.array([np.cos(e) * np.cos(a), np.cos(e) * np.sin(a), np.sin(e)])
         n = n * np.sign((n @ cam) + 1e-12)[:, None]
         tris_all.append(tri); cols_all.append(_shade(p.color, n, p.alpha)); items.append((p, v))
-    img, mask, proj = _zbuffer(np.vstack(tris_all), np.vstack(cols_all), elev, azim, W * ss, H * ss)
+    ids = np.concatenate([np.full(len(t), k) for k, t in enumerate(tris_all)])
+    img, mask, proj0, idb = _zbuffer(np.vstack(tris_all), np.vstack(cols_all), elev, azim, W * ss, H * ss, ids=ids)
+    # Crop to the drawn subject (plus a margin) so it fills its box instead of floating in white space
+    ys_, xs_ = np.nonzero(mask)
+    if len(xs_):
+        mx = int(0.04 * max(np.ptp(xs_), np.ptp(ys_))) + 4 * ss
+        x0, x1 = max(xs_.min() - mx, 0), min(xs_.max() + mx + 1, W * ss)
+        y0, y1 = max(ys_.min() - mx, 0), min(ys_.max() + mx + 1, H * ss)
+        x1 = x0 + (x1 - x0) // ss * ss; y1 = y0 + (y1 - y0) // ss * ss
+        img, idb = img[y0:y1, x0:x1], idb[y0:y1, x0:x1]
+    else:
+        x0 = y0 = 0
+    Hc, Wc = img.shape[0] // ss, img.shape[1] // ss
     if ss > 1:
-        img = img.reshape(H, ss, W, ss, 3).mean((1, 3))
-    fig = plt.figure(figsize=size, dpi=dpi)
-    ax = fig.add_axes([0, 0, 1, 1]); ax.imshow(img, interpolation="bilinear"); ax.set_axis_off()
+        img = img.reshape(Hc, ss, Wc, ss, 3).mean((1, 3))
+        idb = idb[::ss, ::ss]
+    proj = (lambda pts: (proj0(pts) - np.array([x0, y0])))
+    # Layout: a header band (title, banner, repo), a footer band (note) and, for labelled views, a
+    # legend column on the left. The render sits in its own box, so no text can fall on the model.
+    import textwrap
+    head, foot = 0.12, 0.09 if note else 0.03
+    leg_w = 0.0
     if labels:
-        for p, v in items:
+        entries = [f"{p.bom}  {p.name}" for p in parts if p.bom is not None]
+        longest = max((len(e) for e in entries), default=0)
+        leg_w = min(0.42, 0.03 + longest * 0.0105 * 8 / size[0])
+    fig = plt.figure(figsize=size, dpi=dpi)
+    ax = fig.add_axes([leg_w, foot, 1 - leg_w, 1 - head - foot]); ax.imshow(img, interpolation="bilinear"); ax.set_axis_off(); ax.set_anchor("C")
+    if labels:
+        # Callout bubbles start on their part; overlapping bubbles are pushed apart and joined to
+        # their part by a thin leader, so no number sits on another.
+        # Each number goes on a pixel where its part is actually visible (the visible pixel nearest
+        # the part's centre); a number whose parts are all hidden gets no bubble, only a legend entry.
+        pts, nums, best = [], [], {}
+        for k, (p, v) in enumerate(items):
             if p.bom is None:
                 continue
-            ctr = v.mean(0); top = v[np.argmax(v[:, 2])]
-            anchor = (ctr + top) / 2
-            x, y = proj(anchor) / ss
-            ax.text(x, y, f"{p.bom}", fontsize=8, fontweight="bold", color="white", ha="center", va="center",
+            yy, xx = np.nonzero(idb == k)
+            if not len(xx):
+                continue
+            c = proj(v.mean(0)) / ss
+            j = int(np.argmin((xx - c[0]) ** 2 + (yy - c[1]) ** 2))
+            if p.bom not in best or len(xx) > best[p.bom][0]:
+                best[p.bom] = (len(xx), (xx[j], yy[j]))
+        W, H = Wc, Hc
+        # bubble radius in image pixels: the bubble is drawn at a fixed size on the figure, so convert
+        axw = (1 - leg_w) * size[0] * dpi; axh = (1 - head - foot) * size[1] * dpi
+        r = 15.0 * max(Wc / axw, Hc / axh)
+        small = []
+        for bom, (area, xy) in best.items():
+            pts.append(xy); nums.append(bom); small.append(area < (1.6 * r) ** 2)
+        hidden = {p.bom for p in parts if p.bom is not None} - set(best)
+        pts = np.array(pts, float).reshape(-1, 2); pos = pts.copy()
+        # A part smaller than its bubble gets the bubble set off to the side, away from the middle of
+        # the picture, with a leader to the part, so the bubble never hides the part or floats alone.
+        ctr_img = np.array([W / 2, H / 2])
+        for i, sm in enumerate(small):
+            if sm:
+                d = pts[i] - ctr_img; nd = np.hypot(*d)
+                u = d / nd if nd > 1e-6 else np.array([1.0, 0.0])
+                # outward first; if that leaves the picture, try other directions
+                for v in (u, np.array([-u[1], u[0]]), np.array([u[1], -u[0]]), np.array([0.0, -1.0]),
+                          np.array([0.0, 1.0]), -u):
+                    q = pts[i] + v * 3.2 * r
+                    if 1.2 * r <= q[0] <= W - 1.2 * r and 1.2 * r <= q[1] <= H - 1.2 * r:
+                        pos[i] = q
+                        break
+                else:
+                    pos[i] = pts[i] - u * 3.2 * r     # point back toward the middle; clipped below
+        for _ in range(200):
+            moved = False
+            for i in range(len(pos)):
+                for j in range(i + 1, len(pos)):
+                    d = pos[j] - pos[i]; dist = np.hypot(*d)
+                    if dist < 2.25 * r:
+                        u = d / dist if dist > 1e-6 else np.array([1.0, 0.0])
+                        push = (2.25 * r - dist) / 2 + 0.5
+                        pos[i] -= u * push; pos[j] += u * push; moved = True
+            pos[:, 0] = np.clip(pos[:, 0], r, W - r); pos[:, 1] = np.clip(pos[:, 1], r, H - r)
+            if not moved:
+                break
+        for (ax0, ay0), (x, y), n in zip(pts, pos, nums):
+            if np.hypot(x - ax0, y - ay0) > 0.6 * r:
+                ax.plot([ax0, x], [ay0, y], color=INK, lw=0.6, zorder=3)
+                ax.plot([ax0], [ay0], marker="o", ms=2.2, color=INK, zorder=3)
+            ax.text(x, y, f"{n}", fontsize=8, fontweight="bold", color="white", ha="center", va="center", zorder=4,
                     bbox=dict(boxstyle="circle,pad=0.3", fc=ACCENT, ec="white", lw=0.8))
-        handles = [plt.Line2D([], [], marker="o", ls="", mfc=p.color, mec=INK, ms=7, label=f"{p.bom}  {p.name}")
-                   for p in parts if p.bom is not None]
-        ax.legend(handles=handles, loc="upper left", frameon=False, fontsize=7.5, bbox_to_anchor=(0.0, 0.9))
+        ax.set_xlim(0, W); ax.set_ylim(H, 0)
+        legend = {}
+        for p in parts:
+            if p.bom is None:
+                continue
+            e = legend.setdefault(p.bom, [p.color, []])
+            if p.name not in e[1]:
+                e[1].append(p.name)
+        handles = [plt.Line2D([], [], marker="o", ls="", mfc=c, mec=INK, ms=7,
+                              label=f"{b}  {' and '.join(ns)}" + ("  (hidden in this view)" if b in hidden else ""))
+                   for b, (c, ns) in sorted(legend.items(), key=lambda kv: (str(type(kv[0])), kv[0]))]
+        n = len(handles)
+        fs = 7.5 if n <= 18 else max(5.5, 7.5 * 18 / n)
+        fig.legend(handles=handles, loc="upper left", frameon=False, fontsize=fs, bbox_to_anchor=(0.01, 1 - head),
+                   handletextpad=0.4, borderaxespad=0.0, labelspacing=0.5)
     if title:
-        fig.text(0.02, 0.97, title, fontsize=9, fontweight="bold", color=INK, va="top")
+        fig.text(0.02, 0.975, title, fontsize=9, fontweight="bold", color=INK, va="top")
         fig.text(0.02, 0.93, "CONCEPT, NOT FOR FABRICATION", fontsize=6.5, color="#B45309", va="top")
         if _repo():
-            fig.text(0.98, 0.97, _repo(), fontsize=7, color=ACCENT, va="top", ha="right", family="monospace")
+            fig.text(0.98, 0.975, _repo(), fontsize=7, color=ACCENT, va="top", ha="right", family="monospace")
     if note:
-        fig.text(0.02, 0.03, note, fontsize=7.5, color="#4B5563", va="bottom")
+        fig.text(0.02, 0.015, textwrap.fill(note, int(size[0] * 15)), fontsize=7.5, color="#4B5563", va="bottom")
     out = Path(out); out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out, facecolor="white"); plt.close(fig)
     return out
@@ -214,6 +305,12 @@ def export_web_model(parts, media_dir="media", poster="hero.png", title="3D mode
     return md / "model.glb"
 
 
+def _keep_units(text):
+    """Join a number to its unit with a no-break space so wrapping never strands the unit."""
+    import re
+    return re.sub(r"(\d)\s+([A-Za-z%\u00b0/]{1,6})(?=\W|$)", "\\1\u00a0\\2", str(text))
+
+
 def flow_diagram(stages, out, title, unit="kWh", losses=()):
     """System, data, energy or material flow diagram. Values may be numbers (scaled arrows) or text labels.
     stages: [(name, value)] left to right; losses: [(after_stage_index, name, value)] drawn as branches down.
@@ -229,9 +326,15 @@ def flow_diagram(stages, out, title, unit="kWh", losses=()):
         x = i * 3 + 0.3
         ax.add_patch(FancyBboxPatch((x - 0.15, -0.5), 2.3, 1.2, boxstyle="round,pad=0.02,rounding_size=0.12",
                                     fc="#F0FDFA", ec=ACCENT, lw=1.4))
-        ax.text(x + 0.95, 0.28, name, ha="center", va="center", fontsize=8.5, fontweight="bold", color=INK)
-        label = f"{v:g} {unit}".strip() if isinstance(v, (int, float)) else str(v)
-        ax.text(x + 0.95, -0.15, label, ha="center", va="center", fontsize=9, color=ACCENT)
+        import textwrap as _tw
+        name = _keep_units(str(name))
+        ax.text(x + 0.95, 0.3, _tw.fill(name, 18), ha="center", va="center", fontsize=8 if len(str(name)) > 18 else 8.5,
+                fontweight="bold", color=INK, linespacing=1.1)
+        label = f"{v:g}\u00a0{unit}".strip() if isinstance(v, (int, float)) else str(v)
+        import re as _re
+        label = _keep_units(label)
+        ax.text(x + 0.95, -0.22, _tw.fill(label, 20), ha="center", va="center", fontsize=8 if len(label) > 20 else 9,
+                color=ACCENT, linespacing=1.1)
         if i < n - 1:
             w = 1 + 6 * v / vmax if isinstance(v, (int, float)) else 3
             ax.add_patch(FancyArrowPatch((x + 2.2, 0.1), (x + 2.8, 0.1), arrowstyle="-|>", mutation_scale=14,
@@ -240,9 +343,13 @@ def flow_diagram(stages, out, title, unit="kWh", losses=()):
         x = i * 3 + 0.3 + 0.95
         ax.add_patch(FancyArrowPatch((x, -0.55), (x, -1.7), arrowstyle="-|>", mutation_scale=12,
                                      lw=1 + 6 * v / vmax, color="#C2410C", alpha=0.6))
-        ax.text(x, -2.05, f"{name}: {v:g} {unit}", ha="center", va="center", fontsize=8.5, color="#C2410C")
-    fig.text(0.01, 0.97, title, fontsize=10, fontweight="bold", color=INK, va="top")
-    fig.text(0.01, 0.9, "CONCEPT, NOT FOR FABRICATION", fontsize=6.5, color="#B45309", va="top")
+        ax.text(x, -2.1, _tw.fill(_keep_units(f"{name}: {v:g} {unit}"), 24), ha="center", va="center", fontsize=8, color="#C2410C")
+    import textwrap as _tw2
+    fw = fig.get_size_inches()[0]
+    ttl = _tw2.fill(title, max(30, int((fw - 3.6) * 11)))
+    nl = ttl.count("\n") + 1
+    fig.text(0.01, 0.97, ttl, fontsize=10, fontweight="bold", color=INK, va="top", linespacing=1.2)
+    fig.text(0.01, 0.97 - 0.075 * nl, "CONCEPT, NOT FOR FABRICATION", fontsize=6.5, color="#B45309", va="top")
     if _repo():
         fig.text(0.99, 0.97, _repo(), fontsize=7, color=ACCENT, va="top", ha="right", family="monospace")
     out = Path(out); out.parent.mkdir(parents=True, exist_ok=True)
