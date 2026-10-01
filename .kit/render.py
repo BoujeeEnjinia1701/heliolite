@@ -19,7 +19,7 @@ ROOT = KIT.parent
 OUT = ROOT / "docs" / "pdf"
 REQUIRED = ["doc_id", "title", "project", "doc_type", "version", "status", "date", "author", "license", "revisions"]
 STATUSES = {"Draft", "In review", "Released", "Superseded"}
-ID_RE = re.compile(r"^[A-Z]{3}-(PRC|PRB|REQ|CAL|DDR|BOM|DWG|TST|STD)-\d{3}$")
+ID_RE = re.compile(r"^[A-Z]{3}-(PRC|PRB|REQ|CAL|DDR|BOM|DWG|TST|STD|BLD|DEC)-\d{3}$")
 VER_RE = re.compile(r"^\d+\.\d+$")
 FM_RE = re.compile(r"^---\n(.*?)\n---\n", re.S)
 
@@ -113,6 +113,10 @@ def trl_check(docs) -> list[str]:
         import csv
         rows = list(csv.DictReader(bom.open())) if bom.exists() else []
         need(3, rows and all((r.get("unit_cost_usd") or "").strip() for r in rows), "every BOM row priced")
+        need(3, "BLD" in by_type, "prototype build plan (BLD, STANDARDS section 18)")
+        need(3, "DEC" in by_type, "design decisions register (DEC, STANDARDS section 18)")
+        need(3, pm.get("design_state") == "constructable", "design_state: constructable in project.yaml (STANDARDS section 18)")
+        need(3, (ROOT / "docs/05-build-plan/overview.png").exists(), "build plan pictures (docs/05-build-plan/overview.png)")
     envs = [str(m.get("environment", "")) for _, m in by_type.get("TST", [])]
     need(4, bool(envs), "test report (TST)")
     need(4, len(list((ROOT / "build-log").glob("*.md"))) > 1, "build log entries")
@@ -150,6 +154,8 @@ def phase_check(docs) -> tuple[list[str], list[str]]:
         errs.append(f"trl {trl} exceeds the portfolio cap of TRL {cap} (.kit/PHASE.yaml)")
     if target > cap:
         errs.append(f"trl_target {target} exceeds the portfolio cap of TRL {cap} (.kit/PHASE.yaml)")
+    if ph.get("phase") == "populate" and target < cap:
+        errs.append(f"trl_target {target} is below the TRL {cap} every repo targets in the populate phase (STANDARDS section 10); run /to-trl3")
     tst = [p for p, m, _ in docs if "-TST-" in str(m["doc_id"])]
     extra = [str(p.relative_to(ROOT)) for p in tst] + [b for b in BEYOND_CAP_PATHS if (ROOT / b).exists()]
     if cap < 4 and extra:

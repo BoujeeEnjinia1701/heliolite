@@ -43,7 +43,7 @@ DIST_DP = 10.0                           # design point mirror to target, m
 WIN_W, WIN_H = 1.0, 1.2                  # target window, m
 LAT = 45.0
 
-print("HelioLite sizing, HLT-CAL-001 v0.2")
+print("HelioLite sizing, HLT-CAL-001 v0.4")
 print(f"Model: mirror {P['mirror']:.0f} mm, axis at {P['axis_z']:.0f} mm, mast {P['mast_od']} x {P['mast_wall']} mm, "
       f"length {P['mast_len']:.0f} mm, arms {P['arm_t']:.0f} x {P['arm_w']:.0f} mm")
 
@@ -207,15 +207,19 @@ theta_mast = F8 * L_m ** 2 / (2 * EI) + M_top * L_m / EI
 out("C2", f"8 m/s face-on: force {F8:.1f} N; mast top slope {degrees(theta_mast):.3f} deg (normal error)")
 I_al = 9.0e4; theta_al = F8 * 2200 ** 2 / (2 * 70e3 * I_al)
 out("C3", f"Same load on a 2.2 m 40 x 40 mm aluminum extrusion (I about 9e4 mm4): {degrees(theta_al):.2f} deg")
-# Yoke arms: printed cantilevers of length arm_len, bending in the Y-Z plane (rotation about the elevation axis)
-La = D["arm_len"] - P["base_t"]
-Ia = P["arm_t"] * P["arm_w"] ** 3 / 12
+# Yoke arms: aluminum rectangular tube cantilevers (HLT-DDR-003) from the crossbar top to the elevation axis,
+# bending in the Y-Z plane (rotation about the elevation axis)
+E_AL = 69e3
+La = D["arm_free"]
+aw_, at_, t_ = P["arm_w"], P["arm_t"], P["arm_wall"]
+Ia = (at_ * aw_ ** 3 - (at_ - 2 * t_) * (aw_ - 2 * t_) ** 3) / 12
 Mh8 = 0.25 * q(8) * A_M * CHORD * 1000           # hinge moment, N mm
-th_arm = ((F8 / 2) * La ** 2 / 2 + Mh8 * La) / (E_ASA * Ia)
-Ia_old = 30 * 50 ** 3 / 12
-th_old = ((F8 / 2) * La ** 2 / 2 + Mh8 * La) / (E_ASA * Ia_old)
-out("C4", f"Yoke arm {P['arm_t']:.0f} x {P['arm_w']:.0f} mm, {La:.0f} mm long: slope {degrees(th_arm):.3f} deg at 8 m/s "
-          f"(hinge moment {Mh8 / 1000:.1f} N m reacted by the drive arm); a 30 x 50 mm arm would give {degrees(th_old):.3f} deg")
+th_arm = ((F8 / 2) * La ** 2 / 2 + Mh8 * La) / (E_AL * Ia)
+Ia_asa = 40 * 70 ** 3 / 12
+th_asa = ((F8 / 2) * La ** 2 / 2 + Mh8 * La) / (E_ASA * Ia_asa)
+out("C4", f"Yoke arm, aluminum tube {P['arm_t']:.0f} x {P['arm_w']:.0f} x {P['arm_wall']:.0f} mm, {La:.0f} mm above the crossbar: "
+          f"slope {degrees(th_arm):.3f} deg at 8 m/s (hinge moment {Mh8 / 1000:.1f} N m reacted by the drive arm); "
+          f"the concept's solid printed 40 x 70 mm ASA arm would give {degrees(th_asa):.3f} deg")
 yaw8 = 0.1 * q(8) * A_M * CHORD * 1000
 tw = yaw8 * L_m / (G_ST * J_m)
 out("C5", f"Mast twist from an assumed yaw moment {yaw8 / 1000:.2f} N m at 8 m/s: {degrees(tw):.4f} deg")
@@ -348,13 +352,17 @@ PAD_A = 24.0 * P["lug_t"]                        # pad contact area, mm2 (24 mm 
 E_PU = 50.0                                      # MPa, polyurethane 90A (assumed)
 d_pad = F_stop * P["pad_t"] / (E_PU * PAD_A)
 d_free = radians(BACKLASH / 2) * P["stop_r"]     # lug travel at mid-backlash before the worm teeth touch
-PIN_D = 8.0
-tau_pin = F_stop / (2 * pi * PIN_D ** 2 / 4)
+# Sliding pawl (HLT-DDR-003): 12 x 8 mm steel tongue cantilevered from its slot in the bracket to the lug center
+PW_B, PW_H, PW_L = 12.0, 8.0, 13.0               # width, depth, lever from the bracket face to the lug mid-plane (mm)
+sig_pawl = F_stop * PW_L / (PW_B * PW_H ** 2 / 6)
+# Bracket screws: two M6 through the -X arm, 37 mm apart, 33 mm from the contact line
+F_scr = F_stop / 2 + F_stop * 33.0 / 37.0
 out("E7", f"Stow latch design moment {M_des:.1f} N m ({SF_COEF:.0f}x the assumed stowed moment, i.e. a stowed moment coefficient up to "
           f"{SF_COEF * C_MS:.2f}); force at the {P['stop_r']:.0f} mm contact radius {F_stop:.0f} N")
 out("E8", f"Stop pad {P['pad_t']:.0f} mm PU 90A (E {E_PU:.0f} MPa assumed) on {PAD_A:.0f} mm2: stress {F_stop / PAD_A:.1f} MPa, "
           f"deflection {d_pad:.2f} mm against {d_free:.2f} mm free travel with the worm backed off to mid-backlash, so the gearbox carries "
-          f"{'no stowed moment' if d_pad < d_free else 'part of the moment'}; pawl pivot pin {PIN_D:.0f} mm in double shear {tau_pin:.0f} MPa")
+          f"{'no stowed moment' if d_pad < d_free else 'part of the moment'}; sliding pawl 12 x 8 mm bending {sig_pawl:.0f} MPa "
+          f"(steel, 275 MPa yield); bracket screws up to {F_scr:.0f} N each in shear (M6 8.8 about 9 kN)")
 RES["R9"] = (f"Stowed moment {Mh_stow:.0f} N m at 35 m/s carried by the stow stop and latch (designed for {M_des:.0f} N m), not the gearbox; "
              f"stow trigger {rows[1][4]:.1f} N m within the {GB_RATED:.0f} N m rating; mast {sig_face:.0f} MPa worst case",
              "Hold R4 to 8 m/s; survive 35 m/s in stow",
@@ -409,37 +417,38 @@ RES["R7"] = (f"{hands_on} min hands-on for four points spread over about 4 h of 
              "Met" if hands_on <= 30 else "Not met")
 
 # ---------------------------------------------------------------- H. mass and balance
-from build123d import Compound  # noqa: E402
-pl = {p[0]: p for p in parts()}
-yoke_vol = pl[3][2].volume
+from model import build_components  # noqa: E402
+CC = build_components()
+vol = lambda *ks: sum(CC[k][1].volume for k in ks) / 1e3        # noqa: E731  cm3
+RHO_AL, RHO_ST, RHO_BR, RHO_ASA = 2.70e-3, 7.85e-3, 8.8e-3, 1.07e-3 * 0.60   # kg/cm3 (ASA at 60 % infill)
 m_glass = A_M * P["glass_t"] / 1000 * 2500
 m_acp = A_M * 5.5
-ax_in = P["arm_x"] - P["arm_t"] / 2 - 2
-m_tube = (P["tube"] ** 2 - (P["tube"] - 2 * P["tube_wall"]) ** 2) * 2 * ax_in * 2.7e-6
-m_ribs = (25 * 20 - 21 * 16) * (P["mirror"] - 40) * 2 * 2.7e-6
-m_trun = pi * (P["trunnion_d"] / 2) ** 2 * 2 * 120 * 7.85e-6
+m_tube = vol("tube") * RHO_AL
+m_ribs = vol("ribs") * RHO_AL
+m_trun = vol("blocks") * RHO_AL + vol("stubs", "block_bolts") * RHO_ST
 m_glue = 0.2
 m_mirror = m_glass + m_acp + m_tube + m_ribs + m_trun + m_glue
-m_yoke = yoke_vol * 1.07e-6 * 0.60
+m_yoke_al = vol("crossbar", "arm_r", "arm_l", "gussets") * RHO_AL
+m_yoke = m_yoke_al + vol("gusset_bolts", "cross_bolts") * RHO_ST + vol("plugs") * RHO_ASA + vol("bushes") * RHO_BR
 M_GB, M_MOT, M_ADP = 1.2, 0.36, 0.10
-m_drive = M_GB + M_MOT + M_ADP
-m_tt = 0.5
-m_lug = P["lug_t"] * P["lug_w"] * (P["lug_r1"] - P["lug_r0"]) * 7.85e-6
-M_LATCH_REST = 0.12 + 0.06                       # bracket, pad and pawl; pull solenoid (assumed)
+m_drive = M_GB + M_MOT + M_ADP + vol("el_bolts") * RHO_ST / 2
+m_tt = vol("disc", "hub") * RHO_AL + vol("shaft") * RHO_ST + vol("washer") * RHO_BR
+m_lug = vol("lug") * RHO_ST
+M_SOL = 0.06                                     # pull solenoid (assumed)
 M_SPRING = 0.08                                  # each spiral spring in its can (assumed)
-m_latch = m_lug + M_LATCH_REST
+m_latch = m_lug + vol("bracket", "pawl", "latch_bolts") * RHO_ST + M_SOL
 m_top = m_mirror + m_yoke + 2 * m_drive + m_tt + m_latch + 2 * M_SPRING
 M_LIMIT = 13.0                                   # R13 as relaxed on 2026-09-25 (HLT-DDR-002 N3)
 m_mast = pi / 4 * (P["mast_od"] ** 2 - (P["mast_od"] - 2 * P["mast_wall"]) ** 2) * P["mast_len"] * 7.85e-6
 m_cap = P["cap"] ** 2 * P["cap_t"] * 7.85e-6
 out("H1", f"Mirror assembly {m_mirror:.2f} kg (glass {m_glass:.2f}, panel {m_acp:.2f}, tube {m_tube:.2f}, ribs {m_ribs:.2f}, "
-          f"trunnions {m_trun:.2f}, adhesive and film {m_glue:.2f})")
-out("H2", f"Yoke {m_yoke:.2f} kg ({yoke_vol / 1e6:.2f} L at 60 % infill ASA); each drive {m_drive:.2f} kg "
-          f"(gearbox {M_GB} kg assumed); turntable {m_tt} kg")
-out("H3", f"Stow stop and latch {m_latch:.2f} kg (lug {m_lug:.2f}); preload springs 2 x {M_SPRING} kg (assumed)")
+          f"trunnion blocks, stubs and bolts {m_trun:.2f}, adhesive and film {m_glue:.2f})")
+out("H2", f"Yoke {m_yoke:.2f} kg (aluminum tubes and gussets {m_yoke_al:.2f}, bolts, printed plugs and bushes); each drive {m_drive:.2f} kg "
+          f"(gearbox {M_GB} kg assumed); turntable, hub and shaft {m_tt:.2f} kg")
+out("H3", f"Stow stop and latch {m_latch:.2f} kg (lug {m_lug:.2f}, solenoid {M_SOL} assumed); preload springs 2 x {M_SPRING} kg (assumed)")
 out("H3", f"On the mast top {m_top:.2f} kg against {M_LIMIT:.0f} kg (margin {M_LIMIT - m_top:.2f} kg); mast pipe {m_mast:.1f} kg; cap plate {m_cap:.1f} kg")
 zb = P["tube"] / 2
-com = (m_glass * (zb + P["back_t"] + P["glass_t"] / 2) + m_acp * (zb + P["back_t"] / 2) + m_ribs * (zb - 10)
+com = (m_glass * (zb + P["back_t"] + P["glass_t"] / 2) + m_acp * (zb + P["back_t"] / 2) + m_ribs * (zb - P["rib"][1] / 2)
        + m_glue * (zb + P["back_t"])) / m_mirror
 Mimb = m_mirror * 9.81 * com / 1000
 out("H4", f"Mirror center of mass {com:.1f} mm in front of the elevation axis; gravity moment up to {Mimb:.2f} N m")
@@ -459,13 +468,17 @@ out("I1", f"Average power {p_avg:.2f} W (idle {P_IDLE} W, moves {P_MOVE * T_MOVE
 RES["R14"] = (f"{p_avg:.2f} W average", "3 W or less", "Met" if p_avg <= 3 else "Not met")
 
 # ---------------------------------------------------------------- J. cost
-BUDGET = 455.0  # budget_usd; top-up approved by Amish 2026-09-26 (HLT-DDR-002 v0.2)
+VE_TARGET = 455.0  # budget_usd: a hypothetical value-engineering target, not a limit (Amish, 2026-10-01)
 rows_b = list(csv.DictReader((ROOT / "bom" / "bom.csv").open()))
 total = sum(float(r["qty"]) * float(r["unit_cost_usd"]) for r in rows_b)
-out("J1", f"BOM {len(rows_b)} lines, all priced: total ${total:,.2f} against ${BUDGET:.0f} budget; margin ${BUDGET - total:.2f}")
-out("J2", "Not in the BOM: tools, printer time, shipping. Preload springs (line 16) and stow stop and latch (line 17) added under HLT-DDR-002")
-RES["R15"] = (f"${total:,.0f} ({BUDGET - total:+.0f} against the budget)", "$455 or less (budget top-up approved 2026-09-26)",
-              "Met" if total <= BUDGET else "Not met")
+diff = total - VE_TARGET
+out("J1", f"BOM {len(rows_b)} lines, all priced: estimated cost ${total:,.2f} against the ${VE_TARGET:.0f} value-engineering target; "
+          f"${abs(diff):.2f} {'over' if diff > 0 else 'under'} the target")
+out("J2", "Not in the BOM: tools, printer time, shipping. Lines 16 and 17 added under HLT-DDR-002; lines 2, 3, 5, 6, 9, 13, 14 and 17 "
+          "repriced under HLT-DDR-003 (design for construction)")
+RES["R15"] = (f"${total:,.0f} (${abs(diff):.0f} {'over' if diff > 0 else 'under'} the target)",
+              "$455 value-engineering target (a hypothetical control target)",
+              "Over the value-engineering target" if diff > 0 else "Met")
 
 # ---------------------------------------------------------------- K. remaining requirements and summary
 naz = site_res[("A", "21 Dec")]["naz"]
@@ -480,7 +493,7 @@ RES["R8"] = (f"Mechanical range met; spot plus error fits a 1.0 m window up to {
 RES["R11"] = ("12 V SELV outdoors, IP65 box, listed indoor adapter", "SELV, IP65, listed adapter", "Met")
 RES["R12"] = ("ASA, galvanized steel, glass with backing film by selection", "-20 to +45 C, UV, corrosion, 10 years",
               "Not verifiable at TRL 3")
-order = {"Not met": 0, "At risk": 1, "Not verifiable at TRL 3": 2, "Met": 3}
+order = {"Not met": 0, "Over the value-engineering target": 1, "At risk": 2, "Not verifiable at TRL 3": 3, "Met": 4}
 print("\nResults by requirement")
 for rid in sorted(RES, key=lambda k: (order[RES[k][2]], int(k[1:]))):
     v, tgt, st = RES[rid]

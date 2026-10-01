@@ -3,9 +3,9 @@ doc_id: OHP-STD-001
 title: Documentation and drawing standard
 project: Open Hardware Portfolio
 doc_type: Standard
-version: "1.6"
+version: "1.7"
 status: Released
-date: 2026-09-29
+date: 2026-09-30
 author: Amish Chadha
 license: CC-BY-SA-4.0
 revisions:
@@ -37,6 +37,10 @@ revisions:
     date: 2026-09-29
     author: Amish Chadha
     change: Licensing metadata with REUSE (section 16), Zenodo DOI and Software Heritage archiving (section 17), release gate checks REUSE and a single CITATION.cff license, archive.py
+  - version: "1.7"
+    date: 2026-09-30
+    author: Amish Chadha
+    change: Concept and constructable design states; design decisions register (DEC) kept apart from the build plan; prototype build plan (BLD, section 18) with pictures by component is required TRL 3 evidence; every repo targets TRL 3 during the populate phase; build_views.py; /to-trl3 and /build-plan commands
 ---
 
 # Documentation and drawing standard
@@ -60,6 +64,8 @@ Every controlled document has a unique ID in the form `PRJ-TYP-NNN`.
 | DDR | Design decision record | `docs/decisions/*.md` |
 | BOM | Bill of materials | `bom/bom.csv` |
 | DWG | Drawing or sketch sheet | `cad/drawings/*.svg` |
+| BLD | Prototype build plan (section 18) | `docs/05-build-plan.md` |
+| DEC | Design decisions register (section 18) | `docs/06-design-decisions.md` |
 | TST | Test plan or test report (front matter adds `environment: lab` or `relevant`) | `docs/05-tests/*.md` |
 
 Example: `TBK-PRC-001` is the ThermaBrick design precis.
@@ -174,7 +180,7 @@ Each project states its maturity as a Technology Readiness Level on the NASA and
 | --- | --- | --- |
 | 1 | Basic principles observed | Problem statement (PRB) |
 | 2 | Technology concept formulated | Draft precis (PRC) and requirements (REQ) |
-| 3 | Analytical or experimental proof of concept | Calculation note (CAL), working build123d model with STEP export, drawing sheet (DWG), priced BOM with every unit cost filled in |
+| 3 | Analytical or experimental proof of concept | Calculation note (CAL), working build123d model with STEP export, drawing sheet (DWG), priced BOM with every unit cost filled in, prototype build plan (BLD) with pictures, `design_state: constructable` |
 | 4 | Components validated in the lab | Test report (TST) with `environment: lab`, build log entries |
 | 5 | Validated in a relevant environment | Test report (TST) with `environment: relevant` |
 | 6 | System prototype demonstrated in a relevant environment | Precis at version 1.0 or later with status Released, a drawing at a lettered revision (Rev A or later), and a system-level TST with `environment: relevant` |
@@ -190,7 +196,7 @@ Rules:
 
 ## 10. Portfolio phase and TRL cap
 
-`.kit/PHASE.yaml` sets the current phase. During the **populate** phase every repo is capped at **TRL 3**: `trl` and `trl_target` may not exceed 3, and the check fails if they do. Work that belongs to TRL 4 or later (test articles, test plans and reports, build procedures, purchasing lists, PCB layouts) must not be started. Where it already exists it is kept, flagged in the check output, and not extended. Only Amish changes `PHASE.yaml`.
+`.kit/PHASE.yaml` sets the current phase. During the **populate** phase every repo is capped at **TRL 3**: `trl` and `trl_target` may not exceed 3, and the check fails if they do. Every repo targets the cap: `trl_target` must equal 3, so a new repo is taken all the way to TRL 3 (scaffold, populate and advance, see `/to-trl3`). Work that belongs to TRL 4 or later (building or testing hardware, test articles, test plans and reports, build-log entries, purchasing lists, PCB layouts) must not be started. The prototype build plan (BLD, section 18) is TRL 3 paper work and is required. Where it already exists it is kept, flagged in the check output, and not extended. Only Amish changes `PHASE.yaml`.
 
 Every repo carries a `CLAUDE.md` with the working rules for AI sessions: the TRL cap, decision rights (nothing is recorded as decided unless Amish decided it), one step per session, and a mandatory `docs/REVIEW.md` before stopping.
 
@@ -325,3 +331,56 @@ Software Heritage (permanent source archive):
 2. The Software Heritage badge on the README resolves once the save is accepted and ingested. Later pushes are picked up by its regular crawl.
 
 OpenRatio repositories follow the same steps when Amish approves their release.
+
+## 18. Prototype build plan (BLD) and the constructable design
+
+### Two design states
+
+A design moves through two states, recorded as `design_state` in `project.yaml`:
+
+- **Concept**: the design shows what the product does and that it works on paper (TRL 2 and the calculations of TRL 3). Parts may be simplified shapes that have never been checked for how they are made or how they join.
+- **Constructable**: every part can be made with the stated process and material, and every part fits and fastens to the parts next to it. Nothing is left as a shape that cannot be cut, cast, bent, printed, machined or bought.
+
+A repo reaches TRL 3 only when its design is constructable and its build plan shows how. Writing the build plan is how the design is made constructable: when a part cannot be made or cannot fit as modelled, change the model so it can (Amish, 2026-09-30: "fix the design assumptions to match and be physically feasible"), keep what the concept does, and record every change in a decision record "Design for construction" (DDR) and in the plan. Changes that alter what the product does, its pitch or its safety case are proposed, not made.
+
+### What the build plan is
+
+`docs/05-build-plan.md` (`PRJ-BLD-001`) tells a capable maker how to build the first proof-of-concept prototype, in order, component by component, and shows it in pictures. It is written before anything is built, states "Plan, not yet built" under the title and never claims results. Building and testing to it is TRL 4 work.
+
+### Writing rules
+
+- **Plain English.** Say "the steel plate the jack stands on", not a model parameter or variable name. No code identifiers, function names, parameter names or file paths in the body of the plan. Give sizes as numbers with units ("a 62 mm hole, centred 100 mm up from the bottom edge"). The only place file names appear is the closing "Where the numbers come from" list.
+- **Pictures first.** Every component and every assembly step has a picture. A reader should be able to build from the pictures, with the words explaining what the pictures cannot show (order, force, tolerance, checks).
+- **By component, in build order.** Each component is made and checked before the step that needs it.
+- **Cost is not the focus.** One line in the overview may state the parts cost from the BOM; there is no cost or time section.
+
+### Sections, in order
+
+1. **What you are building**: the overview picture (every component pulled apart and numbered in build order) and one short paragraph.
+2. **What changed to make it buildable**: a table of each change from the concept (what the concept had, what the constructable design has, why), with a picture where the change is visible. "None" if nothing changed.
+3. **Making the components**: one subsection per made component, in build order, each with:
+   - its making sketch (three views with overall sizes, a 3D view, where it goes, making notes), `cad/drawings/PRJ-DWG-1NN`;
+   - what it is and what it is made from (material, stock size);
+   - how to make it, as numbered steps (mark out, cut, drill, bend, weld, cast, print, machine, finish), with the sizes that matter;
+   - how it fits the parts next to it: a close-up picture of the joint, which faces touch, what holds them (bolt, weld, pin, clip, glue), the gap or fit needed, and which side goes where;
+   - the check before moving on.
+   Bought components get a short subsection: what to buy (specification, not brand), and what to do to it (drill, trim, fit).
+4. **Putting it together**: numbered assembly steps, each with a step picture (parts already fitted in grey, the part being fitted in colour with an arrow showing the way it goes in), the fasteners, and any hold point.
+5. **First checks**: fit, movement, first power or first load, each tied to a requirement ID with a pass criterion. The plan lists them; a TRL 4 test report records them.
+6. **Safety stops**: points where work stops (before energising, pressurising, loading, lifting or operating) and what must be true to carry on.
+7. **Tools, skills and workspace.**
+8. **Where the numbers come from**: the model, drawings, calculation note and BOM, by file name.
+
+### Budgets are value-engineering targets
+
+`budget_usd` in `project.yaml` is a hypothetical control target that keeps the design thinking along a value-engineering lens; it is not a spending limit (Amish, 2026-10-01: "the budgets are a hypothethical control target to ensure we are thinking along a value engineering lens. its ok to ensure wording reflects that the hypothesis budget was x - the real cost being accrued is y"). Write it that way everywhere: "Value-engineering target: USD X. Estimated cost of the constructable design: USD Y (USD Z over or under the target)." A cost requirement is reported against the target ("over the value-engineering target by USD Z"), never as a failure that needs a budget decision, and the design decisions register does not carry "raise the budget" decisions. Instead the register has a short **Value engineering** section: target, estimated cost, the main cost drivers and the savings worth trying.
+
+### Decisions live in their own document
+
+The build plan describes the design as it stands; it never lists outstanding decisions, open questions or items awaiting Amish (Amish, 2026-09-30: "don't log outstanding decisions in this build plan - that is not the place for it. that should be in a separate design document logged and named as such"). Those go in the **design decisions register**, `docs/06-design-decisions.md` (`PRJ-DEC-001`), which has two tables: open decisions (what is to be decided, options, recommendation, what it affects in the build, source record) and decisions made (date, decision, Amish's words where recorded, link to the decision record). Things to confirm when parts are bought (for example a panel's frame lip) are open items in the register too. The build plan may say "see the design decisions register" once, in its introduction.
+
+### Pictures
+
+Pictures are generated from the model by `cad/src/build_plan_media.py` using `.kit/build_views.py` (overview, component making sketches, joint close-ups, assembly steps), so they always match the model. They are written to `docs/05-build-plan/` and `cad/drawings/`. Look at every picture before committing: labels readable, nothing overlapping, the part in question clearly visible.
+
+`render.py --check` at TRL 3 requires a BLD document, `design_state: constructable` in `project.yaml`, and `docs/05-build-plan/overview.png`.

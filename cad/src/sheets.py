@@ -1,4 +1,4 @@
-"""HelioLite general arrangement sheet HLT-DWG-001, Rev P2 (TRL 3).
+"""HelioLite general arrangement sheet HLT-DWG-001, Rev P4 (TRL 3, constructable design, HLT-DDR-003).
 
 Run from the repo root:  python cad/src/sheets.py
 Writes cad/drawings/HLT-DWG-001.svg, .pdf and .png from the parametric model in
@@ -18,6 +18,7 @@ from model import PARAMS as P, derived, parts  # noqa: E402
 from build123d import Compound  # noqa: E402
 
 DATE = "2026-09-25"
+DATE_P4 = "2026-10-01"
 
 
 def ortho_cells(sheet, views, names=("front", "top", "right")):
@@ -65,12 +66,13 @@ def main():
     views = project_views(stow, work / "stowed")
     views["iso"] = project_views(track, work / "tracking")["iso"]
     bb = stow.bounding_box()
-    s = Sheet(project="HelioLite", title="General arrangement", dwg_no="HLT-DWG-001", rev="P3",
-              author="Amish Chadha", date=DATE, scale=None, theme="technical",
-              material="Glass mirror on ACP; printed ASA yoke; NMRV030-class drives; 60.3 mm galv. pipe. PRELIMINARY, NOT FOR FABRICATION",
+    s = Sheet(project="HelioLite", title="General arrangement", dwg_no="HLT-DWG-001", rev="P4",
+              author="Amish Chadha", date=DATE_P4, scale=None, theme="technical",
+              material="Glass mirror on ACP; aluminum tube yoke; NMRV030-class drives; 60.3 mm galv. pipe. PRELIMINARY, NOT FOR FABRICATION",
               revisions=[("P1", "Preliminary GA for TRL 3 (from cad/src/model.py)", DATE, "AC"),
                          ("P2", "Stow stop and latch, preload springs added (DDR-002)", DATE, "AC"),
-                         ("P3", "Layout and labels tidied", DATE, "AC")])
+                         ("P3", "Layout and labels tidied", DATE, "AC"),
+                         ("P4", "Design for construction (DDR-003): tube yoke, fixings", DATE_P4, "AC")])
     s.add_ortho(views)
     k = s.scale
     c = ortho_cells(s, views)
@@ -106,19 +108,19 @@ def main():
     L += [ext(xa, zan - 2, xa, zan - 10), ext(yc, zan - 2, yc, zan - 10)]
     L += dim_h(min(xa, yc), max(xa, yc), zan - 9, f"{P['anemo_reach']:.0f}")
     s._layers += L
-    s.add_svg(views["iso"], 276, 32, 140, 90, label="Isometric view, tracking pose", sublabel="Not to scale")
+    s.add_svg(views["iso"], 276, 42, 140, 82, label="Isometric view, tracking pose", sublabel="Not to scale")
     gx, gy, gz = P["gb"]
     s.add_notes("Main dimensions and interfaces (mm)", [
         f"Mirror {P['mirror']:.0f} x {P['mirror']:.0f} x {P['glass_t']:.0f} glass on {P['back_t']:.0f} ACP; sweep radius {D['sweep_r']:.0f}",
         f"Elevation axis at Z {P['axis_z']:,.0f}; {P['tube']:.0f} sq. torque tube, {P['trunnion_d']:.0f} trunnions",
-        f"Yoke arms {P['arm_t']:.0f} x {P['arm_w']:.0f} at X +/-{P['arm_x']:.0f}; gaps {D['arm_gap']:.0f} (arm), {D['cross_gap']:.0f} (crossbar)",
+        f"Yoke: {P['arm_t']:.0f} x {P['arm_w']:.0f} x {P['arm_wall']:.0f} alu. tube arms at X +/-{P['arm_x']:.0f}; gaps {D['arm_gap']:.0f} (arm), {D['cross_gap']:.0f} (crossbar)",
         f"Drives: NEMA17 on NMRV030-class 50:1, envelope {gx:.0f} x {gy:.0f} x {gz:.0f}, 14 bore",
-        f"Mast {P['mast_od']} x {P['mast_wall']} galv. pipe, {P['mast_len']:,.0f} long; cap {P['cap']:.0f} sq. x {P['cap_t']:.0f}",
+        f"Mast {P['mast_od']} x {P['mast_wall']} galv. pipe, {P['mast_len']:,.0f} long; floor flange; cap {P['cap']:.0f} sq. x {P['cap_t']:.0f}",
         f"Anchor flange {P['flange_d']:.0f} dia.; ground screw {P['screw_d']:.0f} x {P['screw_len']:.0f} (not shown)",
         f"Anemometer at Z {P['anemo_z']:,.0f}, reach {P['anemo_reach']:.0f}; controller box at Z {P['ctrl_z']:,.0f}",
         f"Stow lug {P['lug_t']:.0f} thk at X {P['lug_x']:.0f}; stop pad and latch pawl at R {P['stop_r']:.0f} on -X arm",
         f"Preload spring cans {P['spring_d']:.0f} dia.: -X trunnion and mast top",
-        "Top mass about 12.95 kg; stow face-down in 23 s (HLT-CAL-001)",
+        "Top mass about 12.94 kg; stow face-down in 23 s (HLT-CAL-001)",
         "Orthographic views stowed at azimuth 0; front from -Y, right from +X",
     ], x=276, y=138, width=144)
     out = s.save(ROOT / "cad" / "drawings" / "HLT-DWG-001")

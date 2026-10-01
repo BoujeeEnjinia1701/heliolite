@@ -271,3 +271,55 @@ This is an appearance model only: no tolerances, no fabrication detail, nothing 
 - Kit 1.5.0 synced: STANDARDS v1.5 (sections 12 to 15: product renders, storefront images and image quality, public release, authorship and signing), `.kit/cards.py`, `.kit/image_qc.py`, `.kit/release_gate.py`, issue templates, and the `/render-product` and `/release` commands. `CLAUDE.md` now matches `.kit/CLAUDE.md`.
 - Every `media/render-*.png` recaptioned from its original render with the new layout: the title, concept label and repository sit in a band above the render and the view note in a band below it, each line wrapped to the image width, so no text overlaps other text or the render or runs off the image. `media/card.png` and `media/social-preview.png` regenerated with the same rules.
 - `python .kit/image_qc.py` and `python .kit/release_gate.py` pass. trl stays 3.
+
+## Session 2026-10-01: design for construction and prototype build plan (kit 1.7.0)
+
+Under Amish's 2026-09-30 instruction ("If you are realising that the design cannot be built as per concept - fix the design assumptions to match and be physically feasible as you draw the illustrations") and his approval of the build plan format, HelioLite was brought to the approved standard. TRL stays 3; TRL 4 remains on hold.
+
+### What was done
+
+- Kit 1.7.0 installed (`.kit/`, `.claude/commands/`); `CLAUDE.md` matches `.kit/CLAUDE.md`.
+- `cad/src/model.py` rebuilt as separate made and bought parts with bolt holes, and a constructability check (`python cad/src/model.py --check`): 1,583 checks of contacts, clearances, overlaps and the elevation sweep from stow to face-up, all passing. STEP and STL re-exported.
+- `docs/decisions/0003-design-for-construction.md` (HLT-DDR-003 v0.1, Draft): every change, with its reason; made under Amish's 2026-09-30 instruction to make the design physically buildable; open for his review.
+- `cad/src/build_plan_media.py`: overview, 15 making sketches (`cad/drawings/HLT-DWG-101` to `115`), 8 joint close-ups, 18 assembly step pictures and a block-level wiring diagram in `docs/05-build-plan/`.
+- `docs/05-build-plan.md` (HLT-BLD-001 v0.1) and `docs/06-design-decisions.md` (HLT-DEC-001 v0.1), both added to `trl_evidence`; `design_state: constructable` in `project.yaml`.
+- HLT-CAL-001 v0.4 (`sizing.py` re-run), HLT-PRC-001 v0.6, HLT-REQ-001 v0.6, `bom/bom.csv`, `bom/bom-notes.md`, `README.md` (links line, "Building the prototype" section, key components, value-engineering wording); general arrangement HLT-DWG-001 Rev P4; concept media regenerated.
+
+### Design changes made for construction (HLT-DDR-003)
+
+1. Ribs crossed the torque tube in the same space: ribs are now 25 x 40 mm with a square tunnel the tube runs through.
+2. The trunnion rod was loose in the tube and could not be fitted with the mirror in the yoke: aluminum end blocks bolted in the tube ends and two keyed stubs pinned in after the mirror is in place.
+3. The one-piece printed yoke could not be printed: an aluminum 60 x 40 x 2 mm tube crossbar and arms with gusset plates, printed bearing plugs; the printed base plate is gone.
+4. Bearings had no housing: flanged bronze bushes through arm and plug; the flanges locate the tube.
+5. Elevation gearbox had no fixing: bolted flat to the right arm.
+6. Elevation spring can floated off the arm: screwed to the left arm, spring stub into it.
+7. Turntable sat loose on the gearbox with no shaft: double output shaft, thrust washer, keyed hub and a 120 x 10 mm disc; the shaft drives the azimuth spring in the mast.
+8. Cap plate to mast undefined: threaded floor flange on the pipe, cap screwed to it from below.
+9. Stow latch could not release (pawl lifted inside the lug's swing) and was poorly supported: lug on a square collar, sliding pawl, bent bracket with a stop block, solenoid on a strap.
+10. Homing switches sensed nothing: azimuth switch on a post under a magnet in the disc; elevation switch beside a magnet in the lug.
+11. Controller box floating: plate and two U-bolts.
+12. Anemometer arm touching the mast at a point: right-angle clamp.
+13. Cable ran through the anchor flange and missed the turning yoke: rerouted, with a service loop to the crossbar.
+14. Mast loose in its socket: two set bolts.
+
+### Key results
+
+- Requirements (HLT-CAL-001 v0.4): 11 met on paper, 2 at risk (R3, R4), 1 not verifiable at TRL 3 (R12), none not met; R15 over the value-engineering target by $37.
+- Value-engineering target: USD 455. Estimated cost of the constructable design: USD 492 (USD 37 over the target).
+- Mast-top mass 12.94 kg against 13 kg (0.06 kg margin, on an assumed 1.2 kg gearbox); arm flex 0.040 to 0.006 degrees; pointing 0.30 degrees beam typical, 0.50 degrees at the 95th percentile; crossbar clearance 46 to 56 mm.
+
+### Proposed, awaiting Amish
+
+All open items are in `docs/06-design-decisions.md`. New this session: the R13 mass margin (A1), how the head goes on the mast (A2) and updating the appearance model and renders (A3), each with a recommendation; and ten items to confirm when parts are bought.
+
+### Stale until regenerated on Amish's Mac
+
+The photoreal renders `media/render-*.png` (made on Amish's Mac; not in this cloud copy), `media/card.png` and `media/social-preview.png` show the printed yoke, the concept latch and the torque tube saddles; the design changed visibly. `cad/src/product_model.py` was not updated.
+
+### Safety concerns
+
+Unchanged in kind: the beam (glass kept covered from bonding until calibration), glass handling, high-torque drives and wound preload springs, the stow reserve's stored energy, and lifting the 11 kg head onto the mast at 1.8 m (two people, stable steps, mirror latched and covered). The build plan's safety stops S1 to S8 cover each.
+
+### Recommended next step
+
+Amish reviews HLT-DDR-003 and the register. TRL 4 (building and testing to the plan) stays on hold.

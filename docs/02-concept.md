@@ -3,9 +3,9 @@ doc_id: HLT-PRC-001
 title: HelioLite design precis
 project: HelioLite
 doc_type: Design precis
-version: "0.5"
+version: "0.6"
 status: Draft
-date: '2026-09-26'
+date: '2026-10-01'
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -29,11 +29,15 @@ revisions:
   date: '2026-09-26'
   author: Amish Chadha
   change: "Budget top-up approved by Amish: parts within the $455 budget"
+- version: "0.6"
+  date: '2026-10-01'
+  author: Amish Chadha
+  change: Design made constructable (HLT-DDR-003); build plan HLT-BLD-001 and register HLT-DEC-001 added; budget treated as a value-engineering target
 ---
 
 # HelioLite design precis
 
-HelioLite is a 600 x 600 mm glass mirror on a two-axis, worm-driven gimbal at the top of a 60.3 mm steel mast. An ESP32 computes the sun's position from a real-time clock and the site location, and turns the mirror so its normal bisects the directions to the sun and to a fixed target window. It uses no sun sensor; a cup anemometer and a wind forecast tell it when to stow, a supercapacitor reserve lets it stow face-down after a power loss, and a stow latch then carries the storm load instead of the gearbox. The TRL 3 calculations (HLT-CAL-001) give about 211 W at the glazing and 159 W (about 15,000 lm, a mean of about 500 lx in a 12 m² room) at the design point, 0.50 kWh through the glazing on the winter solstice and 1.0 kWh on 1 February at a reference site, and a beam pointing error of 0.31° typical against 0.5°. With the decisions of HLT-DDR-002 applied, 11 of 15 requirements are met on paper; cost (R15) is not met at $451 in parts against the $430 budget, and daily energy (R3) and pointing (R4) are at risk.
+HelioLite is a 600 x 600 mm glass mirror on a two-axis, worm-driven gimbal at the top of a 60.3 mm steel mast. An ESP32 computes the sun's position from a real-time clock and the site location, and turns the mirror so its normal bisects the directions to the sun and to a fixed target window. It uses no sun sensor; a cup anemometer and a wind forecast tell it when to stow, a supercapacitor reserve lets it stow face-down after a power loss, and a stow latch then carries the storm load instead of the gearbox. The TRL 3 calculations (HLT-CAL-001) give about 211 W at the glazing and 159 W (about 15,000 lm, a mean of about 500 lx in a 12 m² room) at the design point, 0.50 kWh through the glazing on the winter solstice and 1.0 kWh on 1 February at a reference site, and a beam pointing error of 0.30° typical against 0.5°. The design is now constructable (HLT-DDR-003): every part can be made by its stated process and is fixed to the parts next to it, and the [build plan](05-build-plan.md) (HLT-BLD-001) shows how. 11 of 15 requirements are met on paper; daily energy (R3) and pointing (R4) are at risk; and on cost, value-engineering target: USD 455, estimated cost of the constructable design: USD 492 (USD 37 over the target).
 
 ![Hero render](../media/hero.png)
 
@@ -46,9 +50,9 @@ HelioLite is a 600 x 600 mm glass mirror on a two-axis, worm-driven gimbal at th
 3. **Aim the mirror.** The required mirror normal is **n** = (**s** + **t**) / |**s** + **t**|, where **t** is the unit vector from the mirror to the target. A mount model with five terms (azimuth and elevation zero offsets, two base tilts and the mirror's cant on its torque tube) converts **n** into azimuth and elevation steps.
 4. **Move.** Two NEMA17 steppers on NMRV030-class 50:1 worm gearboxes turn the yoke in azimuth and the mirror in elevation. A spiral preload spring of about 3 N·m on each axis keeps the worm teeth on one flank, so the gearbox's 1° backlash does not reach the beam; the elevation spring biases the mirror toward stow. The worms are self-locking, so the drivers switch off between moves. Hall switches home each axis at start-up.
 5. **Calibrate.** At setup the user opens a web page served by the ESP32, jogs the sun spot onto the target center at four times spread over about 4 h, and the firmware fits the mount model to those points. No survey instrument is needed.
-6. **Stow.** At night, on a fault, when the anemometer sees a 15 m/s gust or when the forecast predicts one, the mirror turns face-down. This sends no reflection anywhere, protects the glass from hail and dust, and presents the lowest wind load. On a power loss a supercapacitor bank in the controller box powers the stow. At the end of the stow a steel lug on the torque tube passes a sprung latch pawl and seats on a polyurethane stop pad on the -X arm; the pawl drops in without power, the firmware backs the worm off to mid-backlash, and from then on the stop and the pawl carry the wind moment in both directions. A 12 V pull solenoid lifts the pawl when the unit leaves stow.
+6. **Stow.** At night, on a fault, when the anemometer sees a 15 m/s gust or when the forecast predicts one, the mirror turns face-down. This sends no reflection anywhere, protects the glass from hail and dust, and presents the lowest wind load. On a power loss a supercapacitor bank in the controller box powers the stow. At the end of the stow a steel lug on the torque tube pushes a sliding latch pawl aside and seats on a polyurethane stop pad on the -X arm; the pawl springs back over it without power, the firmware backs the worm off to mid-backlash, and from then on the stop and the pawl carry the wind moment in both directions. A 12 V pull solenoid draws the pawl back when the unit leaves stow.
 
-The sun moves about 15° per hour, so between 30 s updates it moves about 0.125° and the mirror normal needs about half of that. The mirror's center of mass sits 13.7 mm in front of the elevation axis (HLT-CAL-001, [H4]), so the drives overcome a small gravity moment (up to 0.8 N·m) as well as friction and wind.
+The sun moves about 15° per hour, so between 30 s updates it moves about 0.125° and the mirror normal needs about half of that. The mirror's center of mass sits 12.4 mm in front of the elevation axis (HLT-CAL-001, [H4]), so the drives overcome a small gravity moment (up to 0.75 N·m) as well as friction and wind.
 
 ![Energy flow](../media/flow.png)
 
@@ -63,11 +67,11 @@ Table 1. Main components.
 | # | Component | Choice | Notes |
 | --- | --- | --- | --- |
 | 1 | Mirror | 600 x 600 x 3 mm silvered glass, seamed edges, safety backing film | Decided (HLT-DDR-001, D10); cut by a local glazier |
-| 2 | Backing panel and torque tube | 4 mm aluminum composite panel bonded to the mirror, two rib tubes, 25 mm square aluminum torque tube with 14 mm trunnion stubs | Carries the elevation axis 13.7 mm behind the mirror's center of mass |
-| 3 | Gimbal yoke | 3D-printed ASA base plate, crossbar and two 40 x 70 mm arms at ±340 mm, with heat-set inserts and flanged bearings | Arms stand 20 mm outside the mirror's sweep so it can turn face-down; arm section set by stiffness (HLT-CAL-001, section C) |
-| 4 | Elevation drive | NEMA17 stepper on an NMRV030-class 50:1 worm gearbox (17 N·m rated, 14 mm hollow bore) via an adapter plate | Outboard of the +X arm, on the trunnion |
-| 5 | Azimuth drive and mast cap | Same drive, bore vertical, on a 160 mm steel cap plate | Carries the turntable |
-| 6 | Azimuth turntable | 150 mm disc on a thrust bearing | Carries the yoke and mirror |
+| 2 | Backing panel and torque tube | 4 mm aluminum composite panel bonded to the mirror, two 25 x 40 mm rib tubes with tunnels for the torque tube, 25 mm square aluminum torque tube with end blocks and pinned 14 mm keyed trunnion stubs | Carries the elevation axis 12.4 mm behind the mirror's center of mass |
+| 3 | Gimbal yoke | Aluminum rectangular tube 60 x 40 x 2 mm: a crossbar and two arms at ±340 mm joined by gusset plates, printed ASA bearing plugs and flanged bronze bushes (HLT-DDR-003; the one-piece printed yoke could not be printed) | Arms stand 20 mm outside the mirror's sweep so it can turn face-down; arm flex 0.006° at 8 m/s (HLT-CAL-001, section C) |
+| 4 | Elevation drive | NEMA17 stepper on an NMRV030-class 50:1 worm gearbox (17 N·m rated, 14 mm hollow bore) via an adapter plate | Bolted flat to the +X arm, on the keyed trunnion stub |
+| 5 | Azimuth drive and mast cap | Same drive, bore vertical, on a 160 mm steel cap plate screwed to a 2 in threaded floor flange on the mast | Carries the turntable |
+| 6 | Azimuth turntable | 120 mm aluminum disc on a keyed hub, a double output shaft and a bronze thrust washer | Carries the yoke and mirror |
 | 7 | Mast | 60.3 mm (2 in) galvanized steel pipe, 1.70 m | Decided (D1). Mirror center 2.2 m above ground |
 | 8 | Ground anchor | Ground screw for 60 mm posts or a concrete footing, with a socket and flange | Must resist 0.79 kN·m; 1.0 kN·m specified |
 | 9 | Controller box | ESP32, DS3231 RTC, two TMC2209 drivers, 12 V to 5 V buck, supercapacitor stow reserve (BOM line 15), IP65 box | On the mast at 1.1 m, reachable for service |
@@ -75,7 +79,7 @@ Table 1. Main components.
 | 11 | Cabling | Motor leads, 2-core outdoor 12 V cable, cable glands | 12 V feed from indoors (D9) |
 | 14 | Anemometer | Pulse-output cup anemometer on a 550 mm side arm at 1.5 m | Decided (D2); a weather sensor, not a sun sensor |
 | 16 | Drive preload springs | Flat spiral springs of about 3 N·m in printed cans: elevation on the -X trunnion outboard of the arm, azimuth inside the mast top | Decided (HLT-DDR-002 N2); holds each worm on one flank |
-| 17 | Stow stop and latch | 8 mm steel lug on the torque tube; steel bracket on the -X arm with a 3 mm polyurethane (90A) stop pad, a sprung steel latch pawl and a 12 V pull solenoid | Decided (HLT-DDR-002 N1); designed for 48.6 N·m, twice the assumed stowed moment |
+| 17 | Stow stop and latch | 8 mm steel lug on a collar on the torque tube; steel bracket on the -X arm with a stop block and 3 mm polyurethane (90A) stop pad, a sliding steel pawl and a 12 V pull solenoid with a return spring | Decided (HLT-DDR-002 N1); designed for 48.6 N·m, twice the assumed stowed moment |
 
 A listed indoor 12 V, 3 A power adapter (line 12), the fasteners (line 13) and the stow reserve inside the controller box (line 15) are in the BOM without callouts.
 
@@ -124,8 +128,8 @@ Table 3. Pointing error budget for the mirror normal [D4, D5].
 | Worm backlash | 0.050° | With the decided preload springs holding each worm on one flank |
 | Step resolution | 0.002° | 1.8° step, 16 microsteps, 50:1 |
 | Mast bending at 8 m/s | 0.040° | 60.3 x 3.9 mm pipe |
-| Yoke arm flex at 8 m/s | 0.040° | 40 x 70 mm printed ASA arms |
-| **Root sum square** | **0.153°** | **Beam 0.31°; 0.50° at the 95th percentile of calibration** |
+| Yoke arm flex at 8 m/s | 0.006° | 40 x 60 x 2 mm aluminum tube arms (HLT-DDR-003) |
+| **Root sum square** | **0.148°** | **Beam 0.30°; 0.50° at the 95th percentile of calibration** |
 
 R4 is at risk because the 95th percentile of calibration sits at the 0.5° limit. The listed gearbox backlash is 1°, and without the preload springs the beam error could reach about 1°. Calibration points taken within half an hour cannot be fitted; four points over about 4 h are the default (HLT-DDR-002 N6; HLT-CAL-001, Table 3).
 
@@ -149,8 +153,8 @@ A worst-case stow takes 18 s of motion plus 5 s to detect the loss and needs 87 
 ### Power, mass and cost
 
 - **Power:** 0.60 W average, about 14 Wh per day (R14 met) [I1].
-- **Mass:** mirror assembly 6.0 kg, yoke 2.7 kg, two drives 3.3 kg, turntable 0.5 kg, stow stop and latch 0.27 kg and springs 0.16 kg make 12.95 kg on the mast top against the relaxed 13 kg limit (R13 met, 0.05 kg margin); the mast adds 9.2 kg [H1 to H3].
-- **Cost:** $451 in parts against the $455 budget (R15 met, $4 margin) [J1], after a budget top-up Amish approved on 2026-09-26 (HLT-DDR-002 v0.2).
+- **Mass:** mirror assembly 6.2 kg, yoke 2.3 kg, two drives 3.4 kg, turntable stack 0.5 kg, stow stop and latch 0.43 kg and springs 0.16 kg make 12.94 kg on the mast top against the relaxed 13 kg limit (R13 met, 0.06 kg margin); the mast adds 9.2 kg [H1 to H3].
+- **Cost:** value-engineering target: USD 455 (a hypothetical control target, Amish 2026-10-01). Estimated cost of the constructable design: USD 492 (USD 37 over the target) [J1]. The cost drivers and savings worth trying are in the design decisions register ([HLT-DEC-001](06-design-decisions.md)).
 
 ## Key design choices
 
@@ -167,7 +171,7 @@ Decided by Amish on 2026-09-25, going with the recommendation (HLT-DDR-001):
 - **Power supply (D9):** a listed indoor 12 V adapter with only SELV cable outdoors.
 - **Mirror (D10):** glass with a safety backing film.
 
-Selected at TRL 3 to make the checks possible: NMRV030-class 50:1 gearboxes, chosen because a rating and backlash are listed at a price within budget, and 40 x 70 mm yoke arms, sized for stiffness.
+Selected at TRL 3 to make the checks possible: NMRV030-class 50:1 gearboxes, chosen because a rating and backlash are listed at a price within budget, and 40 x 70 mm yoke arms, sized for stiffness (made aluminum tube 40 x 60 mm in HLT-DDR-003, because the printed yoke could not be printed).
 
 Decided by Amish on 2026-09-25, going with the recommendation (HLT-DDR-002):
 
@@ -188,7 +192,7 @@ Decided by Amish on 2026-09-26: a budget top-up to $455 that covers the $451 BOM
 - **Beam sweep.** During slews, calibration and stows the beam can pass across the surroundings. Stows always turn the normal downward so the beam moves toward the ground; during a power-loss stow it crosses the ground between the target and the mast for about 3 s. Keep that strip clear of seating and paths. Calibration jogs move the spot near the target; the user should stand beside, not in, the beam path.
 - **Concentration and fire.** One flat mirror does not concentrate sunlight, but several mirrors aimed at one spot, or a mirror bent concave by its mounting, can. Do not aim more than one unit at the same spot, and check the mirror for flatness after mounting.
 - **Glass.** A broken mirror has sharp edges and can fall from 2.2 m. Use seamed edges and a safety backing film, wear cut-resistant gloves and eye protection when handling, and keep the mirror face-down in hail.
-- **Moving machinery.** The worm drives turn slowly but with high torque (up to 17 N·m at the output) and can trap fingers between the mirror, torque tube and yoke, where the gaps are only 20 to 46 mm, and between the stow lug and the latch bracket, where the gap is 3 to 9 mm. The preload springs store energy even when the drives are off, and the elevation spring pulls the mirror toward stow if a drive is disconnected. The latch pawl snaps shut under spring force. Disable the drives and discharge the stow reserve before servicing, and keep the gimbal above head height.
+- **Moving machinery.** The worm drives turn slowly but with high torque (up to 17 N·m at the output) and can trap fingers between the mirror, torque tube and yoke, where the gaps are only 20 to 56 mm, and between the stow lug and the latch bracket, where the gap is 3 to 9 mm. The preload springs store energy even when the drives are off, and the elevation spring pulls the mirror toward stow if a drive is disconnected. The sliding latch pawl snaps out under spring force. Disable the drives and discharge the stow reserve before servicing, and keep the gimbal above head height.
 - **Stored energy.** The supercapacitor bank holds about 360 J at 12 V and can deliver high current if shorted. Fuse its output, bleed it on shutdown and mark the controller box.
 - **Mast and wind.** A falling mast or mirror can injure people. Use an anchor rated for at least 1.0 kN·m, check for buried services before driving a ground screw, and stow before storms. The stow latch is designed on an assumed stowed load; until it is tested (TRL 4, on hold), remove the mirror if a storm with gusts above about 29 m/s is forecast. Two people install the mirror.
 - **Electrical.** Only 12 V DC runs outdoors. The mains adapter stays indoors and must be a listed product; do not run mains to the mast.
@@ -196,11 +200,8 @@ Decided by Amish on 2026-09-26: a budget top-up to $455 that covers the $451 BOM
 
 ## Open questions
 
-- Budget for the $451 BOM (proposed, awaiting Amish).
-- Confirm gearbox, spring and solenoid masses (R13 has only 0.05 kg of margin), and the gearbox's backlash, from suppliers' drawings; find a published stowed coefficient for small heliostats to confirm the latch margin.
-- First site and user (HLT-DDR-001, O1), local rules on glare and structures (O2) and a siting survey (O3) using the hourly model in HLT-CAL-001.
-- Whether daylight or heat is the benefit users value most.
+Every open decision and every item to confirm when parts are bought is listed in the design decisions register, [docs/06-design-decisions.md](06-design-decisions.md) (HLT-DEC-001). The main ones: the first site and user (HLT-DDR-001, O1), local rules on glare and structures (O2) and a siting survey (O3); whether daylight or heat is the benefit users value most; gearbox, spring and solenoid masses (R13 has only 0.06 kg of margin) and the gearbox's backlash; and a published stowed coefficient for small heliostats to confirm the latch margin.
 
 TRL 4 work (building and testing) is on hold by Amish's instruction.
 
-Concept media: [blueprint sheet](../media/concept-blueprint.pdf), [interactive 3D model](../media/viewer.html). General arrangement: [HLT-DWG-001](../cad/drawings/HLT-DWG-001.pdf).
+Concept media: [blueprint sheet](../media/concept-blueprint.pdf), [interactive 3D model](../media/viewer.html). General arrangement: [HLT-DWG-001](../cad/drawings/HLT-DWG-001.pdf). Prototype build plan: [HLT-BLD-001](05-build-plan.md).

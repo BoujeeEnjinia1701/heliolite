@@ -2,17 +2,17 @@
 
 ![TRL 3](https://img.shields.io/badge/TRL-3%20of%209-0F766E) ![Hardware: CERN-OHL-S-2.0](https://img.shields.io/badge/hardware-CERN--OHL--S--2.0-111827) ![Software: MIT](https://img.shields.io/badge/software-MIT-111827) [![DOI](https://zenodo.org/badge/1386352007.svg)](https://zenodo.org/badge/latestdoi/1386352007) [![REUSE compliant](https://github.com/BoujeeEnjinia1701/heliolite/actions/workflows/reuse.yml/badge.svg)](https://github.com/BoujeeEnjinia1701/heliolite/actions/workflows/reuse.yml) [![Archived in Software Heritage](https://archive.softwareheritage.org/badge/origin/https://github.com/BoujeeEnjinia1701/heliolite/)](https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/BoujeeEnjinia1701/heliolite)
 
-**Area:** CleanTech · **TRL:** 3 of 9 (proof of concept on paper) · **Prototype budget:** about $455 USD · **Difficulty:** 3 of 5
+**Area:** CleanTech · **TRL:** 3 of 9 (proof of concept on paper) · **Value-engineering target:** about $455 USD · **Difficulty:** 3 of 5
 
 Two-axis mini heliostat on a mast that redirects sunlight to a fixed target, using a sun-position algorithm with no sun sensors.
 
 ![HelioLite: two-axis mini heliostat that aims sunlight at a window, product render](media/render-hero.png)
 
-[Exploded render](media/render-exploded.png) · [Detail render](media/render-detail.png) · [Interactive 3D model](media/viewer.html) · [Concept blueprint (PDF)](media/concept-blueprint.pdf) · [General arrangement HLT-DWG-001 (PDF)](cad/drawings/HLT-DWG-001.pdf) · [Sizing calculations](docs/04-calcs/01-sizing.md) · [Review note](docs/REVIEW.md)
+[Exploded render](media/render-exploded.png) · [Detail render](media/render-detail.png) · [Interactive 3D model](media/viewer.html) · [Concept blueprint (PDF)](media/concept-blueprint.pdf) · [General arrangement HLT-DWG-001 (PDF)](cad/drawings/HLT-DWG-001.pdf) · [Sizing calculations](docs/04-calcs/01-sizing.md) · [Prototype build plan](docs/05-build-plan.md) · [Design decisions register](docs/06-design-decisions.md) · [Review note](docs/REVIEW.md)
 
 ## Concept rationale
 
-A flat mirror that follows the sun is the simplest way to move winter sunlight to where it is needed: it adds no light source, burns no fuel and uses a few watts to aim itself. Towns in deep valleys have proved the idea at civic scale ([NPR, 2013](https://www.npr.org/2013/11/03/242789411/as-mirrors-beam-light-to-town-norwegians-share-patch-of-sun)), and open microcontroller projects have shown that a clock and a sun-position algorithm can aim a mirror without a sun sensor ([jremington/Arduino_heliostat](https://github.com/jremington/Arduino_heliostat)). HelioLite joins the two at the scale of one window, with a mast, a printed yoke and two worm drives instead of a structure on a mountainside.
+A flat mirror that follows the sun is the simplest way to move winter sunlight to where it is needed: it adds no light source, burns no fuel and uses a few watts to aim itself. Towns in deep valleys have proved the idea at civic scale ([NPR, 2013](https://www.npr.org/2013/11/03/242789411/as-mirrors-beam-light-to-town-norwegians-share-patch-of-sun)), and open microcontroller projects have shown that a clock and a sun-position algorithm can aim a mirror without a sun sensor ([jremington/Arduino_heliostat](https://github.com/jremington/Arduino_heliostat)). HelioLite joins the two at the scale of one window, with a mast, a light aluminum yoke and two worm drives instead of a structure on a mountainside.
 
 Keeping the design open and garage-buildable matters because the useful sites are scattered and different: each yard, greenhouse or school has its own latitude, distances and shading, and the hourly model shows that siting changes the result more than any part choice. Common parts (a glazier's mirror, steel fence pipe, NEMA17 motors, an ESP32) let owners build, calibrate and repair a unit for their own site, and published calculations let them check that it will work there before they buy anything.
 
@@ -58,7 +58,7 @@ Two-axis mini heliostat on a mast that redirects sunlight to a fixed target, usi
 
 An ESP32 computes the sun's position from a real-time clock and the site location every 30 s, and two worm-driven steppers turn the mirror so its normal bisects the directions to the sun and to the target. A phone-based calibration at four points over about 4 h fits the mount alignment, and spiral preload springs keep the worm drives' backlash out of the beam. The mirror stows face-down at night, before storms (from a cup anemometer and a wind forecast) and, on a supercapacitor reserve, after a power loss; a spring latch then carries the storm load instead of the gearbox.
 
-At TRL 3 the paper checks meet 12 of 15 requirements after Amish accepted the TRL 3 recommendations on 2026-09-25 ([HLT-DDR-002](docs/decisions/0002-recommendations-accepted.md)). Cost (R15) is met at $451 against the $455 budget that Amish approved on 2026-09-26; daily energy (R3) and pointing (R4) are at risk; see the [review note](docs/REVIEW.md).
+At TRL 3 the paper checks meet 11 of 15 requirements with the design made constructable ([HLT-DDR-003](docs/decisions/0003-design-for-construction.md)). Value-engineering target: USD 455. Estimated cost of the constructable design: USD 492 (USD 37 over the target). Daily energy (R3) and pointing (R4) are at risk; see the [review note](docs/REVIEW.md).
 
 Full design precis: [docs/02-concept.md](docs/02-concept.md)
 
@@ -68,11 +68,17 @@ Full design precis: [docs/02-concept.md](docs/02-concept.md)
 - NEMA17 steppers on NMRV030-class 50:1 worm gearboxes (2)
 - ESP32 with RTC
 - Mast: 60.3 mm galvanized steel pipe (decided 2026-09-25)
-- Printed gimbal
+- Aluminum tube yoke with printed bearing plugs and bronze bushes (made constructable 2026-10-01)
 - Cup anemometer and supercapacitor stow reserve
 - Stow stop and spring latch on the yoke, and spiral preload springs on both drives (decided 2026-09-25)
 
-The priced bill of materials ($451 against the $455 budget, R15 met) is in [bom/bom.csv](bom/bom.csv). The parametric model is `cad/src/model.py`, with STEP and STL exports in `cad/step/` and `cad/stl/`.
+The priced bill of materials (USD 492 against the USD 455 value-engineering target, USD 37 over) is in [bom/bom.csv](bom/bom.csv). The parametric model is `cad/src/model.py`, with STEP and STL exports in `cad/step/` and `cad/stl/`.
+
+## Building the prototype
+
+The [prototype build plan](docs/05-build-plan.md) (HLT-BLD-001) shows how to make each of the 15 made components and how to put HelioLite together in 18 steps, with a making sketch for every made part, close-ups of the joints and a picture for every step, all drawn from the model. Building the plan made the design constructable: the printed yoke became an aluminum tube frame, and the trunnions, latch, mast top and fixings were detailed so every part can be made and fastened ([HLT-DDR-003](docs/decisions/0003-design-for-construction.md)). It is a plan, not yet built; building and testing to it is TRL 4 work. Decisions still open are in the [design decisions register](docs/06-design-decisions.md).
+
+![HelioLite prototype: every component pulled apart, numbered in build order](docs/05-build-plan/overview.png)
 
 ## Safety
 

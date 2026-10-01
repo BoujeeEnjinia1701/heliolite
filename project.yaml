@@ -5,12 +5,14 @@ repo: BoujeeEnjinia1701/heliolite         # GitHub repository, shown on every dr
 area: CleanTech
 trl: 3                   # Technology Readiness Level, see .kit/STANDARDS.md section 9
 trl_target: 3
+design_state: constructable   # concept or constructable, see .kit/STANDARDS.md section 18
 trl_evidence:
   - docs/01-problem.md
   - docs/02-concept.md
   - docs/03-requirements.md
   - docs/decisions/0001-trl2-review-decisions.md
   - docs/decisions/0002-recommendations-accepted.md
+  - docs/decisions/0003-design-for-construction.md
   - docs/04-calcs/01-sizing.md
   - docs/04-calcs/sizing.py
   - cad/src/model.py
@@ -20,6 +22,8 @@ trl_evidence:
   - cad/drawings/HLT-DWG-001.pdf
   - bom/bom.csv
   - bom/bom-notes.md
+  - docs/05-build-plan.md
+  - docs/06-design-decisions.md
 shortlisted: false
 pitch: >-
   Two-axis mini heliostat on a mast that redirects sunlight to a fixed target, using a sun-position algorithm with no sun sensors.

@@ -10,7 +10,8 @@ Goal: TRL 3 evidence and nothing beyond it. Deliverables:
 3. Drawing sheet DWG-001 at Rev P1 (general arrangement) generated with .kit/drawing.py.
 4. bom/bom.csv with every line priced, and a supplier where known.
 5. Refresh all concept media from the updated model (as in /populate step 3).
+6. Make the design constructable and write the illustrated prototype build plan BLD-001, exactly as .claude/commands/build-plan.md steps 1 to 4 describe.
 
-Then set trl: 3 and trl_target: 3 in project.yaml, with trl_evidence listing the files. Do not create test articles, test plans, firmware, PCB layouts, build procedures or purchasing lists. If the design misses a requirement, report it; do not redesign beyond TRL 3 scope. Record decisions as "Proposed, awaiting Amish". Write docs/REVIEW.md, run `python .kit/render.py --check`, commit, push, then stop.
+Then set trl: 3 and trl_target: 3 in project.yaml, with trl_evidence listing the files. Do not build or test anything, and do not create test articles, test plans, firmware, PCB layouts, build-log entries or purchasing lists. The build plan is a plan: it states "Plan, not yet built" and records no results. If the design misses a requirement, report it; do not redesign beyond TRL 3 scope. Record decisions as "Proposed, awaiting Amish". Write docs/REVIEW.md, run `python .kit/render.py --check`, commit, push, then stop.
 
 Additional instructions from Amish: $ARGUMENTS

@@ -3,9 +3,9 @@ doc_id: HLT-CAL-001
 title: HelioLite sizing calculations
 project: HelioLite
 doc_type: Calculation
-version: "0.3"
+version: "0.4"
 status: Draft
-date: '2026-09-26'
+date: '2026-10-01'
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -21,17 +21,21 @@ revisions:
   date: '2026-09-26'
   author: Amish Chadha
   change: "Budget top-up approved by Amish: R15 target $455, script re-run"
+- version: "0.4"
+  date: '2026-10-01'
+  author: Amish Chadha
+  change: Design made constructable (HLT-DDR-003); aluminum tube yoke, masses from the model's parts; budget treated as a value-engineering target
 ---
 
 # HelioLite sizing calculations
 
-On paper, HelioLite meets twelve of its fifteen requirements and has two at risk; one cannot be verified at TRL 3. This version applies the decisions Amish took on 2026-09-25 (HLT-DDR-002): a stow stop and latch that carries the stowed hinge moment, preload springs on both drives, R13 relaxed to 13 kg, R7 and R10 reworded, and four calibration points over about 4 h as the default. The optics work: at the design point the mirror delivers about 211 W to the outside of the glazing and 159 W (about 15,000 lm) into the room, and a reference site at 45° N receives 0.50 kWh through the glazing on the winter solstice and 1.0 kWh on 1 February. Stowed wind survival (R9) is now met on paper, because the latch rather than the gearbox carries the stowed moment, with a factor of 2 on the assumed coefficient. The two added lines take the BOM to $451; in version 0.3 the budget is $455, a top-up Amish approved on 2026-09-26 (HLT-DDR-002 v0.2), so cost (R15) is met with $4 to spare. Pointing (R4) stays at risk at the 95th percentile of calibration, and daily energy (R3) depends on siting. Every number in this note is printed by `docs/04-calcs/sizing.py`; the tag in brackets, for example [D5], is the line of that script's output that carries it.
+On paper, HelioLite meets eleven of its fifteen requirements, has two at risk and is over its value-engineering target on cost; one cannot be verified at TRL 3. Version 0.4 follows the constructable design of HLT-DDR-003 (aluminum tube yoke, rib tunnels, trunnion end blocks and stubs, detailed latch, mast top and fixings): the yoke arms are stiffer, the masses now come from the model's separate parts, and the estimated cost is USD 492 against the USD 455 value-engineering target, USD 37 over. This version applies the decisions Amish took on 2026-09-25 (HLT-DDR-002): a stow stop and latch that carries the stowed hinge moment, preload springs on both drives, R13 relaxed to 13 kg, R7 and R10 reworded, and four calibration points over about 4 h as the default. The optics work: at the design point the mirror delivers about 211 W to the outside of the glazing and 159 W (about 15,000 lm) into the room, and a reference site at 45° N receives 0.50 kWh through the glazing on the winter solstice and 1.0 kWh on 1 February. Stowed wind survival (R9) is now met on paper, because the latch rather than the gearbox carries the stowed moment, with a factor of 2 on the assumed coefficient. Version 0.3 recorded a budget of $455, a top-up Amish approved on 2026-09-26 (HLT-DDR-002 v0.2); on 2026-10-01 Amish set budgets as hypothetical value-engineering targets, so R15 is now reported against that target. Pointing (R4) stays at risk at the 95th percentile of calibration, and daily energy (R3) depends on siting. Every number in this note is printed by `docs/04-calcs/sizing.py`; the tag in brackets, for example [D5], is the line of that script's output that carries it.
 
 > **Safety:** These calculations concern a reflected beam of nearly one sun, a glass mirror 2.2 m above the ground, worm drives with high output torque, and a mast in storm winds. They are first-principles estimates for a paper proof of concept and are not a substitute for datasheets, a structural review or test. See HLT-PRC-001, Safety.
 
 ## Scope and method
 
-The note checks every requirement in HLT-REQ-001 v0.4 against the design in HLT-PRC-001 v0.4 and the parametric model `cad/src/model.py`. The script imports the model's `PARAMS` and `derived()` values, so mast, yoke, mirror and clearance dimensions are the ones in the STEP files and in drawing HLT-DWG-001. It reads the BOM total from `bom/bom.csv`. Run it from the repo root with `python docs/04-calcs/sizing.py` (about 20 s, most of it the calibration simulation).
+The note checks every requirement in HLT-REQ-001 v0.6 against the design in HLT-PRC-001 v0.6 and the parametric model `cad/src/model.py`. The script imports the model's `PARAMS` and `derived()` values, so mast, yoke, mirror and clearance dimensions are the ones in the STEP files and in drawing HLT-DWG-001. It reads the BOM total from `bom/bom.csv`. Run it from the repo root with `python docs/04-calcs/sizing.py` (about 20 s, most of it the calibration simulation).
 
 ## Assumptions
 
@@ -46,7 +50,7 @@ The note checks every requirement in HLT-REQ-001 v0.4 against the design in HLT-
 | Wind | Air 1.225 kg/m³; face-on force coefficient 1.2; operating peak hinge moment coefficient 0.25 (normalized by q·A·c), in the range reported by Peterka and Derickson ([SAND92-7009](https://www.osti.gov/biblio/7105290)); stowed normal force coefficient 0.6 and stowed hinge moment coefficient 0.15, raised for a small chord because peak stow coefficients roughly double as chord halves ([Emes et al.](https://apvi.org.au/solar-research-conference/wp-content/uploads/2018/01/Matthew-Emes-Experimental-Investigation-of-the-Wind-Loads-on-Heliostats.pdf)); yaw moment coefficient 0.1; mast drag coefficient 1.2 | Rough; the stowed values are the largest uncertainty in R9 |
 | Stow latch | Stowed moment carried by a steel lug trapped between a 3 mm polyurethane (90A) stop pad and a sprung steel latch pawl at 55 mm from the elevation axis; design factor 2 on the stowed moment; polyurethane E = 50 MPa (assumed); stop, pawl, bracket and solenoid 0.18 kg and each spiral preload spring 0.08 kg (assumed) | HLT-DDR-002 N1, N2; engineering judgment |
 | Drives | NMRV030-class 50:1 worm gearbox: rated output 17 N·m and backlash 1° as listed by [StepperOnline](https://www.omc-stepperonline.com/nmrv30-worm-gearbox); maximum 22 N·m as listed for a Motovario 50:1 unit ([RS](https://my.rs-online.com/web/p/gearboxes/2166494)); mass about 1.2 kg (typical of the frame size, to confirm); worm efficiency 0.4; NEMA17 48 mm motor 0.36 kg | Supplier listings; mass assumed |
-| Materials | Steel E = 200 GPa, G = 80 GPa, pipe yield 240 MPa (ASTM A53 grade B); printed ASA E = 1.8 GPa, 1.07 g/cm³ at 60 % infill; aluminum composite panel 5.5 kg/m²; glass 2,500 kg/m³ | Typical values |
+| Materials | Steel E = 200 GPa, G = 80 GPa, pipe yield 240 MPa (ASTM A53 grade B); printed ASA E = 1.8 GPa, 1.07 g/cm³ at 60 % infill; aluminum E = 69 GPa, 2.7 g/cm³; bronze 8.8 g/cm³; aluminum composite panel 5.5 kg/m²; glass 2,500 kg/m³ | Typical values |
 | Calibration | Mount model with five unknowns: azimuth and elevation zero offsets, two base tilts and mirror cant on the torque tube. User jogs the spot to the target within 0.05° per axis (normal) at each point. True errors drawn at random: azimuth ±10°, elevation ±3°, tilts and cant with 1° and 0.3° standard deviation. 120 trials per case | Monte Carlo simulation |
 | Power | Idle 0.4 W (ESP32 light sleep, RTC, drivers off); one motor at 5 W for 1 s per 30 s update; stow at 3.8 W (two coils at 1.0 A in 1.5 Ω, driver 0.3 W, ESP32 0.5 W) | Typical module data |
 
@@ -77,7 +81,7 @@ At reference site A the unit delivers 0.501 kWh on the solstice and 1.004 kWh on
 
 The 60.3 x 3.9 mm pipe has I = 276,079 mm⁴ and EI = 5.52 x 10¹⁰ N·mm² [C1]. At 8 m/s face-on the mirror force is 16.9 N, and the mast top tilts 0.040° [C2]. The same load on a 2.2 m 40 x 40 mm extrusion would tilt it 0.37° [C3], which confirms decision D1.
 
-The printed yoke arms carry the wind force and react the hinge moment through the elevation gearbox. With the TRL 2 scaffold's 30 x 50 mm section, 382 mm long, the arm slope at 8 m/s would be 0.145°, three times the 0.05° allowed in the TRL 2 budget. The model therefore uses 40 x 70 mm arms, which give 0.040° [C4]. Mast twist from an assumed yaw moment of 0.85 N·m is 0.002° [C5].
+The yoke arms carry the wind force and react the hinge moment through the elevation gearbox. Version 0.3 used solid printed ASA arms 40 x 70 mm; that yoke cannot be printed in one piece, and HLT-DDR-003 replaced it with aluminum rectangular tube 40 x 60 x 2 mm, 357 mm from the crossbar top to the axis. Its slope at 8 m/s is 0.006°, against 0.036° for the printed arm over the same length [C4]. Mast twist from an assumed yaw moment of 0.85 N·m is 0.002° [C5].
 
 ## D. Pointing error budget and calibration (R4, R6, R7)
 
@@ -103,10 +107,10 @@ Points taken within half an hour cannot separate the five mount errors, and the 
 | Worm backlash with preload | 0.050° | Assumed lost motion with the teeth held on one flank |
 | Step resolution | 0.002° | [D2] |
 | Mast bending, 8 m/s | 0.040° | [C2] |
-| Yoke arm flex, 8 m/s | 0.040° | [C4] |
-| **Root sum square** | **0.153°** | **0.31° beam against 0.5°** |
+| Yoke arm flex, 8 m/s | 0.006° | [C4] |
+| **Root sum square** | **0.148°** | **0.30° beam against 0.5°** |
 
-With the 95th percentile calibration residual (0.23°) the beam error is 0.50°, exactly at the limit [D5]. The budget also depends on a preload: the listed backlash of the gearbox is 1°, and if the wind reverses the load, half of it can appear at the mirror, giving 1.04° beam error [D6]. The mirror's center of mass sits 13.7 mm in front of the elevation axis, a gravity moment of up to 0.80 N·m [H4], so a preload of more than 2.9 N·m (operating hinge moment 2.1 N·m plus imbalance) is needed at 8 m/s [H5]. The decided spiral preload spring of about 3 N·m on each axis (HLT-DDR-002 N2, BOM line 16) needs about 0.30 N·m at the motor with wind and imbalance [H5], within a 48 mm NEMA17's holding torque but with little margin at speed. The elevation spring biases the mirror toward stow, so it never opposes a stow. R4 remains **at risk**: the typical beam error is 0.31°, but the 95th percentile of calibration sits at the 0.5° limit.
+With the 95th percentile calibration residual (0.23°) the beam error is 0.50°, exactly at the limit [D5]. The budget also depends on a preload: the listed backlash of the gearbox is 1°, and if the wind reverses the load, half of it can appear at the mirror, giving 1.04° beam error [D6]. The mirror's center of mass sits 12.4 mm in front of the elevation axis, a gravity moment of up to 0.75 N·m [H4], so a preload of more than 2.9 N·m (operating hinge moment 2.1 N·m plus imbalance) is needed at 8 m/s [H5]. The decided spiral preload spring of about 3 N·m on each axis (HLT-DDR-002 N2, BOM line 16) needs about 0.29 N·m at the motor with wind and imbalance [H5], within a 48 mm NEMA17's holding torque but with little margin at speed. The elevation spring biases the mirror toward stow, so it never opposes a stow. R4 remains **at risk**: the typical beam error is 0.30°, but the 95th percentile of calibration sits at the 0.5° limit.
 
 Calibration hands-on time by task analysis is 19 min for four points (5 min setup, 3 min per point, 2 min to fit and save) [G1], and the points span about 4 h of one day [G2]. Four points over about 4 h are now the default (HLT-DDR-002 N6), and R7 now reads "30 min or less of hands-on time, spread over one clear day" (N4), so R7 is **met**.
 
@@ -127,11 +131,11 @@ The mast is adequate in every case: caught face-on at 35 m/s it reaches 87 MPa a
 The weak link remains the elevation gearbox. With the decided storm awareness (D2), the controller stows when the anemometer sees a 15 m/s gust or the forecast predicts one; the hinge moment at the trigger is 7.4 N·m, within the 17 N·m rating [E5]. In stow, the assumed stowed hinge moment at 35 m/s is 24.3 N·m, above both the 17 N·m rating and the 22 N·m listed maximum [E2]; the rating is reached at a 29 m/s gust [E3]. Without a stow latch R9 would not be met: the gearbox would carry 2.3 N·m more than its listed maximum [E6] (the v0.1 result). On 2026-09-25 Amish decided on stow stops on the yoke that carry the stowed hinge moment in both directions (HLT-DDR-002 N1). A fixed stop can only resist one direction on an axis that must turn into the stow, so the design uses a stop and a latch together:
 
 - A steel lug on the -X end of the torque tube, between the mirror edge and the -X arm, lies along -Y when the mirror is face-down.
-- A steel bracket on the -X arm carries a 3 mm polyurethane (90A) pad below the stowed lug, which takes the moment in the stowing direction, and a sprung steel latch pawl above it, which the lug cams past on the way into stow and which then takes the moment in the other direction. The latch engages without power, so a power-loss stow on the supercapacitor reserve also latches.
-- A 12 V pull solenoid lifts the pawl for a few seconds when the unit leaves stow; it draws no standby power.
+- A steel bracket on the -X arm carries a 3 mm polyurethane (90A) pad on a stop block below the stowed lug, which takes the moment in the stowing direction, and a sliding steel pawl above it (HLT-DDR-003), which the lug pushes aside on the way into stow and which then takes the moment in the other direction. The latch engages without power, so a power-loss stow on the supercapacitor reserve also latches.
+- A 12 V pull solenoid pulls the pawl back out of the lug's path for a few seconds when the unit leaves stow; its return spring pushes the pawl out again; it draws no standby power.
 - After latching, the firmware backs the elevation worm off to the middle of its 1° backlash, so the worm teeth do not touch while the pad compresses.
 
-The latch is designed for 48.6 N·m, twice the assumed stowed moment, which covers a stowed hinge moment coefficient up to 0.30 [E7]. This is the check against option C: a published stowed coefficient for small heliostats would have to exceed twice the value assumed here before the latch is overloaded. At that load the contact force is 884 N, the pad stress 4.6 MPa and its deflection 0.28 mm, less than the 0.48 mm the lug can move before the worm teeth touch, and the 8 mm pawl pivot pin sees 9 MPa in double shear [E8]. The gearbox therefore carries no stowed moment, and R9 is **met** on paper. The stowed coefficient and the polyurethane modulus are still assumptions, and the case of a unit caught face-on (40.5 N·m) still exceeds the gearbox, so the stow must not fail.
+The latch is designed for 48.6 N·m, twice the assumed stowed moment, which covers a stowed hinge moment coefficient up to 0.30 [E7]. This is the check against option C: a published stowed coefficient for small heliostats would have to exceed twice the value assumed here before the latch is overloaded. At that load the contact force is 884 N, the pad stress 4.6 MPa and its deflection 0.28 mm, less than the 0.48 mm the lug can move before the worm teeth touch, the sliding 12 x 8 mm pawl sees 90 MPa in bending against a 275 MPa yield, and each of the two M6 bracket screws carries up to 1.23 kN in shear [E8]. The gearbox therefore carries no stowed moment, and R9 is **met** on paper. The stowed coefficient and the polyurethane modulus are still assumptions, and the case of a unit caught face-on (40.5 N·m) still exceeds the gearbox, so the stow must not fail.
 
 ## F. Stow on power loss (R10)
 
@@ -143,7 +147,7 @@ See section D and [G1], [G2].
 
 ## H. Mass and balance (R13)
 
-The mirror assembly weighs 5.98 kg: glass 2.70, panel 1.98, torque tube 0.32, ribs 0.50, trunnions 0.29, adhesive and film 0.20 [H1]. The yoke, printed at 60 % infill from the model's 4.23 L, weighs 2.72 kg; each drive 1.66 kg (gearbox 1.2 kg assumed); the turntable 0.5 kg [H2]. The stow stop and latch add 0.27 kg and the two preload springs 0.16 kg [H3]. The total on the mast top is 12.95 kg against the 13 kg limit decided on 2026-09-25 (HLT-DDR-002 N3), a margin of 0.05 kg [H3], so R13 is **met**, thinly and on assumed gearbox, spring and solenoid masses. The TRL 2 estimate of about 8 kg assumed small generic NEMA17 worm gearboxes without a rating and a 0.8 kg yoke; the rated NMRV030-class gearboxes and the stiffer arms of section C add about 4.5 kg. The mast pipe adds 9.2 kg and the cap plate 1.6 kg. Installation in 4 h by two people is not verifiable at TRL 3.
+Masses come from the volumes of the model's separate parts (HLT-DDR-003). The mirror assembly weighs 6.18 kg: glass 2.70, panel 1.98, torque tube 0.31, ribs 0.55, trunnion end blocks, stubs and bolts 0.44, adhesive and film 0.20 [H1]. The aluminum tube yoke with its gussets, bolts, printed plugs and bushes weighs 2.27 kg (the printed yoke of v0.3 was 2.72 kg); each drive 1.69 kg (gearbox 1.2 kg assumed); the turntable disc, hub, shaft and thrust washer 0.51 kg [H2]. The stow stop and latch add 0.43 kg and the two preload springs 0.16 kg [H3]. The total on the mast top is 12.94 kg against the 13 kg limit decided on 2026-09-25 (HLT-DDR-002 N3), a margin of 0.06 kg [H3], so R13 is **met**, thinly and on assumed gearbox, spring and solenoid masses. The TRL 2 estimate of about 8 kg assumed small generic NEMA17 worm gearboxes without a rating and a 0.8 kg yoke; the rated NMRV030-class gearboxes and the stiffer arms of section C add about 4.5 kg. The mast pipe adds 9.2 kg and the cap plate 1.6 kg. Installation in 4 h by two people is not verifiable at TRL 3.
 
 ## I. Power (R14)
 
@@ -151,18 +155,19 @@ Average draw is 0.60 W: idle 0.4 W, moves 0.17 W and 0.029 W in the stow reserve
 
 ## J. Cost (R15)
 
-The BOM has 17 lines, all priced, totaling $451.00 against the $455 budget, a $4.00 margin [J1]. The preload springs (line 16, $6) and the stow stop and latch (line 17, $20, of which the solenoid is about $8) took it $21 over the earlier $430 budget; Amish approved a top-up to $455 on 2026-09-26 (HLT-DDR-002 v0.2). R15 is met. Tools, printer time and shipping are not included [J2].
+Value-engineering target: USD 455 (`budget_usd`, a hypothetical control target, not a limit). Estimated cost of the constructable design: USD 492 (USD 37 over the target) [J1]. The BOM has 17 lines, all priced. The parts added to make the design constructable (HLT-DDR-003) repriced lines 2, 3, 5, 6, 9, 13, 14 and 17, from USD 451 to USD 492 [J2]. R15 is reported as over the value-engineering target; the cost drivers and savings worth trying are in the design decisions register (HLT-DEC-001). Tools, printer time and shipping are not included.
 
 ## K. Results
 
-The yoke sweeps: at site A the normal stays within 46° of the target direction on the solstice, inside the ±135° range; the mirror clears the arms by 20 mm and the crossbar by 46 mm, so a face-down stow clears the yoke; the stow lug runs 3 mm outside the mirror edge and 9 mm inside the -X arm [K1].
+The yoke sweeps: at site A the normal stays within 46° of the target direction on the solstice, inside the ±135° range; the mirror clears the arms by 20 mm and the crossbar by 56 mm, so a face-down stow clears the yoke; the stow lug runs 3 mm outside the mirror edge and 9 mm inside the -X arm [K1].
 
-*Table 6. Requirement status, not met first [K2, K3].*
+*Table 6. Requirement status, not met and over the target first [K2, K3].*
 
 | ID | Requirement | Value | Target | Status |
 | --- | --- | --- | --- | --- |
 | R3 | Daily energy | 0.50 kWh (21 Dec) and 1.00 kWh (1 Feb) at site A; 0.40 kWh at site B on 21 Dec | 0.5 kWh or more on a clear winter day | At risk |
-| R4 | Pointing | 0.31° beam typical, 0.50° at the 95th percentile, with the decided preload springs; 1.04° without preload | 0.5° beam up to 8 m/s | At risk |
+| R15 | Cost | USD 492 estimated, USD 37 over the target | USD 455 value-engineering target (a hypothetical control target) | Over the value-engineering target |
+| R4 | Pointing | 0.30° beam typical, 0.50° at the 95th percentile, with the decided preload springs; 1.04° without preload | 0.5° beam up to 8 m/s | At risk |
 | R12 | Outdoor life | ASA, galvanized steel, glass with backing film, by selection | -20 to +45 °C, UV, corrosion, 10 years | Not verifiable at TRL 3 |
 | R1 | Redirected sunlight | 211 W at the glazing | 200 W or more | Met |
 | R2 | Daylight | 502 lx mean added (utilization 0.4 assumed) | 300 lx or more | Met |
@@ -173,11 +178,10 @@ The yoke sweeps: at site A the normal stays within 46° of the target direction 
 | R9 | Wind | Stowed moment 24 N·m at 35 m/s carried by the stow stop and latch (designed for 49 N·m), not the gearbox; 7.4 N·m at the stow trigger; mast 87 MPa worst case | Hold R4 to 8 m/s; survive 35 m/s in stow | Met |
 | R10 | Safe beam | Stow in 23 s on stored energy (margin 2.1); beam moves only downward; latch engages without power | Target or ground within 3 m when stowed; only downward during a stow; stow within 60 s | Met |
 | R11 | Electrical safety | 12 V SELV outdoors, IP65 box, listed indoor adapter | SELV, IP65, listed adapter | Met |
-| R13 | Mass and install | 12.95 kg on the mast top, 0.05 kg margin | 13 kg or less; two people, hand tools, 4 h | Met (install time not verifiable at TRL 3) |
+| R13 | Mass and install | 12.94 kg on the mast top, 0.06 kg margin | 13 kg or less; two people, hand tools, 4 h | Met (install time not verifiable at TRL 3) |
 | R14 | Standby power | 0.60 W average | 3 W or less | Met |
-| R15 | Cost | $451, $4 margin | $455 or less | Met |
 
-Totals: 0 not met, 2 at risk, 1 not verifiable at TRL 3, 12 met [K3].
+Totals: 0 not met, 1 over the value-engineering target, 2 at risk, 1 not verifiable at TRL 3, 11 met [K3].
 
 ## Checks against earlier figures
 
@@ -185,10 +189,11 @@ Totals: 0 not met, 2 at risk, 1 not verifiable at TRL 3, 12 met [K3].
 - **Spill distance.** TRL 2 said spill rises above about 15 m; with 0.5° error and a 1.0 m window the limit is 16.8 m [A6].
 - **Daily energy.** TRL 2 quoted about 0.7 kWh from a generic day; the generic day reproduces 0.73 kWh [B1], but the hourly site model gives 0.50 kWh at site A on the solstice [B3]. Documents now quote the site figures.
 - **Clock.** TRL 2 quoted about 32 s; the script gives 31.5 s [D1].
-- **Pointing.** TRL 2 quoted 0.17° normal and 0.34° beam with a 0.10° calibration residual, 0.10° backlash and 0.05° yoke flex. The new budget is 0.153° normal and 0.31° beam [D5], but only with four-point calibration, preloaded drives and 40 x 70 mm arms.
+- **Pointing.** TRL 2 quoted 0.17° normal and 0.34° beam with a 0.10° calibration residual, 0.10° backlash and 0.05° yoke flex. The budget in v0.3 was 0.153° normal and 0.31° beam with printed 40 x 70 mm arms; with the aluminum tube arms of HLT-DDR-003 it is 0.148° normal and 0.30° beam [D5], still only with four-point calibration and preloaded drives.
 - **Wind.** The face-on figures match TRL 2 (40 N·m hinge moment; mast stress now 87 MPa including drag on the pipe, up from 78 MPa). Stowed loads were not estimated at TRL 2 and are new.
 - **Mass.** TRL 2 quoted about 8 kg on the mast top; now 12.5 kg [H3].
 - **Power.** 0.6 W, unchanged [I1].
 - **Cost.** TRL 2 quoted $391 against $400; v0.1 of this note gave $425 against the decided $430; with lines 16 and 17 it is now $451, against $455 after the 2026-09-26 top-up [J1].
 - **Changes in v0.2 (HLT-DDR-002).** R9 moved from not met (24.3 N·m on the gearbox against 22 N·m maximum) to met (moment carried by the stow latch); R13 moved from not met (12.5 kg against 10 kg) to met (12.95 kg against 13 kg); R7 and R10 moved from at risk to met after rewording; R15 moved from met ($425) to not met ($451 against $430). R3, R4 and R12 are unchanged.
 - **Changes in v0.3 (budget top-up).** `BUDGET` in `sizing.py` is $455; R15 moves from not met ($451 against $430) to met ($451 against $455). No other figure changes.
+- **Changes in v0.4 (design for construction, HLT-DDR-003).** Arm flex 0.040° to 0.006° [C4]; root sum square 0.153° to 0.148° (beam 0.31° to 0.30°) [D5]; center of mass 13.7 to 12.4 mm in front of the axis [H4]; mast-top mass 12.95 to 12.94 kg [H3]; crossbar clearance 46 to 56 mm [K1]; latch pawl and bracket screws checked [E8]; cost USD 451 to USD 492, now reported against the USD 455 value-engineering target [J1]. No requirement moved between met, at risk and not met; R15 moved from met to over the value-engineering target.

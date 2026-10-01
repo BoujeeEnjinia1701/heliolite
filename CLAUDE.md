@@ -5,7 +5,7 @@ This repo is one design in Amish Chadha's Open Hardware Portfolio. These rules a
 ## 1. Current portfolio phase: TRL cap 3
 
 - The whole portfolio is capped at **TRL 3** (proof of concept on paper) until every repo is populated. The cap is set in `.kit/PHASE.yaml`.
-- Do **not** create TRL 4 or later work: no test articles, build procedures, cut lists, purchasing checklists, test plans or reports (TST), PCB layouts or Gerbers, firmware beyond a clearly labeled sketch, or build-log tooling.
+- Do **not** create TRL 4 or later work: no building or testing of hardware, test articles, purchasing checklists, test plans or reports (TST), PCB layouts or Gerbers, firmware beyond a clearly labeled sketch, or build-log entries or tooling. The prototype build plan (BLD-001, `docs/05-build-plan.md`, STANDARDS section 18) is TRL 3 paper work and is required; it is a plan, never a record of a build.
 - `trl` and `trl_target` in `project.yaml` must not exceed the cap. `python .kit/render.py --check` enforces this.
 - If the design looks ready for TRL 4, write that up as a recommendation in the review note (section 4) and stop.
 
