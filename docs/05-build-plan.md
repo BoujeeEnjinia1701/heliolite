@@ -3,9 +3,9 @@ doc_id: HLT-BLD-001
 title: HelioLite prototype build plan
 project: HelioLite
 doc_type: Build plan
-version: "0.1"
+version: "0.2"
 status: Draft
-date: '2026-10-01'
+date: '2026-10-02'
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -13,6 +13,10 @@ revisions:
     date: '2026-10-01'
     author: Amish Chadha
     change: First build plan, with pictures by component and step; design made constructable (HLT-DDR-003)
+  - version: "0.2"
+    date: '2026-10-02'
+    author: Amish Chadha
+    change: "Decisions of 2026-10-02: head fitted in two lifts from a stable platform (step 17 and safety stop S6; steps and pictures to be redrawn); glare study and local rules added to S7"
 ---
 
 # HelioLite prototype build plan
@@ -497,7 +501,7 @@ On the bench first, build the cap assembly: gearbox and motor to the cap with fo
 
 ![Step 17](05-build-plan/step-17.png)
 
-Two people on stable steps, glass covered, mirror held face-down by the latch. Lower the head so the hub's keyway slides down the shaft's key until the hub sits on the thrust washer; tighten the hub's set screw on the key. **Hold point:** safety stop S6 in section 6.
+Decided on 2026-10-02 for the prototype: the yoke and drive go on the mast first, and the mirror assembly (about 6.2 kg) is then lowered into the yoke at height, glass covered, from a stable platform rather than steps; this step, steps 10 to 16 and their pictures are to be redrawn for that order. Until then, the sequence as drawn: two people, glass covered, mirror held face-down by the latch. Lower the head so the hub's keyway slides down the shaft's key until the hub sits on the thrust washer; tighten the hub's set screw on the key. **Hold point:** safety stop S6 in section 6.
 
 ### Step 18: cabling and the service loop
 
@@ -535,8 +539,8 @@ Stop at each point. Carry on only when everything listed is true.
 - **S3. Before the springs are wound (steps 12 and 16).** Drives disconnected; hands out of the gaps between mirror, tube and yoke (20 to 56 mm) and between the lug and the latch bracket. A wound spring turns its axis if the drive is disconnected.
 - **S4. Before the stow reserve is charged.** Its output fuse fitted, its bleed resistor fitted, the box labelled. Bleed it before any work in the box.
 - **S5. Before power reaches the drives.** The 12 V feed comes from the listed indoor adapter only; no mains outdoors. The mirror is latched face-down and covered; the motor leads are checked for polarity at the drivers.
-- **S6. Before the head goes on the mast (step 17).** The mast is plumb and its set bolts tight; the cap screws tight; two people on stable steps, never on a ladder alone; no wind above a gentle breeze; the mirror latched face-down and covered.
-- **S7. Before the mirror is uncovered (outside this plan).** The site check of HLT-PRC-001 is done: the beam path crosses no path, road, neighbour's window or flight approach; calibration is done standing beside, never in, the beam.
+- **S6. Before the head goes on the mast (step 17).** The mast is plumb and its set bolts tight; the cap screws tight; two people working from a stable platform, never from steps or a ladder alone; the yoke and drive fitted first and the mirror assembly lowered into it; no wind above a gentle breeze; the mirror latched face-down and covered.
+- **S7. Before the mirror is uncovered (outside this plan).** The local building and planning rules are checked and a simple glare study shows the beam stays inside the property in every state; the site check of HLT-PRC-001 is done: the beam path crosses no path, road, neighbour's window or flight approach; calibration is done standing beside, never in, the beam.
 - **S8. Before a storm.** Until the latch is tested at TRL 4, remove the mirror if gusts above about 29 m/s are forecast.
 
 ## 7. Tools, skills and workspace

@@ -3,9 +3,9 @@ doc_id: HLT-REQ-001
 title: HelioLite requirements
 project: HelioLite
 doc_type: Requirements
-version: "0.6"
+version: "0.7"
 status: Draft
-date: '2026-10-01'
+date: '2026-10-02'
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -33,6 +33,10 @@ revisions:
   date: '2026-10-01'
   author: Amish Chadha
   change: Status from HLT-CAL-001 v0.4 for the constructable design (HLT-DDR-003); R15 reported against the value-engineering target
+- version: "0.7"
+  date: '2026-10-02'
+  author: Amish Chadha
+  change: "R13 note on the aluminum latch bracket and edge guard decided on 2026-10-02; no target or status changed"
 ---
 
 # HelioLite requirements
@@ -57,7 +61,7 @@ Table 1. Requirements and TRL 3 status (tags refer to lines printed by `docs/04-
 | R10 | Safe beam when stowed, faulted or unpowered | Beam directed only at the target or the ground within 3 m of the mast when stowed; during a stow the beam may move only downward, toward the ground (clarified 2026-09-25, HLT-DDR-002 N5); stow face-down within 60 s of a fault or power loss | Met: stow in 23 s on the supercapacitor reserve with 2.1x energy margin, beam moving only downward; latch engages without power [F1, F2, F4] | Calculation (done); later fault test |
 | R11 | Electrical safety | Only 12 V DC (SELV) outdoors; electronics enclosure IP65; mains adapter indoors and listed | Met by design | Design review |
 | R12 | Outdoor life | Operate from -20 to +45 °C; UV-stable plastics (ASA or better); corrosion-resistant mast; 10-year mirror life with cleaning | Not verifiable at TRL 3 | Materials review; later exposure test |
-| R13 | Mass and install | 13 kg or less on the mast top (relaxed from 10 kg, decided by Amish 2026-09-25, HLT-DDR-002 N3); installed by two people with hand tools in 4 h or less | Met, thinly: 12.94 kg on the mast top, 0.06 kg margin on assumed masses [H3]; install time not verifiable at TRL 3 | Mass estimate (done) |
+| R13 | Mass and install | 13 kg or less on the mast top (relaxed from 10 kg, decided by Amish 2026-09-25, HLT-DDR-002 N3); installed by two people with hand tools in 4 h or less | Met, thinly: 12.94 kg on the mast top, 0.06 kg margin on assumed masses [H3]; install time not verifiable at TRL 3. The aluminum latch bracket (about 0.1 kg less) and the EPDM edge guard (about 0.15 to 0.25 kg more), decided on 2026-10-02, are not yet in the estimate; if the weighed head exceeds 13 kg, R13 is relaxed slightly rather than the guard dropped | Mass estimate (done) |
 | R14 | Standby power | 3 W or less average from the 12 V supply | Met: 0.60 W [I1] | Power budget (done) |
 | R15 | Cost | Parts at or under the $455 value-engineering target (a hypothetical control target; raised from $400 to $430 by Amish on 2026-09-25, then to $455 by a top-up he approved on 2026-09-26) | **Over the value-engineering target by $37:** estimated cost of the constructable design $492 [J1] | Priced BOM (`bom/bom.csv`) |
 

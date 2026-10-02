@@ -3,9 +3,9 @@ doc_id: HLT-PRC-001
 title: HelioLite design precis
 project: HelioLite
 doc_type: Design precis
-version: "0.6"
+version: "0.7"
 status: Draft
-date: '2026-10-01'
+date: '2026-10-02'
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -33,6 +33,10 @@ revisions:
   date: '2026-10-01'
   author: Amish Chadha
   change: Design made constructable (HLT-DDR-003); build plan HLT-BLD-001 and register HLT-DEC-001 added; budget treated as a value-engineering target
+- version: "0.7"
+  date: '2026-10-02'
+  author: Amish Chadha
+  change: "Decisions of 2026-10-02: glare study and local rules before uncovering, EPDM edge guard, two-lift head fitting from a platform, first site and siting survey, daylight first in public copy"
 ---
 
 # HelioLite design precis
@@ -188,19 +192,19 @@ Decided by Amish on 2026-09-26: a budget top-up to $455 that covers the $451 BOM
 
 > **Safety:** HelioLite redirects sunlight, moves under motor power, carries a glass mirror 2.2 m above the ground and stands in the wind. Treat the beam, the moving gimbal, the glass and the mast as hazards at every stage.
 
-- **Eye injury and glare.** Looking into the reflected beam is like looking at the sun, at 0.88 to 0.93 of its brightness. A brief glance causes an after-image; staring can cause retinal injury ([Ho, Ghanbari and Diver 2011](https://www.sandia.gov/app/uploads/sites/167/2025/03/Methods_Ho_2011.pdf)). Site the unit so the beam path crosses no path, road, neighbor's window or flight approach; mount the mirror above head height; never aim at people, vehicles or aircraft; and make the firmware refuse any target that is not the calibrated one.
+- **Eye injury and glare.** Looking into the reflected beam is like looking at the sun, at 0.88 to 0.93 of its brightness. A brief glance causes an after-image; staring can cause retinal injury ([Ho, Ghanbari and Diver 2011](https://www.sandia.gov/app/uploads/sites/167/2025/03/Methods_Ho_2011.pdf)). Before the mirror is uncovered, check the local building and planning rules and do a simple glare study of where the beam can go (neighbors, roads, sky), and keep the beam inside the property in every state. Site the unit so the beam path crosses no path, road, neighbor's window or flight approach; mount the mirror above head height; never aim at people, vehicles or aircraft; and make the firmware refuse any target that is not the calibrated one.
 - **Beam sweep.** During slews, calibration and stows the beam can pass across the surroundings. Stows always turn the normal downward so the beam moves toward the ground; during a power-loss stow it crosses the ground between the target and the mast for about 3 s. Keep that strip clear of seating and paths. Calibration jogs move the spot near the target; the user should stand beside, not in, the beam path.
 - **Concentration and fire.** One flat mirror does not concentrate sunlight, but several mirrors aimed at one spot, or a mirror bent concave by its mounting, can. Do not aim more than one unit at the same spot, and check the mirror for flatness after mounting.
-- **Glass.** A broken mirror has sharp edges and can fall from 2.2 m. Use seamed edges and a safety backing film, wear cut-resistant gloves and eye protection when handling, and keep the mirror face-down in hail.
+- **Glass.** A broken mirror has sharp edges and can fall from 2.2 m. Use seamed edges, a black EPDM edge channel round the glass and panel edges, and a safety backing film, wear cut-resistant gloves and eye protection when handling, and keep the mirror face-down in hail.
 - **Moving machinery.** The worm drives turn slowly but with high torque (up to 17 N·m at the output) and can trap fingers between the mirror, torque tube and yoke, where the gaps are only 20 to 56 mm, and between the stow lug and the latch bracket, where the gap is 3 to 9 mm. The preload springs store energy even when the drives are off, and the elevation spring pulls the mirror toward stow if a drive is disconnected. The sliding latch pawl snaps out under spring force. Disable the drives and discharge the stow reserve before servicing, and keep the gimbal above head height.
 - **Stored energy.** The supercapacitor bank holds about 360 J at 12 V and can deliver high current if shorted. Fuse its output, bleed it on shutdown and mark the controller box.
-- **Mast and wind.** A falling mast or mirror can injure people. Use an anchor rated for at least 1.0 kN·m, check for buried services before driving a ground screw, and stow before storms. The stow latch is designed on an assumed stowed load; until it is tested (TRL 4, on hold), remove the mirror if a storm with gusts above about 29 m/s is forecast. Two people install the mirror.
+- **Mast and wind.** A falling mast or mirror can injure people. Use an anchor rated for at least 1.0 kN·m, check for buried services before driving a ground screw, and stow before storms. The stow latch is designed on an assumed stowed load; until it is tested (TRL 4, on hold), remove the mirror if a storm with gusts above about 29 m/s is forecast. Two people install the mirror: the yoke and drive go on the mast first, and the mirror assembly (about 6.2 kg) is lowered into the yoke, glass covered, from a stable platform, not from steps.
 - **Electrical.** Only 12 V DC runs outdoors. The mains adapter stays indoors and must be a listed product; do not run mains to the mast.
 - **Working at height.** Rooftop sites need fall protection and a structural check of the roof; they are not recommended for the first build.
 
 ## Open questions
 
-Every open decision and every item to confirm when parts are bought is listed in the design decisions register, [docs/06-design-decisions.md](06-design-decisions.md) (HLT-DEC-001). The main ones: the first site and user (HLT-DDR-001, O1), local rules on glare and structures (O2) and a siting survey (O3); whether daylight or heat is the benefit users value most; gearbox, spring and solenoid masses (R13 has only 0.06 kg of margin) and the gearbox's backlash; and a published stowed coefficient for small heliostats to confirm the latch margin.
+Every open decision and every item to confirm when parts are bought is listed in the design decisions register, [docs/06-design-decisions.md](06-design-decisions.md) (HLT-DEC-001). Decided on 2026-10-02: the first site is a house in the team's network, picked by a desk siting survey of 20 to 30 real yards; local rules and a glare study are checked before the mirror is uncovered; public copy leads with daylight and treats heat as a bonus, and both are asked about in co-design. The main open questions: gearbox, spring and solenoid masses (R13 has only 0.06 kg of margin) and the gearbox's backlash; and a published stowed coefficient for small heliostats to confirm the latch margin.
 
 TRL 4 work (building and testing) is on hold by Amish's instruction.
 

@@ -323,3 +323,42 @@ Unchanged in kind: the beam (glass kept covered from bonding until calibration),
 ### Recommended next step
 
 Amish reviews HLT-DDR-003 and the register. TRL 4 (building and testing to the plan) stays on hold.
+
+## Session 2026-10-02: open decisions decided
+
+On 2026-10-02 Amish approved the recommendations for every open decision: "i approve your recommendations for all 555 open decisions." The 11 open decisions of the design decisions register are now in its Decisions made table, dated 2026-10-02.
+
+HLT-DDR-003 Table 3 items A1 to A3 are decided (A1 and A2 on changed recommendations: an aluminum latch bracket now, and fitting the head in two lifts from a stable platform). The acceptance of HLT-DDR-003 Table 1 as a whole was never among the open decisions and is still to be put to Amish. The value engineering savings no longer list the box without a clear lid. Review flag 3 (a forecast-only stow weakening the storm-stow backup) was not part of any decision and that saving is still listed with its caveat.
+
+### Documents changed
+
+- `docs/06-design-decisions.md` (HLT-DEC-001 v0.2)
+- `docs/decisions/0003-design-for-construction.md` (HLT-DDR-003 v0.2)
+- `docs/01-problem.md` (HLT-PRB-001 v0.5)
+- `docs/02-concept.md` (HLT-PRC-001 v0.7)
+- `docs/03-requirements.md` (HLT-REQ-001 v0.7)
+- `docs/05-build-plan.md` (HLT-BLD-001 v0.2)
+- `bom/bom-notes.md` (not a controlled document)
+- `README.md` (not a controlled document)
+
+### Follow-up actions to carry approved decisions into the design
+
+1. Decision 5: Model and drawings: make the latch bracket aluminum in `cad/src/model.py` and on making sketch HLT-DWG-110, rechecking its bending under the stowed load.
+2. Decision 5: BOM and calculations: change line 17's latch bracket to aluminum with its price, and take about 0.1 kg off the mast-top mass (HLT-CAL-001, H3).
+3. Decision 6: Build plan and pictures: redraw steps 10 to 17 so the yoke and drive go on the mast first and the mirror assembly (about 6.2 kg) is lowered into it from a stable platform; regenerate the step pictures.
+4. Decision 6: Model: add the platform-height fitting sequence to `cad/src/build_plan_media.py` and check the mirror assembly can be lowered into the yoke with the trunnions fitted.
+5. Decision 7: Appearance model and renders: update `cad/src/product_model.py` and the photoreal renders on Amish's Mac to the aluminum yoke, the new latch and the rib tunnels, dropping the torque tube saddles; finish set of item 11 and caption of item 8 with them.
+6. Decision 9: BOM: add about 2.4 m of black EPDM edge channel with its price (line 1 or 13).
+7. Decision 9: Model and calculations: add the edge channel to the mirror assembly and the mast-top mass (about 0.15 to 0.25 kg); if the weighed head exceeds 13 kg, propose a slight R13 relaxation.
+8. Decision 9: Build plan pictures: show the edge channel in step 5 after bonding.
+9. Decision 10: BOM: change line 9's specification to an IP65 box with a clear lid.
+10. Decision 3: Run the desk siting survey of 20 to 30 yards and record it (HLT-CAL-001, section B, or a new note).
+
+### Points found in the review
+
+1. Item 9's edge guard would use up the 0.06 kg R13 margin (item 5) by itself; the two items must be decided together.
+2. A saving in Value engineering (a box without a clear lid) contradicts the recommendation in item 10.
+3. A saving in Value engineering (forecast-only stow, making the anemometer optional) weakens the storm-stow backup in the safety case and should not be counted as a saving.
+4. REVIEW 2026-09-26 item 2 says the edge guard fits 'within the $4 margin'; the estimate is now USD 37 over its target, so that wording is stale.
+
+No CAD model, BOM quantity or price, calculation result or picture was changed. TRL stays at 3; TRL 4 remains on hold.

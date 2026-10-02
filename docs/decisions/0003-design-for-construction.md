@@ -3,9 +3,9 @@ doc_id: HLT-DDR-003
 title: HelioLite design for construction
 project: HelioLite
 doc_type: Design decision record
-version: "0.1"
+version: "0.2"
 status: Draft
-date: '2026-10-01'
+date: '2026-10-02'
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -13,12 +13,16 @@ revisions:
   date: '2026-10-01'
   author: Amish Chadha
   change: Changes that make the concept physically buildable, with the reason for each; made under Amish's 2026-09-30 instruction to make the design physically buildable; open for his review
+- version: "0.2"
+  date: '2026-10-02'
+  author: Amish Chadha
+  change: "Table 3 items decided by Amish on 2026-10-02: A1 aluminum latch bracket (changed), A2 two-lift head fitting from a platform (changed), A3 renders updated; Table 1 acceptance still to be put to Amish"
 ---
 
 # 0003: Design for construction
 
 - **Date:** 2026-10-01
-- **Status:** draft. The changes in Table 1 were made under Amish's 2026-09-30 instruction to make the design physically buildable; open for his review. The items in Table 3 are Proposed, awaiting Amish, and are listed in the design decisions register (`docs/06-design-decisions.md`).
+- **Status:** draft. The changes in Table 1 were made under Amish's 2026-09-30 instruction to make the design physically buildable. The items in Table 3 were decided by Amish on 2026-10-02 ("i approve your recommendations for all 555 open decisions."), A1 and A2 on changed recommendations, and are recorded in the design decisions register (`docs/06-design-decisions.md`, HLT-DEC-001). Acceptance of Table 1 as a whole was not among the open decisions and is still to be put to Amish.
 
 ## Context
 
@@ -58,13 +62,13 @@ The changes keep what HelioLite does: the same 600 x 600 mm mirror, elevation ax
 | Drawing | HLT-DWG-001 Rev P4; making sketches HLT-DWG-101 to 115 added. | Follows the model. |
 | Documents | HLT-CAL-001 v0.4, HLT-PRC-001 v0.6, HLT-REQ-001 v0.6. R13 stays met (0.06 kg margin); R15 is reported against the value-engineering target, USD 37 over it. | Follows the model. |
 
-*Table 3. Proposed, awaiting Amish.*
+*Table 3. Proposed, then decided by Amish on 2026-10-02.*
 
 | # | Question | Options | Recommendation |
 | --- | --- | --- | --- |
-| A1 | The R13 mass margin is now 0.06 kg, on an assumed gearbox mass of 1.2 kg each. | (a) accept and weigh the parts at TRL 4; (b) look for more mass now (for example an aluminum latch bracket, about 0.1 kg). | (a). |
-| A2 | How the head goes on the mast. The plan builds the head (yoke, mirror, drive and latch, about 11 kg with the turntable disc) on the bench and lifts it onto the azimuth shaft at 1.8 m. | (a) two people on stable steps lift the head on, glass covered; (b) fit the yoke at height and lower the mirror assembly into it there; (c) a hinged mast base so the head is fitted at waist height. | (a) for the prototype, with the mirror covered; (c) is worth a look before any second build. |
-| A3 | The appearance model (`cad/src/product_model.py`) and the photoreal renders still show the printed yoke, the concept latch and two bolted torque tube saddles (render item 4 of 2026-09-26), which P1 replaces. | (a) update the appearance model to the constructable design on Amish's Mac; (b) keep the concept renders as they are. | (a), and drop the saddles. |
+| A1 | The R13 mass margin is now 0.06 kg, on an assumed gearbox mass of 1.2 kg each. | (a) accept and weigh the parts at TRL 4; (b) look for more mass now (for example an aluminum latch bracket, about 0.1 kg). | (a). Decided 2026-10-02 on a changed recommendation: (b), the aluminum latch bracket now (about 0.1 kg), with the parts weighed at TRL 4; the EPDM edge guard decided the same day uses up most of the saving. |
+| A2 | How the head goes on the mast. The plan builds the head (yoke, mirror, drive and latch, about 11 kg with the turntable disc) on the bench and lifts it onto the azimuth shaft at 1.8 m. | (a) two people on stable steps lift the head on, glass covered; (b) fit the yoke at height and lower the mirror assembly into it there; (c) a hinged mast base so the head is fitted at waist height. | (a) for the prototype, with the mirror covered; (c) is worth a look before any second build. Decided 2026-10-02 on a changed recommendation: (b) for the prototype, the yoke and drive fitted at height first and the mirror assembly (about 6.2 kg) lowered into it, glass covered, from a stable platform rather than steps; (c) looked at before any second build. |
+| A3 | The appearance model (`cad/src/product_model.py`) and the photoreal renders still show the printed yoke, the concept latch and two bolted torque tube saddles (render item 4 of 2026-09-26), which P1 replaces. | (a) update the appearance model to the constructable design on Amish's Mac; (b) keep the concept renders as they are. | (a), and drop the saddles. Decided 2026-10-02. |
 
 ## Consequences
 
@@ -72,4 +76,5 @@ The changes keep what HelioLite does: the same 600 x 600 mm mirror, elevation ax
 - Requirement status: none not met, R15 over the value-engineering target by USD 37, 2 at risk (R3, R4), 11 met on paper, 1 not verifiable at TRL 3 (HLT-CAL-001 v0.4).
 - The photoreal renders (`media/render-*.png`), `media/card.png` and `media/social-preview.png` still show the concept yoke and latch; they are stale until regenerated on Amish's Mac, where Blender is.
 - The gearbox bolt pattern, the double output shaft, the floor flange holes, the solenoid stroke and the spring torque are chosen when parts are bought (TRL 4); the design decisions register lists what to confirm then.
+- With A1 and A2 decided, the latch bracket becomes aluminum and the head goes on the mast in two lifts from a stable platform; the model, the latch making sketch, the build plan steps 10 to 17 and their pictures, the BOM and the mass estimate are still to be changed to match (follow-up actions in `docs/REVIEW.md`, 2026-10-02).
 - TRL 4 work (building and testing) stays on hold by Amish's instruction.

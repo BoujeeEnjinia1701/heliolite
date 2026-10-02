@@ -3,9 +3,9 @@ doc_id: HLT-PRB-001
 title: HelioLite problem statement
 project: HelioLite
 doc_type: Problem statement
-version: "0.4"
+version: "0.5"
 status: Draft
-date: '2026-09-26'
+date: '2026-10-02'
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -25,6 +25,10 @@ revisions:
   date: '2026-09-26'
   author: Amish Chadha
   change: Stronger sources
+- version: "0.5"
+  date: '2026-10-02'
+  author: Amish Chadha
+  change: "First site, glare check and daylight-first wording recorded from the decisions of 2026-10-02"
 ---
 
 # HelioLite problem statement
@@ -86,10 +90,10 @@ A heliostat is a mirror turned by two motors so that the reflection of the sun s
 
 ## Open questions
 
-- Which first site and user (a house with a north room, a greenhouse or a school)? This sets latitude, distance to target and siting. Proposed, awaiting Amish (HLT-DDR-001, O1); co-design partners stay open by Amish's instruction.
+- Which first site and user (a house with a north room, a greenhouse or a school)? This sets latitude, distance to target and siting. Decided 2026-10-02 (HLT-DEC-001): a house first, owned by a contributor or someone in the team's network, chosen by the siting check below; schools only after glare safety is shown.
 - How common is a site where the mirror can see the winter sun and the north window at the same time, without standing in the house's shadow? The hourly model in HLT-CAL-001 (section B) shows the answer matters more than any hardware choice: the same unit delivers 0.40 to 1.00 kWh on the solstice at three illustrative sites. A short siting survey of real yards is needed (O3).
-- Is daylight or heat the main benefit users value? The calculations suggest daylight is substantial (about 500 lx) and heat is modest (about 150 W while sunny).
-- What local rules on glare, setbacks and structures on a lot or roof apply at the first site (O2)?
+- Is daylight or heat the main benefit users value? The calculations suggest daylight is substantial (about 500 lx) and heat is modest (about 150 W while sunny). Until co-design shows otherwise, public copy leads with daylight and treats heat as a bonus (decided 2026-10-02).
+- What local rules on glare, setbacks and structures on a lot or roof apply at the first site (O2)? They are checked, with a simple glare study, before the mirror is uncovered (decided 2026-10-02).
 
 ## User research and co-design
 

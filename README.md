@@ -50,7 +50,7 @@ The starting point was Rjukan, a Norwegian town of about 3,500 people that the s
 
 ## Problem
 
-North-facing rooms and greenhouses lack daylight and solar heat. On a clear winter day a 0.36 m² mirror can send about 160 W of sunlight (about 15,000 lm) through a window, enough to add roughly 500 lx to a small room, and 0.5 to 1.0 kWh a day at a well-sited house at 45° N, while its heat contribution is modest (calculations in [HLT-CAL-001](docs/04-calcs/01-sizing.md)).
+North-facing rooms and greenhouses lack daylight and solar heat. On a clear winter day a 0.36 m² mirror can send about 160 W of sunlight (about 15,000 lm) through a window, enough to add roughly 500 lx to a small room, and 0.5 to 1.0 kWh a day at a well-sited house at 45° N, while its heat contribution is a modest bonus (calculations in [HLT-CAL-001](docs/04-calcs/01-sizing.md)).
 
 ## Concept
 
