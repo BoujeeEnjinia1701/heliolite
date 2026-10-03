@@ -328,7 +328,7 @@ Amish reviews HLT-DDR-003 and the register. TRL 4 (building and testing to the p
 
 On 2026-10-02 Amish approved the recommendations for every open decision: "i approve your recommendations for all 555 open decisions." The 11 open decisions of the design decisions register are now in its Decisions made table, dated 2026-10-02.
 
-HLT-DDR-003 Table 3 items A1 to A3 are decided (A1 and A2 on changed recommendations: an aluminum latch bracket now, and fitting the head in two lifts from a stable platform). The acceptance of HLT-DDR-003 Table 1 as a whole was never among the open decisions and is still to be put to Amish. The value engineering savings no longer list the box without a clear lid. Review flag 3 (a forecast-only stow weakening the storm-stow backup) was not part of any decision and that saving is still listed with its caveat.
+HLT-DDR-003 Table 3 items A1 to A3 are decided (A1 and A2 on changed recommendations: an aluminum latch bracket now, and fitting the head in two lifts from a stable platform). The acceptance of HLT-DDR-003 Table 1 as a whole was never among the open decisions; Amish accepted it later on 2026-10-02 (see the next session). The value engineering savings no longer list the box without a clear lid. Review flag 3 (a forecast-only stow weakening the storm-stow backup) was not part of any decision and that saving is still listed with its caveat.
 
 ### Documents changed
 
@@ -362,3 +362,67 @@ HLT-DDR-003 Table 3 items A1 to A3 are decided (A1 and A2 on changed recommendat
 4. REVIEW 2026-09-26 item 2 says the edge guard fits 'within the $4 margin'; the estimate is now USD 37 over its target, so that wording is stale.
 
 No CAD model, BOM quantity or price, calculation result or picture was changed. TRL stays at 3; TRL 4 remains on hold.
+
+## Session 2026-10-02: design-for-construction changes accepted
+
+Amish, 2026-10-02: "APPROVED: Design-for-construction changes in 10 repos (CityTwin, CoolShade, PalletPilot, Heliolite, PotholeLog, EarthPress, ReadyKit, CellCheck, CargoMule and ThermaCart)". This accepts the whole change table of HLT-DDR-003, Table 1 (P1 to P14), whose acceptance had not been among the open decisions decided earlier the same day. No other item is decided by it. trl stays 3; no build or test work was done, and the model, BOM, calculations and pictures are unchanged.
+
+### Documents changed
+
+- `docs/decisions/0003-design-for-construction.md` (HLT-DDR-003 v0.3, status Draft): status line now "accepted" with Amish's words.
+- `docs/06-design-decisions.md` (HLT-DEC-001 v0.3): Decisions made row added, dated 2026-10-02.
+- `docs/05-build-plan.md` (HLT-BLD-001 v0.3): section 2 says HLT-DDR-003 is accepted.
+- PDFs regenerated.
+
+### Recommended next step
+
+No change: the follow-up actions of the previous session stand. TRL 4 remains on hold by Amish's instruction.
+
+## Session 2026-10-02: approved follow-ups carried out
+
+Amish, 2026-10-02: "497 follow-up actions that need CAD, drawing, picture, BOM or calculation work ... APPROVED CHANGES, COMPLETE THESE", and for the renders: "Photoreal renders are out of date in most repos ... COMPLETE THESE". This session carried the decisions of 2026-10-02 into the model, BOM, calculations, drawings, pictures and appearance model. trl stays 3; no build or test work was done.
+
+### Follow-ups (from the 2026-10-02 list)
+
+1. Done. Latch bracket and stop block made aluminum in `cad/src/model.py`: 6 mm aluminum angle (6063-T6), cut with no bending, in place of 4 mm bent steel plate; making sketch HLT-DWG-110 redrawn. Bending rechecked [E9]: the pawl's moment (11.5 N·m at the design load) bends the leg to 36 MPa against 170 MPa minimum yield (factor 4.7), and the 6 mm leg is 1.16 times as stiff as the steel bracket.
+2. Done. BOM line 17 respecified and repriced (USD 22 to USD 23); mast-top mass updated in HLT-CAL-001 [H3]. The aluminum bracket and block save 0.08 kg, a little under the 0.1 kg expected.
+3. Done. Build plan steps 10 to 17 rewritten and redrawn for the two-lift fitting: step 10 elevation drive onto the right arm on the bench; steps 11 to 14 mast, controller, flange and cap (were 13 to 16); step 15 first lift, the yoke with drive, latch, disc and hub (4.48 kg); step 16 second lift, the mirror assembly (6.34 kg) lowered in from a stable platform onto two 54 mm packers on the crossbar; step 17 stubs, cross pins and spring can at height, then stow and latch. Safety stops S3 and S6 renumbered and S6 now covers each lift.
+4. Done. The fitting sequence is in `cad/src/build_plan_media.py` (steps 10 and 15 to 17), and `model.py --check` now lowers the mirror assembly (end blocks fitted, no stubs) between the arms from 450 mm above its seat in 25 mm steps against every fixed yoke part. The check found that the elevation Hall switch, 3 mm proud of the left arm, stood in the path of the torque tube's end (the tube end passes 2 mm from the arm face); the old bench sequence had the same clash. Fix made: the switch now sits in a 13 x 16 mm window in the arm's inner wall, its back on the bearing plug, 1 mm proud, so the tube end passes it with 1 mm to spare (HLT-DWG-107 redrawn). All 3,634 checks pass.
+5. Done in this repo. `cad/src/product_model.py` rebuilt on the constructable solids of `build_components()`: natural aluminum tube yoke with gussets, printed plugs and bronze bushes, the aluminum latch bracket, sliding pawl and solenoid, rib tubes with tunnels, end blocks and pinned stubs, the EPDM edge channel, the turntable disc on its keyed hub, cap plate and floor flange; torque tube saddles and the printed yoke dropped. Finish set of item 11 (option a) applied; the hero note says the wall is drawn 1.0 m from the mast as a render-only layout (item 8). Render scenes exported to `/home/claude/renders/heliolite`. Not done here: the photoreal renders, captions, `card.png` and `social-preview.png`, which are made on Amish's Mac next.
+6. Done. BOM line 1 adds 2.5 m of black EPDM U edge channel (about USD 2.40 per m, +USD 6; USD 25 to USD 31).
+7. Done. Edge channel added to the model's mirror assembly (2.5 mm wall, 3 mm lip over the glass, 8 mm over the panel back; cut back 15 mm each side of the tube on the right edge and 95 mm each side on the left edge so the lug, bracket and pad pass in the elevation sweep): 0.16 kg for about 2.2 m fitted [H1]. Mast top 12.99 kg against 13 kg, margin 0.01 kg [H3]. The estimate does not exceed 13 kg, so no R13 relaxation is proposed; the decision of 2026-10-02 already provides one if the head weighed at TRL 4 exceeds 13 kg.
+8. Done. Step 5 now shows and describes the edge channel pressed on after bonding.
+9. Done. BOM line 9 specifies an IP65 box with a clear polycarbonate lid; price unchanged (clear-lid boxes of this size list at about the same price).
+10. Not done: the desk siting survey of 20 to 30 real yards is research needing satellite images of real properties chosen by Amish's network (outreach, not design work).
+
+### Requirement status changes
+
+None. R1 207 W (was 211 W) and R2 492 lx (was 502 lx) stay met: the edge channel's 3 mm front lip trims the clear aperture from 0.36 to 0.353 m². R3 stays at risk, but reference site A now falls 2 % short on the solstice (0.491 kWh, was 0.501 kWh) and meets 0.5 kWh from about mid-January. R13 stays met with 0.01 kg margin. R15 stays over the value-engineering target.
+
+Value-engineering target: USD 455. Estimated cost of the constructable design: USD 499 (USD 44 over the target). `budget_usd` unchanged.
+
+### Documents changed
+
+- `cad/src/model.py`, STEP and STL exports regenerated; `docs/04-calcs/sizing.py`.
+- `bom/bom.csv` (lines 1, 9, 17), `bom/bom-notes.md`.
+- `docs/04-calcs/01-sizing.md` (HLT-CAL-001 v0.5), `docs/03-requirements.md` (HLT-REQ-001 v0.8), `docs/02-concept.md` (HLT-PRC-001 v0.8), `docs/05-build-plan.md` (HLT-BLD-001 v0.4), `docs/06-design-decisions.md` (HLT-DEC-001 v0.4), `README.md`.
+- General arrangement HLT-DWG-001 Rev P5; making sketches HLT-DWG-104, 107, 110 and 114; build plan overview, joint 5 and steps 5, 8 and 10 to 18; concept media (`cad/src/concept_media.py`: key figures and flow at the clear aperture).
+- `cad/src/product_model.py`; render scenes in `/home/claude/renders/heliolite`.
+- PDFs regenerated.
+
+### Points for Amish
+
+- The edge channel's front lip costs 2 % of the light. A channel with no front lip (back lip and edge only) would keep R3 at site A on the solstice at the target but guards the glass face edge less. Proposed, awaiting Amish: keep the 3 mm lip (recommended, the guard's purpose is the glass edge).
+- R13's margin is now 0.01 kg on an assumed gearbox mass; weighing at TRL 4 decides it, as already decided.
+
+### Cross-repo actions
+
+None.
+
+### Recommended next step
+
+Photoreal renders on Amish's Mac from the exported scenes. TRL 4 remains on hold.
+
+## 2026-10-02: photoreal renders redone on the constructable design
+
+Rendered with Blender Cycles on Amish's Mac from the updated appearance model; captioned with `.kit/photo_caption.py`; `media/card.png` and `media/social-preview.png` regenerated with `.kit/cards.py`. Views: hero, exploded, detail. image_qc passes. Appearance deviations are those logged above as proposed, awaiting Amish.

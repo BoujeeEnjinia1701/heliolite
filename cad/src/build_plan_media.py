@@ -23,7 +23,7 @@ import build123d as b  # noqa: E402
 
 OUT = ROOT / "docs" / "05-build-plan"
 DWG = ROOT / "cad" / "drawings"
-DATE = "2026-10-01"
+DATE = "2026-10-02"
 D = derived(P)
 AX = P["axis_z"]
 
@@ -98,6 +98,7 @@ def overview():
         ("Trunnion end blocks (2)", ["blocks"], M(0, 0, 240)),
         ("Stow lug", ["lug"], M(-160, -160, 170)),
         ("Glass mirror", ["glass"], M(-330, -330, -190)),
+        ("Edge channel (EPDM)", ["edge"], M(-330, -330, -330)),
         ("Crossbar", ["crossbar"], H(0, 0, 0)),
         ("Arms (2)", ["arm_r", "arm_l"], H(0, 0, 130)),
         ("Gusset plates (4) and bolts", ["gussets", "gusset_bolts"], H(0, -260, -70)),
@@ -105,9 +106,7 @@ def overview():
         ("Latch bracket, pad, pawl, solenoid", ["bracket", "pad", "pawl", "solenoid"], H(-260, -330, 60)),
         ("Elevation Hall switch", ["hall_el"], H(-120, 200, 380)),
         ("Turntable disc and hub", ["disc", "hub"], (0, 0, 560)),
-        ("Trunnion stubs (2)", ["stubs"], H(0, -380, 420)),
         ("Elevation drive", ["el_gb", "el_motor"], H(240, 0, 130)),
-        ("Elevation spring can", ["spring_el"], H(-330, 0, 130)),
         ("Ground anchor", ["anchor"], (0, 0, -140)),
         ("Mast pipe (drawn shortened)", ["mast"], (0, 0, 0)),
         ("Controller box and plate", ["ctrl", "ctrl_plate", "ctrl_ubolts"], (0, -200, 0)),
@@ -116,6 +115,8 @@ def overview():
         ("Mast cap plate", ["cap", "hall_az"], (0, 0, 190)),
         ("Azimuth drive", ["az_gb", "az_motor"], (0, 0, 300)),
         ("Shaft, spring can, thrust washer", ["shaft", "spring_az", "washer"], (0, 0, 420)),
+        ("Trunnion stubs (2)", ["stubs"], H(0, -380, 420)),
+        ("Elevation spring can", ["spring_el"], H(-330, 0, 130)),
         ("Cabling", ["cable"], (-260, -520, -120)),
     ]
     parts = [part(n, S(C, *ks), C[ks[0]][2], e) for n, ks, e in items]
@@ -246,8 +247,8 @@ def sheets(only=None):
            "  hole, outer side only.",
            "Latch bracket holes: two 6.5 mm through both sides, 8 mm from",
            "  the front face, 18 mm and 55 mm below the top end.",
-           "Hall switch holes: two 3.2 mm in the inner side, 10 mm below the",
-           "  top end, 5 mm each side of the centre line.",
+           "Hall switch window: 13 mm wide and 16 mm tall through the inner",
+           "  side only, 1.5 mm below the top end, centred across the side.",
            "Fit: as the right arm; the latch bracket bolts to the inner side",
            "  at the front, the spring can to the outer side.",
            "Check: lay both arms side by side: bush holes and gusset holes",
@@ -286,19 +287,20 @@ def sheets(only=None):
     lb = S(Cs, "bracket", "pawl")
     sheet(110, "latch bracket, stop block and pawl", lb, Cs["bracket"][2],
           [lw("arm_l"), lw("lug"), lw("solenoid"), lw("tube"), lw("spring_el")],
-          "Steel plate 4 mm and bar 15 x 30 mm, 12 x 8 mm; painted",
-          ["Bracket: from 4 mm steel cut a leg 68 x 62 mm with a 15 mm flange",
-           "  on its front edge; bend the flange 90 degrees.",
-           "In the leg: a 21 mm radius bite at the back edge, centred 31 mm up,",
-           "  clear of the turning tube end; a 14 x 9 mm slot for the pawl,",
-           "  21 mm from the front edge, 40 mm up. Two 6.6 mm countersunk",
-           "  holes 7 mm from the back edge, 12.5 and 49.5 mm up.",
-           "Stop block: 15 x 30 x 11.5 mm steel, screwed to the leg's foot",
-           "  with two M5 screws; bond the 3 mm polyurethane pad on top.",
+          "Aluminum angle 6 mm and bar 15 x 30 mm, 6063-T6; steel bar 12 x 8 mm (pawl)",
+          ["Bracket: cut 62 mm of 6 mm aluminum angle with legs of at least",
+           "  70 and 20 mm. Trim the long leg to 68 mm and the short leg to",
+           "  19 mm overall (13 mm clear of the long leg). No bending.",
+           "In the long leg: a 21 mm radius bite at the back edge, centred",
+           "  31 mm up, clear of the turning tube end; a 14 x 9 mm slot for",
+           "  the pawl, 21 mm from the front edge, 40 mm up. Two 6.6 mm",
+           "  countersunk holes 7 mm from the back edge, 12.5 and 49.5 mm up.",
+           "Stop block: 13 x 30 x 11.5 mm aluminum bar, screwed to the leg's",
+           "  foot with two M5 screws; bond the 3 mm polyurethane pad on top.",
            "Pawl: 26 mm of 12 x 8 mm steel bar; chamfer the top of its tip",
            "  45 degrees by 4 mm; tap M3 in the tail for the solenoid plunger.",
-           "Fit: leg flat on the left arm's inner side, two M6 countersunk",
-           "  screws; the pawl slides in the slot, its tip over the lug.",
+           "Fit: long leg flat on the left arm's inner side, two M6",
+           "  countersunk screws; the pawl slides in the slot over the lug.",
            "Check: the pawl slides freely 12 mm; pad top 0.5 mm under the",
            "  stowed lug."],
           inset_view=(30, -45))
@@ -523,10 +525,10 @@ def steps(only=None):
        "Magnet toward the tube end; tongue pointing away from the ribs' centre as shown; M5 set screw, threadlocker",
        elev=30, azim=-120)
     st(5, [g(Cu, "panel", name="Mirror backing, turned face up"), g(Cu, "ribs"), g(Cu, "tube"), g(Cu, "lug")],
-       [g(Cu, "glass", (0, 0, 160))],
-       "bond the glass mirror to the panel",
-       "Two people, gloves; mirror adhesive in beads, glass on spacers, then cover the glass with card", elev=35, azim=-60,
-       label_done=False)
+       [g(Cu, "glass", (0, 0, 160)), part("Edge channel (EPDM), pressed on after bonding", Cu["edge"][1], Cu["edge"][2], (0, 0, 300))],
+       "bond the glass, then fit the edge channel",
+       "Two people, gloves; adhesive in beads, glass on spacers; once cured, press the channel round the edges and cover the glass",
+       elev=35, azim=-60, label_done=False)
     # yoke on the bench
     yoke = ["crossbar", "arm_r", "arm_l", "gussets", "gusset_bolts"]
     st(6, [g(C0, "crossbar")],
@@ -550,7 +552,7 @@ def steps(only=None):
        [part("Latch bracket, stop block and pad", S(C0, "bracket", "pad"), C0["bracket"][2], (110, 0, 0)),
         g(C0, "pawl", (-70, 0, 0)), g(C0, "solenoid", (-110, 0, 0)), g(C0, "hall_el", (90, 0, 60))],
        "latch, solenoid and Hall switch onto the left arm",
-       "Bracket on the arm's inner side, two M6 countersunk screws; pawl in its slot; solenoid strap on the leg's outside",
+       "Bracket on the arm's inner side, two M6 countersunk screws; pawl in its slot; solenoid strap on the leg's outside; switch in its window",
        elev=25, azim=-120, label_done=False)
     head0 = yoke + ["plugs", "bushes", "bracket", "pad", "pawl", "solenoid", "hall_el"]
     st(9, [g(C0, k) for k in head0],
@@ -559,35 +561,21 @@ def steps(only=None):
        "Hub to the disc with four M5 countersunk screws; disc to the crossbar with four M6 bolts from above. Seen from below",
        elev=-25, azim=-55, label_done=False)
     head1 = head0 + ["disc", "hub"]
-    mir = ["glass", "panel", "ribs", "tube", "blocks", "lug"]
     st(10, [g(C0, k) for k in head1],
-       [part("Mirror assembly, glass covered", S(C0, *mir), C0["panel"][2], (0, 0, 420))],
-       "lower the mirror assembly into the yoke",
-       "Two people. Mirror upright, glass to the front, lug at the top of the left end; tube ends between the bush flanges",
-       elev=18, azim=-55, label_done=False)
-    head2 = head1 + mir
-    st(11, [g(C0, k) for k in head2],
-       [part("Drive stub (right)", half(C0["stubs"][1], "x", +1), C0["stubs"][2], (160, 0, 0)),
-        part("Spring stub (left)", half(C0["stubs"][1], "x", -1), C0["stubs"][2], (-160, 0, 0)),
-        part("Cross pins (in place)", C0["pins"][1], "#111827", (0, 0, 0))],
-       "trunnion stubs through the bushes into the end blocks",
-       "Each stub in 38 mm; drill 5 mm through tube, block and stub 20 mm from the tube end; drive in the roll pins",
-       elev=20, azim=-55, label_done=False)
-    head3 = head2 + ["stubs", "pins"]
-    st(12, [g(C0, k) for k in head3],
        [part("Elevation gearbox and motor", S(C0, "el_gb", "el_motor"), "#374151", (200, 0, 0)),
-        g(C0, "spring_el", (-150, 0, 0))],
-       "elevation drive and spring can onto the stubs",
-       "Key in the drive stub; gearbox onto it and flat on the arm, four M6 bolts. Spring can: wind 1 turn, three M4 screws",
+        part("Four M6 bolts from inside the arm", C0["el_bolts"][1], "#111827", (-120, 0, 0))],
+       "elevation drive onto the right arm",
+       "Gearbox output face flat on the arm's outer side, its bore in line with the bush; four M6 bolts from inside the arm",
        elev=20, azim=-55, label_done=False)
+    yhead = head1 + ["el_gb", "el_motor", "el_bolts"]
     # mast at the site (mast drawn shortened)
     Cc = comps(0.0, 0.0, compact=True)
-    st(13, [g(Cc, "anchor", name="Ground anchor, screwed in plumb")],
+    st(11, [g(Cc, "anchor", name="Ground anchor, screwed in plumb")],
        [part("Mast pipe (drawn shortened)", Cc["mast"][1], Cc["mast"][2], (0, 0, 320)), g(Cc, "set_screws", (120, 0, 0))],
        "mast pipe into the ground anchor",
        "Anchor screwed in plumb (services checked first); pipe down to the socket floor, plumb, two M10 set bolts",
        elev=20, azim=-55)
-    st(14, [g(Cc, "anchor"), g(Cc, "mast")],
+    st(12, [g(Cc, "anchor"), g(Cc, "mast")],
        [part("Controller box on its plate", S(Cc, "ctrl", "ctrl_plate"), Cc["ctrl"][2], (0, -160, 0)),
         part("U-bolts (2)", Cc["ctrl_ubolts"][1], "#111827", (0, 120, 0)),
         part("Anemometer and clamp", S(Cc, "anemo", "anemo_clamp"), Cc["anemo"][2], (0, 160, 0))],
@@ -596,24 +584,39 @@ def steps(only=None):
        elev=20, azim=-55, label_done=False)
     zt = D["mast_top"]
     top = lambda C, k: win(C[k][1], -200, 200, -200, 200, zt - 260, zt + 400)  # noqa: E731
-    st(15, [part("Mast pipe, top end", top(C0, "mast"), C0["mast"][2])],
+    st(13, [part("Mast pipe, top end", top(C0, "mast"), C0["mast"][2])],
        [g(C0, "floor_flange", (0, 0, 110))],
        "floor flange onto the mast top",
        "Thread sealant on the pipe thread; screw the flange on until the pipe end is flush with the flange face",
        elev=22, azim=-55)
     capset = ["cap", "az_gb", "az_motor", "shaft", "spring_az", "hall_az", "washer"]
-    st(16, [part("Mast pipe, top end", top(C0, "mast"), C0["mast"][2]), g(C0, "floor_flange")],
+    st(14, [part("Mast pipe, top end", top(C0, "mast"), C0["mast"][2]), g(C0, "floor_flange")],
        [part("Cap assembly", S(C0, *capset), "#0F766E", (0, 0, 220))],
        "cap and azimuth drive onto the floor flange",
        "Built on the bench first (gearbox screwed on from below). Lower the spring can into the pipe; four M8 screws up into the cap",
        elev=22, azim=-55, label_done=False)
     mastset = ["floor_flange", "flange_screws"] + capset
-    head = head3 + ["el_gb", "el_motor", "spring_el"]
-    st(17, [part("Mast pipe, top end", top(C0, "mast"), C0["mast"][2])] + [g(C0, k) for k in mastset],
-       [part("Head: yoke, mirror, drive and latch", S(C0, *head), "#0F766E", (0, 0, 300))],
-       "lift the head onto the azimuth shaft",
-       "Two people on stable steps; glass covered. Hub's keyway on the shaft key; set screw tight. Then the anchor check",
+    mtop = [part("Mast pipe, top end", top(C0, "mast"), C0["mast"][2])]
+    st(15, mtop + [g(C0, k) for k in mastset],
+       [part("First lift: yoke, elevation drive and latch (about 4.5 kg)", S(C0, *yhead), "#0F766E", (0, 0, 300))],
+       "first lift: the yoke and drive onto the azimuth shaft",
+       "Two people on a stable platform. Hub's keyway on the shaft key, down onto the thrust washer; set screw tight",
        elev=18, azim=-55, label_done=False)
+    mir = ["glass", "edge", "panel", "ribs", "tube", "blocks", "lug"]
+    st(16, mtop + [g(C0, k) for k in mastset + yhead],
+       [part("Second lift: mirror assembly, glass covered (about 6.3 kg)", S(C0, *mir), C0["panel"][2], (0, 0, 420))],
+       "second lift: lower the mirror assembly into the yoke",
+       "From the platform, mirror upright, lug at the top of the left end; tube ends between the bush flanges; rest it on packers",
+       elev=18, azim=-55, label_done=False)
+    st(17, mtop + [g(C0, k) for k in mastset + yhead + mir],
+       [part("Drive stub (right), through the gearbox", half(C0["stubs"][1], "x", +1), C0["stubs"][2], (200, 0, 0)),
+        part("Spring stub (left)", half(C0["stubs"][1], "x", -1), C0["stubs"][2], (-170, 0, 0)),
+        part("Cross pins (in place)", C0["pins"][1], "#111827", (0, 0, 0)),
+        g(C0, "spring_el", (-300, 0, 0))],
+       "trunnion stubs, cross pins and spring can",
+       "Stubs in through gearbox and bushes, 38 mm into the blocks; roll pins; can wound 1 turn, three M4 screws; then stow and latch",
+       elev=20, azim=-55, label_done=False)
+    head = yhead + mir + ["stubs", "pins", "spring_el"]
     st(18, [g(Cc, k) for k in ["anchor", "mast", "ctrl", "ctrl_plate", "anemo", "anemo_clamp", "floor_flange", "cap", "az_gb",
                                "az_motor", "washer", "hub", "disc"] + head],
        [g(Cc, "cable", (-140, -140, 0))],

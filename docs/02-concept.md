@@ -3,7 +3,7 @@ doc_id: HLT-PRC-001
 title: HelioLite design precis
 project: HelioLite
 doc_type: Design precis
-version: "0.7"
+version: "0.8"
 status: Draft
 date: '2026-10-02'
 author: Amish Chadha
@@ -37,6 +37,10 @@ revisions:
   date: '2026-10-02'
   author: Amish Chadha
   change: "Decisions of 2026-10-02: glare study and local rules before uncovering, EPDM edge guard, two-lift head fitting from a platform, first site and siting survey, daylight first in public copy"
+- version: "0.8"
+  date: '2026-10-02'
+  author: Amish Chadha
+  change: "Decisions of 2026-10-02 carried into the design: aluminum latch bracket, EPDM edge channel in the parts table and figures, two-lift fitting; values from HLT-CAL-001 v0.5"
 ---
 
 # HelioLite design precis
@@ -56,7 +60,7 @@ HelioLite is a 600 x 600 mm glass mirror on a two-axis, worm-driven gimbal at th
 5. **Calibrate.** At setup the user opens a web page served by the ESP32, jogs the sun spot onto the target center at four times spread over about 4 h, and the firmware fits the mount model to those points. No survey instrument is needed.
 6. **Stow.** At night, on a fault, when the anemometer sees a 15 m/s gust or when the forecast predicts one, the mirror turns face-down. This sends no reflection anywhere, protects the glass from hail and dust, and presents the lowest wind load. On a power loss a supercapacitor bank in the controller box powers the stow. At the end of the stow a steel lug on the torque tube pushes a sliding latch pawl aside and seats on a polyurethane stop pad on the -X arm; the pawl springs back over it without power, the firmware backs the worm off to mid-backlash, and from then on the stop and the pawl carry the wind moment in both directions. A 12 V pull solenoid draws the pawl back when the unit leaves stow.
 
-The sun moves about 15° per hour, so between 30 s updates it moves about 0.125° and the mirror normal needs about half of that. The mirror's center of mass sits 12.4 mm in front of the elevation axis (HLT-CAL-001, [H4]), so the drives overcome a small gravity moment (up to 0.75 N·m) as well as friction and wind.
+The sun moves about 15° per hour, so between 30 s updates it moves about 0.125° and the mirror normal needs about half of that. The mirror's center of mass sits 12.5 mm in front of the elevation axis (HLT-CAL-001, [H4]), so the drives overcome a small gravity moment (up to 0.78 N·m) as well as friction and wind.
 
 ![Energy flow](../media/flow.png)
 
@@ -70,7 +74,7 @@ Table 1. Main components.
 
 | # | Component | Choice | Notes |
 | --- | --- | --- | --- |
-| 1 | Mirror | 600 x 600 x 3 mm silvered glass, seamed edges, safety backing film | Decided (HLT-DDR-001, D10); cut by a local glazier |
+| 1 | Mirror | 600 x 600 x 3 mm silvered glass, seamed edges, safety backing film; black EPDM edge channel round the glass and panel edges | Decided (HLT-DDR-001, D10; edge channel 2026-10-02); cut by a local glazier |
 | 2 | Backing panel and torque tube | 4 mm aluminum composite panel bonded to the mirror, two 25 x 40 mm rib tubes with tunnels for the torque tube, 25 mm square aluminum torque tube with end blocks and pinned 14 mm keyed trunnion stubs | Carries the elevation axis 12.4 mm behind the mirror's center of mass |
 | 3 | Gimbal yoke | Aluminum rectangular tube 60 x 40 x 2 mm: a crossbar and two arms at ±340 mm joined by gusset plates, printed ASA bearing plugs and flanged bronze bushes (HLT-DDR-003; the one-piece printed yoke could not be printed) | Arms stand 20 mm outside the mirror's sweep so it can turn face-down; arm flex 0.006° at 8 m/s (HLT-CAL-001, section C) |
 | 4 | Elevation drive | NEMA17 stepper on an NMRV030-class 50:1 worm gearbox (17 N·m rated, 14 mm hollow bore) via an adapter plate | Bolted flat to the +X arm, on the keyed trunnion stub |
@@ -83,7 +87,7 @@ Table 1. Main components.
 | 11 | Cabling | Motor leads, 2-core outdoor 12 V cable, cable glands | 12 V feed from indoors (D9) |
 | 14 | Anemometer | Pulse-output cup anemometer on a 550 mm side arm at 1.5 m | Decided (D2); a weather sensor, not a sun sensor |
 | 16 | Drive preload springs | Flat spiral springs of about 3 N·m in printed cans: elevation on the -X trunnion outboard of the arm, azimuth inside the mast top | Decided (HLT-DDR-002 N2); holds each worm on one flank |
-| 17 | Stow stop and latch | 8 mm steel lug on a collar on the torque tube; steel bracket on the -X arm with a stop block and 3 mm polyurethane (90A) stop pad, a sliding steel pawl and a 12 V pull solenoid with a return spring | Decided (HLT-DDR-002 N1); designed for 48.6 N·m, twice the assumed stowed moment |
+| 17 | Stow stop and latch | 8 mm steel lug on a collar on the torque tube; 6 mm aluminum angle bracket on the -X arm with an aluminum stop block and 3 mm polyurethane (90A) stop pad, a sliding steel pawl and a 12 V pull solenoid with a return spring | Decided (HLT-DDR-002 N1); designed for 48.6 N·m, twice the assumed stowed moment |
 
 A listed indoor 12 V, 3 A power adapter (line 12), the fasteners (line 13) and the stow reserve inside the controller box (line 15) are in the BOM without callouts.
 
@@ -103,18 +107,18 @@ Table 2. Power and daylight at the design point [A2, A3].
 
 | Quantity | Value | Basis | Requirement |
 | --- | --- | --- | --- |
-| DNI times mirror area | 288 W | 800 W/m² x 0.36 m² | |
-| Intercepted (after cosine) | 244 W | x 0.848 | |
-| Reflected beam | 216 W | x 0.93 x 0.95 | |
-| At the outside of the glazing | 211 W | 0.98 edge and spill allowance | R1 (200 W) met |
-| Into the room | 159 W | x 0.75 | |
-| Luminous flux into the room | about 15,070 lm | 95 lm/W | About ten 1,500 lm LED lamps |
-| Mean added illuminance, 12 m² room | about 500 lx | utilization 0.4 | R2 (300 lx) met |
+| DNI times clear aperture | 282 W | 800 W/m² x 0.353 m² (594 mm square inside the edge channel's lip) | |
+| Intercepted (after cosine) | 239 W | x 0.848 | |
+| Reflected beam | 211 W | x 0.93 x 0.95 | |
+| At the outside of the glazing | 207 W | 0.98 edge and spill allowance | R1 (200 W) met |
+| Into the room | 155 W | x 0.75 | |
+| Luminous flux into the room | about 14,770 lm | 95 lm/W | About ten 1,500 lm LED lamps |
+| Mean added illuminance, 12 m² room | about 490 lx | utilization 0.4 | R2 (300 lx) met |
 | Beam irradiance at the target | 0.88 to 0.93 of DNI | A flat mirror does not concentrate | See Safety |
 
 ### Daily energy, heat and siting
 
-An hourly clear-sky model at 45° N with the house's shadow and the angle of the beam on the glass gives 0.50 kWh through the glazing on 21 December and 1.0 kWh on 1 February at reference site A (mirror 6 m east and 8 m north of the window). At site B, where the beam meets the glass at 58°, the solstice figure falls to 0.40 kWh; at site C, 15 m out on the window's axis, it rises to 1.0 kWh (HLT-CAL-001, Table 2). R3 (0.5 kWh) is at risk and depends on siting. A small, poorly insulated room may lose 0.5 to 1 kW in cold weather, so about 150 W is a noticeable but modest share of daytime heat, of the order of 15 to 30 % while the sun is out. The main benefit is light. On overcast days HelioLite delivers nothing.
+An hourly clear-sky model at 45° N with the house's shadow and the angle of the beam on the glass gives 0.49 kWh through the glazing on 21 December and 0.98 kWh on 1 February at reference site A (mirror 6 m east and 8 m north of the window). At site B, where the beam meets the glass at 58°, the solstice figure falls to 0.40 kWh; at site C, 15 m out on the window's axis, it rises to 1.0 kWh (HLT-CAL-001, Table 2). R3 (0.5 kWh) is at risk and depends on siting. A small, poorly insulated room may lose 0.5 to 1 kW in cold weather, so about 150 W is a noticeable but modest share of daytime heat, of the order of 15 to 30 % while the sun is out. The main benefit is light. On overcast days HelioLite delivers nothing.
 
 ### Beam size and spill
 
@@ -157,8 +161,8 @@ A worst-case stow takes 18 s of motion plus 5 s to detect the loss and needs 87 
 ### Power, mass and cost
 
 - **Power:** 0.60 W average, about 14 Wh per day (R14 met) [I1].
-- **Mass:** mirror assembly 6.2 kg, yoke 2.3 kg, two drives 3.4 kg, turntable stack 0.5 kg, stow stop and latch 0.43 kg and springs 0.16 kg make 12.94 kg on the mast top against the relaxed 13 kg limit (R13 met, 0.06 kg margin); the mast adds 9.2 kg [H1 to H3].
-- **Cost:** value-engineering target: USD 455 (a hypothetical control target, Amish 2026-10-01). Estimated cost of the constructable design: USD 492 (USD 37 over the target) [J1]. The cost drivers and savings worth trying are in the design decisions register ([HLT-DEC-001](06-design-decisions.md)).
+- **Mass:** mirror assembly 6.3 kg with its edge channel, yoke 2.3 kg, two drives 3.4 kg, turntable stack 0.5 kg, stow stop and latch 0.33 kg with the aluminum bracket, and springs 0.16 kg make 12.99 kg on the mast top against the relaxed 13 kg limit (R13 met, 0.01 kg margin); the head goes on in two lifts of 4.5 and 6.3 kg; the mast adds 9.2 kg [H1 to H3].
+- **Cost:** value-engineering target: USD 455 (a hypothetical control target, Amish 2026-10-01). Estimated cost of the constructable design: USD 499 (USD 44 over the target) [J1]. The cost drivers and savings worth trying are in the design decisions register ([HLT-DEC-001](06-design-decisions.md)).
 
 ## Key design choices
 

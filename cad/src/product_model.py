@@ -1,16 +1,20 @@
 """HelioLite product appearance model (build123d), TRL 3.
 
-Finished-product look for photoreal renders: the 600 mm glass mirror with a silvered back layer,
-a rubber edge guard, the painted backing panel with its ribs and torque tube; the printed ASA yoke
-with rounded arm heads, pocketed arm faces, flanged bearings and heat-set bolts; both NEMA17 and
-NMRV030-class worm drives with cast-look gearbox bodies, output bosses, fins, adapter plates and
-motor end caps; the teal turntable on the galvanized cap plate; the stow lug, stop pad, pawl and
-pull solenoid; the elevation spring can; the homing switches; an IP65 controller on the mast with a
-clear window over the board (ESP32, RTC, two stepper drivers, buck converter and the supercapacitor
-stow reserve), a lit green status light, glands and a teal name plate; the cup anemometer on its
-side arm; the cabling with stand-off clips; and the anchor flange and socket with their bolts.
+Finished-product look for photoreal renders, updated 2026-10-02 to the constructable design (HLT-DDR-003)
+and the decisions of that day: the 600 mm glass mirror with a silvered back layer in a black EPDM edge
+channel; the painted backing panel on two aluminum rib tubes with tunnels for the torque tube (no torque
+tube saddles); trunnion end blocks and pinned stubs; the natural aluminum tube yoke (crossbar, arms and
+gusset plates) with printed bearing plugs and bronze bushes; both NEMA17 and NMRV030-class worm drives
+with silver-grey cast-look gearbox bodies, output bosses, fins, adapter plates and black motors; the teal
+turntable disc on its keyed hub on the galvanized cap plate and floor flange; the stow lug, the aluminum
+latch bracket with its stop pad, the sliding pawl and pull solenoid; the spring cans; the homing switches;
+an IP65 controller on the mast with a clear lid over the board (ESP32, RTC, two stepper drivers, buck
+converter and the supercapacitor stow reserve), a lit green status light, glands and a teal name plate;
+the cup anemometer on its side arm; the cabling with stand-off clips; and the dark anchor flange and
+socket with their bolts. The mirror, yoke, latch, turntable, cap and spring parts are the solids of
+build_components() in model.py, so they match the constructable model exactly.
 Context is a compact ground patch with a paver pad and a short section of house wall with the
-target window, closer to the mast than a real site. APPEARANCE MODEL ONLY: no tolerances, no
+target window 1.0 m from the mast, a render-only layout much closer than a real site. APPEARANCE MODEL ONLY: no tolerances, no
 fabrication detail. CONCEPT, NOT FOR FABRICATION.
 
 Every main dimension, height, pose and interface comes from PARAMS, derived() and parts() in
@@ -29,7 +33,7 @@ sys.path.insert(0, str(HERE))
 
 from build123d import (Axis, Box, Cylinder, Plane, Pos, RectangleRounded, RegularPolygon, Rot, Solid,
                        Sphere, Text, Vector, extrude, fillet)
-from model import PARAMS, derived, parts as model_parts
+from model import PARAMS, derived, build_components
 
 TITLE = "HelioLite: two-axis mini heliostat that aims sunlight at a window"
 
@@ -37,15 +41,15 @@ RENDER_VIEWS = [
     {"name": "hero", "groups": ["shell", "internal", "context"], "explode": False, "el": 22, "az": -58,
      "note": "Product render from the front right and above (about 22 deg elevation); mirror in the "
              "tracking pose on its two-axis drive at the mast head, controller with the green status "
-             "light on the mast, target window at left (drawn closer than a real site)"},
+             "light on the mast, target window at left (wall drawn 1.0 m from the mast, a render-only layout)"},
     {"name": "exploded", "groups": ["shell", "internal", "accessory"], "explode": True, "el": 28, "az": -55,
-     "note": "Exploded view from the front right and above (about 28 deg elevation): mirror, edge guard and "
-             "backing panel; torque tube, stow lug and spring can; yoke; elevation and azimuth worm drives; "
+     "note": "Exploded view from the front right and above (about 28 deg elevation): mirror, EPDM edge channel and "
+             "backing panel; rib tubes, torque tube, stow lug and spring can; aluminum tube yoke; elevation and azimuth worm drives; "
              "turntable and cap plate; controller, board and lid; anemometer; mast and anchor; power adapter"},
     {"name": "detail", "groups": ["internal"], "explode": False, "el": 20, "az": -100,
      "note": "Detail from the front, slightly right and above (about 20 deg elevation): two-axis drive with the "
              "mirror removed; elevation worm drive on the +X arm, azimuth worm drive under the teal "
-             "turntable, stow latch and spring can on the -X arm"},
+             "turntable, aluminum latch bracket and spring can on the -X arm"},
 ]
 
 FONT = str(HERE.parents[1] / ".kit" / "fonts" / "IBMPlexSans-SemiBold.ttf")
@@ -59,12 +63,12 @@ C_PANEL = "#D9DCE0"
 C_ALU = "#C9CED4"
 C_STEEL = "#9AA1A9"
 C_GALV = "#B8BEC6"
-C_YOKE = "#E3E5E8"
 C_GB = "#B0B7BF"
 C_MOTOR = "#22262B"
 C_DARK = "#2B2F36"
 C_LATCH = "#4B5159"
 C_PAD = "#B45309"
+C_BRONZE = "#B07A3B"
 C_BOX = "#E9EAEC"
 C_LID = "#DDE0E4"
 C_WINDOW = "#DCEBF5"
@@ -169,7 +173,6 @@ def _text_plate(txt, size, depth):
 # ---------------------------------------------------------------- model
 def product_parts(P=PARAMS):
     D = derived(P)
-    m = {bom: shape for bom, _n, shape, _c, _e in model_parts(P=P, below_ground=False)}
     el, az = P["track_el"], P["track_az"]
     h = P["mirror"] / 2
     t = P["tube"]
@@ -213,101 +216,43 @@ def product_parts(P=PARAMS):
     silver = _fillet_try(silver, silver.edges().filter_by(Axis.Z), [3.0, 2.0])
     add("Mirror silvering", on_mirror(silver), C_SILVER, "metal", 1, "shell", ex(Z_HEAD, 500))
 
-    # rubber edge guard around the glass and panel edges (U channel)
-    g = 3.0
-    guard_o = _box(-h - g, h + g, -h - g, h + g, zb - 1.0, zg1 + 1.2)
-    guard_o = _fillet_try(guard_o, guard_o.edges().filter_by(Axis.Z), [6.0, 4.0])
-    guard_o = _fillet_try(guard_o, guard_o.edges().filter_by(Axis.Z, reverse=True), [1.2, 0.8])
-    guard = guard_o - _box(-h + 10, h - 10, -h + 10, h - 10, zb - 5, zg1 + 5) \
-        - _box(-h - 0.01, h + 0.01, -h - 0.01, h + 0.01, zb, zg1)
-    # the lip over the glass front is 10 mm wide; keep only the strip outside the glass edge plus the lip
-    add("Mirror edge guard (EPDM)", on_mirror(guard), C_RUBBER, "rubber", 1, "shell", ex(Z_HEAD, 420))
+    # Constructable components from model.py (decisions of 2026-10-02: aluminum tube yoke, rib tunnels,
+    # aluminum latch bracket, EPDM edge channel; no torque tube saddles)
+    C = build_components(el=el, az=az, P=P, below_ground=False)
 
+    def mcomp(*keys):
+        sh = None
+        for k in keys:
+            sh = C[k][1] if sh is None else sh + C[k][1]
+        return sh
+
+    add("Mirror edge channel (EPDM)", mcomp("edge"), C_RUBBER, "rubber", 1, "shell", ex(Z_HEAD, 420))
     rw, rd = P["rib"]
     panel = _box(-h, h, -h, h, zb, zb + P["back_t"])
     panel = _fillet_try(panel, panel.edges().filter_by(Axis.Z), [3.0, 2.0])
     add("Backing panel (ACP)", on_mirror(panel), C_PANEL, "painted", 2, "shell", ex(Z_HEAD, 260))
-    ribs = None
-    for x0 in (-h + 60, h - 60 - rw):
-        r_ = _box(x0, x0 + rw, -h + 20, h - 20, zb - rd, zb)
-        r_ -= _box(x0 + 2, x0 + rw - 2, -h + 19, h - 19, zb - rd + 2, zb - 2)
-        r_ = _fillet_try(r_, r_.edges().filter_by(Axis.Y), [1.0, 0.5])
-        ribs = r_ if ribs is None else ribs + r_
-    # rib end caps (black plugs)
     plugs = None
-    for x0 in (-h + 60, h - 60 - rw):
+    for sx in (-1, 1):
+        x0 = sx * P["rib_x"] - rw / 2
         for y in (-h + 20, h - 20):
-            s = 1 if y > 0 else -1
-            p_ = _box(x0 + 0.5, x0 + rw - 0.5, y, y + s * 3.0, zb - rd + 0.5, zb - 0.5)
+            s_ = 1 if y > 0 else -1
+            p_ = _box(x0 + 0.5, x0 + rw - 0.5, y, y + s_ * 3.0, zb - rd + 0.5, zb - 0.5)
             p_ = _fillet_try(p_, p_.edges(), [0.8, 0.4])
             plugs = p_ if plugs is None else plugs + p_
-    add("Rib tubes (aluminum)", on_mirror(ribs), C_ALU, "metal", 2, "shell", ex(Z_HEAD, 220))
+    add("Rib tubes with tunnels (aluminum)", mcomp("ribs"), C_ALU, "metal", 2, "shell", ex(Z_HEAD, 220))
     add("Rib end plugs", on_mirror(plugs), C_RUBBER, "rubber", 2, "shell", ex(Z_HEAD, 220))
+    add("Torque tube (aluminum)", mcomp("tube"), C_ALU, "metal", 2, "internal", ex(Z_HEAD))
+    add("Trunnion end blocks (aluminum)", mcomp("blocks"), C_ALU, "metal", 2, "internal", ex(Z_HEAD))
+    add("Trunnion stubs and cross pins (steel)", mcomp("stubs", "pins"), C_STEEL, "metal", 2, "internal", ex(Z_HEAD))
 
-    # torque tube, clamp saddles and trunnions (drive side, group internal)
-    ax_in = ax_ - at / 2 - 2
-    tw = P["tube_wall"]
-    tube = _box(-ax_in, ax_in, -t / 2, t / 2, -t / 2, t / 2)
-    tube = _fillet_try(tube, tube.edges().filter_by(Axis.X), [2.5, 1.5])
-    tube -= _box(-ax_in - 1, ax_in + 1, -t / 2 + tw, t / 2 - tw, -t / 2 + tw, t / 2 - tw)
-    add("Torque tube (aluminum)", on_mirror(tube), C_ALU, "metal", 2, "internal", ex(Z_HEAD))
-    saddles = None
-    for x in (-h + 72.5, h - 72.5):
-        s_ = _box(x - 22, x + 22, -t / 2 - 3, t / 2 + 3, -t / 2 - 3, zb)
-        s_ = _fillet_try(s_, s_.edges().filter_by(Axis.X), [2.5, 1.5])
-        s_ -= _box(x - 23, x + 23, -t / 2 - 0.01, t / 2 + 0.01, -t / 2 - 0.01, t / 2 + 0.01)
-        for dx in (-13, 13):
-            s_ += _hex_z(x + dx, 0, -t / 2 - 3, 8.0, -3.5)
-        saddles = s_ if saddles is None else saddles + s_
-    add("Torque tube saddles", on_mirror(saddles), C_STEEL, "metal", 2, "internal", ex(Z_HEAD))
-    x_t0, x_t1 = -ax_ - at / 2 - 5, ax_ + at / 2 + gx / 2
-    trun = _xcyl(x_t0, x_t1, 0, 0, P["trunnion_d"] / 2)
-    trun = _fillet_try(trun, trun.edges(), [1.0, 0.5])
-    add("Trunnion stubs (steel)", on_mirror(trun), C_STEEL, "metal", 2, "internal", ex(Z_HEAD))
-
-    # ============================================================ yoke (BOM 3), yoke frame
-    yb = D["yoke_base"] - AZ_
-    cz = D["cross_top"] - AZ_
-    base = _zcyl(0, 0, yb, yb + P["base_t"], 80)
-    base = _fillet_try(base, _top(base), [4.0, 2.5])
-    base = _fillet_try(base, _bottom(base), [1.5, 1.0])
-    cross = _box(-ax_ - at / 2, ax_ + at / 2, -aw / 2, aw / 2, cz - P["cross_h"], cz)
-    cross = _fillet_try(cross, cross.edges().filter_by(Axis.X), [8.0, 5.0])
-    arms = None
-    for sx in (-1, 1):
-        xc = sx * ax_
-        a_ = _box(xc - at / 2, xc + at / 2, -aw / 2, aw / 2, cz - P["cross_h"], 40 - aw / 2)
-        a_ += _xcyl(xc - at / 2, xc + at / 2, 0, 40 - aw / 2, aw / 2)        # rounded head round the trunnion
-        a_ = _fillet_try(a_, a_.edges().filter_by(Axis.Z), [8.0, 5.0])
-        # shallow design pockets on both faces
-        for sy in (-1, 1):
-            a_ -= _box(xc - at / 2 + 8, xc + at / 2 - 8, sy * aw / 2 - 1.5, sy * aw / 2 + 1.5, cz + 25, -95)
-        # bearing bore
-        a_ -= _xcyl(xc - at / 2 - 1, xc + at / 2 + 1, 0, 0, 11)
-        arms = a_ if arms is None else arms + a_
-    yoke = base + cross + arms
-    add("Printed yoke (ASA)", on_yoke(yoke), C_YOKE, "plastic", 3, "internal", ex(280))
-    bear = None
-    for xf, s in ((ax_ - at / 2, -1), (-ax_ + at / 2, 1), (-ax_ - at / 2, -1)):
-        b_ = _xcyl(xf, xf + s * 4.0, 0, 0, 20) - _xcyl(xf - 5, xf + 5, 0, 0, P["trunnion_d"] / 2 + 0.3)
-        b_ += _xcyl(xf, xf - s * 12, 0, 0, 11) - \
-            _xcyl(xf - 13, xf + 13, 0, 0, P["trunnion_d"] / 2 + 0.3)
-        for k in range(3):
-            a = radians(90 + 120 * k)
-            b_ += _xcyl(xf + s * 4, xf + s * 7, 15 * cos(a), 15 * sin(a), 2.6)
-        bear = b_ if bear is None else bear + b_
-    add("Flanged bearings", on_yoke(bear), C_STEEL, "metal", 3, "internal", ex(280))
-    bolts = None
-    for k in range(4):
-        a = radians(45 + 90 * k)
-        b_ = _zcyl(62 * cos(a), 62 * sin(a), yb + P["base_t"], yb + P["base_t"] + 5, 5.0)
-        b_ -= _hex_z(62 * cos(a), 62 * sin(a), yb + P["base_t"] + 2.5, 4.0, 3.0)
-        bolts = b_ if bolts is None else bolts + b_
-    for sx in (-1, 1):
-        for zz in (cz - 12, cz + 8):
-            b_ = _ycyl(sx * ax_, -aw / 2 - 5, -aw / 2, zz, 5.0) - _ycyl(sx * ax_, -aw / 2 - 6, -aw / 2 - 3, zz, 2.3)
-            bolts += b_
-    add("Yoke bolts (M6)", on_yoke(bolts), C_STEEL, "metal", 13, "internal", ex(280))
+    # ============================================================ yoke (BOM 3): natural aluminum tube frame
+    add("Yoke crossbar (aluminum tube)", mcomp("crossbar"), C_ALU, "metal", 3, "internal", ex(280))
+    add("Yoke arms (aluminum tube)", mcomp("arm_r", "arm_l"), C_ALU, "metal", 3, "internal", ex(280))
+    add("Gusset plates (aluminum)", mcomp("gussets"), C_ALU, "metal", 3, "internal", ex(280))
+    add("Bearing plugs (printed ASA)", mcomp("plugs"), C_DARK, "plastic", 3, "internal", ex(280))
+    add("Flanged bronze bushes", mcomp("bushes"), C_BRONZE, "metal", 3, "internal", ex(280))
+    add("Yoke, trunnion and latch bolts (M6)", mcomp("gusset_bolts", "cross_bolts", "el_bolts", "block_bolts", "latch_bolts"),
+        C_STEEL, "metal", 13, "internal", ex(280))
 
     # ============================================================ worm drive helper
     def worm_box(x0, x1, y0, y1, z0, z1, bore_axis):
@@ -375,13 +320,9 @@ def product_parts(P=PARAMS):
     # ============================================================ azimuth drive, cap plate (BOM 5), world
     zc0 = D["mast_top"]
     z0 = zc0 + P["cap_t"]
-    cap = _box(-P["cap"] / 2, P["cap"] / 2, -P["cap"] / 2, P["cap"] / 2, zc0, z0)
-    cap = _fillet_try(cap, cap.edges().filter_by(Axis.Z), [10.0, 6.0])
-    cap = _fillet_try(cap, _top(cap), [1.5, 1.0])
-    for sx in (-1, 1):
-        for sy in (-1, 1):
-            cap += _hex_z(sx * 64, sy * 64, z0, 10.0, 4.5)
-    add("Mast cap plate (galvanized)", cap, C_GALV, "metal", 5, "internal", (0, 0, 40))
+    add("Mast cap plate (galvanized)", mcomp("cap"), C_GALV, "metal", 5, "internal", (0, 0, 40))
+    add("Floor flange (galvanized)", mcomp("floor_flange"), C_GALV, "metal", 5, "internal", (0, 0, 20))
+    add("Flange screws (M8)", mcomp("flange_screws"), C_STEEL, "metal", 13, "internal", (0, 0, 20))
     gb_a = worm_box(-gx / 2, gx / 2, -gy / 3, gy * 2 / 3, z0, z0 + gz, "Z")
     add("Azimuth gearbox (NMRV030)", gb_a, C_GB, "metal", 5, "internal", (0, 0, 110))
     zc = z0 + gz / 2
@@ -398,61 +339,25 @@ def product_parts(P=PARAMS):
     add("Azimuth motor (NEMA17)", mb, C_MOTOR, "painted", 5, "internal", (0, -130, 110))
     add("Azimuth motor end caps", mc, C_ALU, "metal", 5, "internal", (0, -130, 110))
 
-    # ============================================================ turntable (BOM 6)
-    tt = _zcyl(0, 0, D["gb_top"], D["tt_top"], P["turntable_d"] / 2)
-    tt = _fillet_try(tt, _top(tt), [3.0, 2.0])
-    tt = _fillet_try(tt, _bottom(tt), [1.5, 1.0])
-    tt -= _zcyl(0, 0, D["gb_top"] + 8.8, D["gb_top"] + 9.4, P["turntable_d"] / 2 + 1) - \
-        _zcyl(0, 0, D["gb_top"] + 8, D["gb_top"] + 10, P["turntable_d"] / 2 - 0.6)   # bearing seam
-    add("Azimuth turntable", tt, C_ACCENT, "painted", 6, "internal", (0, 0, 190))
+    # ============================================================ turntable (BOM 6): teal disc on a keyed hub
+    add("Azimuth turntable disc", mcomp("disc"), C_ACCENT, "painted", 6, "internal", (0, 0, 190))
+    add("Keyed flange hub and output shaft", mcomp("hub", "shaft"), C_STEEL, "metal", 6, "internal", (0, 0, 160))
+    add("Bronze thrust washer", mcomp("washer"), C_BRONZE, "metal", 6, "internal", (0, 0, 140))
 
     # ============================================================ preload springs (BOM 16)
-    xo = -ax_ - at / 2
-    sl, sd = P["spring_l"], P["spring_d"]
-    can = _xcyl(xo - 5 - sl, xo - 5, 0, 0, sd / 2)
-    can = _fillet_try(can, can.faces().sort_by(Axis.X)[0].edges(), [4.0, 2.5])
-    for k in range(12):
-        a = radians(30 * k)
-        can += Pos(xo - 5 - sl / 2, (sd / 2) * cos(a), (sd / 2) * sin(a)) * Rot(a * 57.2958, 0, 0) * Box(sl - 10, 1.6, 3.0)
-    can += _xcyl(xo - 5 - sl - 1.5, xo - 5 - sl + 0.5, 0, 0, 10)
-    add("Elevation spring can", on_yoke(can), C_DARK, "plastic", 16, "internal", ex(Z_HEAD, along_yx=-170))
-    sp_az = _zcyl(0, 0, D["mast_top"] - sl - 20, D["mast_top"] - 20, ri - 1)
-    add("Azimuth spring can (in mast top)", sp_az, C_DARK, "plastic", 16, "internal", (0, 0, 60))
+    add("Elevation spring can", mcomp("spring_el"), C_DARK, "plastic", 16, "internal", ex(Z_HEAD, along_yx=-170))
+    add("Azimuth spring can (in mast top)", mcomp("spring_az"), C_DARK, "plastic", 16, "internal", (0, 0, 60))
 
     # ============================================================ stow stop and latch (BOM 17)
-    lx, lt = P["lug_x"], P["lug_t"]
-    lug = _box(lx - lt / 2, lx + lt / 2, P["lug_r0"], P["lug_r1"], -P["lug_w"] / 2, P["lug_w"] / 2)
-    lug = _fillet_try(lug, lug.faces().sort_by(Axis.Y)[-1].edges().filter_by(Axis.X), [8.0, 5.0])
-    lug = on_mirror(lug)
-    add("Stow lug (steel)", lug, C_LATCH, "painted", 17, "internal", ex(Z_HEAD))
-    wlo, whi = -(P["lug_r1"] + 10), -35.0
-    xa_in = -ax_ + at / 2
-    hw = P["lug_w"] / 2
-    brk = _box(xa_in, xa_in + 4, wlo, whi + 15, -hw - P["pad_t"] - 12, hw + 22) + \
-        _box(xa_in + 4, lx + lt / 2 + 2, wlo, wlo + 10, -hw - P["pad_t"] - 12, hw + 22)
-    brk = _fillet_try(brk, brk.edges().filter_by(Axis.X), [2.0, 1.0])
-    for zz in (-hw - 6, hw + 12):
-        brk += Pos(xa_in + 4, -28, zz) * Rot(0, 90, 0) * \
-            extrude(RegularPolygon(8.0 / 2 / cos(radians(30)), 6), amount=3.5)
-    add("Stop bracket (steel)", on_yoke(brk), C_LATCH, "painted", 17, "internal", ex(280, along_yx=-130))
-    pad = _box(xa_in + 4, lx + lt / 2 + 2, -P["stop_r"] - 12, -P["stop_r"] + 12, -hw - P["pad_t"] - 0.5, -hw - 0.5)
-    pad = _fillet_try(pad, pad.edges().filter_by(Axis.X), [1.0, 0.5])
-    add("Stop pad (PU 90A)", on_yoke(pad), C_PAD, "rubber", 17, "internal", ex(280, along_yx=-130))
-    pawl = _box(xa_in + 4, lx + lt / 2 + 2, -P["stop_r"] - 12, -P["stop_r"] + 12, hw + 0.5, hw + 8)
-    pawl = _fillet_try(pawl, pawl.edges().filter_by(Axis.X), [2.0, 1.0])
-    pawl += _xcyl(xa_in + 3, lx + lt / 2 + 3, wlo + 16, hw + 4, 4.0)            # pivot pin
-    add("Latch pawl (steel)", on_yoke(pawl), C_STEEL, "metal", 17, "internal", ex(280, along_yx=-130))
-    sol = _box(xa_in - 30, xa_in - 2, wlo, wlo + 22, hw + 8, hw + 34)
-    sol = _fillet_try(sol, sol.edges().filter_by(Axis.X), [2.0, 1.0])
-    sol += _xcyl(xa_in - 2, xa_in + 3, wlo + 11, hw + 21, 3.0)                     # plunger
-    add("Pull solenoid (12 V)", on_yoke(sol), C_GALV, "metal", 17, "internal", ex(280, along_yx=-160))
+    add("Stow lug (steel)", mcomp("lug"), C_LATCH, "painted", 17, "internal", ex(Z_HEAD))
+    add("Latch bracket and stop block (aluminum)", mcomp("bracket"), C_ALU, "metal", 17, "internal", ex(280, along_yx=-130))
+    add("Stop pad (PU 90A)", mcomp("pad"), C_PAD, "rubber", 17, "internal", ex(280, along_yx=-130))
+    add("Sliding latch pawl (steel)", mcomp("pawl"), C_STEEL, "metal", 17, "internal", ex(280, along_yx=-130))
+    add("Pull solenoid (12 V)", mcomp("solenoid"), C_GALV, "metal", 17, "internal", ex(280, along_yx=-160))
 
     # ============================================================ homing Hall switches (BOM 10)
-    hs = _fbox(-P["cap"] / 2 + 5, -P["cap"] / 2 + 25, -10, 10, z0, z0 + 15, [2.0, 1.0])
-    hs += _rod((-P["cap"] / 2 + 15, -10, z0 + 7), (-P["cap"] / 2 + 15, -30, z0 + 7), 2.0)
-    add("Azimuth homing switch", hs, C_DARK, "plastic", 10, "internal", (0, 0, 110))
-    he = _fbox(-ax_ + at / 2, -ax_ + at / 2 + 15, -12, 12, -200, -180, [2.0, 1.0])
-    add("Elevation homing switch", on_yoke(he), C_DARK, "plastic", 10, "internal", ex(280, along_yx=-60))
+    add("Azimuth homing switch on its post", mcomp("hall_az"), C_DARK, "plastic", 10, "internal", (0, 0, 110))
+    add("Elevation homing switch", mcomp("hall_el"), C_DARK, "plastic", 10, "internal", ex(280, along_yx=-60))
 
     # ============================================================ mast (BOM 7) and anchor (BOM 8)
     mast = _zcyl(0, 0, P["flange_t"], D["mast_top"], ro) - _zcyl(0, 0, P["flange_t"] - 1, D["mast_top"] + 1, ri)

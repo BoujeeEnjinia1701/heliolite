@@ -3,6 +3,9 @@ Revised 2026-09-25 for HLT-DDR-002: stow stop and latch (R9) and drive preload s
 Revised 2026-10-01 for HLT-DDR-003 (design for construction): every part can now be made by its stated
 process and every part is fixed to the parts next to it. The changes are listed in
 docs/decisions/0003-design-for-construction.md; the build plan is docs/05-build-plan.md.
+Revised 2026-10-02 for the decisions of that day (HLT-DEC-001): the latch bracket and stop block are
+aluminum (6 mm angle), a black EPDM edge channel guards the glass and panel edges, and the checks
+include lowering the mirror assembly into the yoke at height (two-lift fitting from a platform).
 
 Run from the repo root:
     python cad/src/model.py            export STEP and STL into cad/step and cad/stl
@@ -72,6 +75,12 @@ PARAMS = {
     "lug_x": -307.0,                        # lug mid-plane, between the mirror edge (-300) and the -X arm (-320)
     "stop_r": 55.0,                         # contact radius of the stop pad and latch pawl
     "pad_t": 3.0,                           # polyurethane (90A) stop pad thickness
+    "brk_t": 6.0,                           # latch bracket: 6 mm aluminum angle, 6063-T6 (decided 2026-10-02; was 4 mm steel)
+    # mirror edge guard (decided 2026-10-02): black EPDM U channel round the glass and panel edges
+    "edge_wall": 2.5,                       # channel wall thickness
+    "edge_lip": (3.0, 8.0),                 # lip width over the glass front and over the panel back
+    "edge_gap_l": 95.0,                     # left (latch) edge: channel stops this far each side of the tube centre
+    "edge_gap_r": 15.0,                     # right edge: notch round the torque tube
     # drive preload springs (decided 2026-09-25, HLT-DDR-002: about 3 N m each, biasing toward stow)
     "spring_d": 50.0, "spring_l": 30.0,     # spiral spring can envelope
     # poses shown
@@ -198,6 +207,12 @@ def build_components(el=None, az=None, P=PARAMS, below_ground=True):
     zb = t / 2
     add("glass", "Glass mirror", on_mirror(_box(-h, h, -h, h, zb + P["back_t"], zb + P["back_t"] + P["glass_t"])), "#A9C7DA", 1)
     add("panel", "Backing panel", on_mirror(_box(-h, h, -h, h, zb, zb + P["back_t"])), "#9CA3AF", 2)
+    ew = P["edge_wall"]; lf, lb_ = P["edge_lip"]; zg = zb + P["back_t"] + P["glass_t"]
+    edge = (_box(-h - ew, h + ew, -h - ew, h + ew, zb - ew, zg + ew) - _box(-h, h, -h, h, zb, zg)
+            - _box(-h + lf, h - lf, -h + lf, h - lf, zg - 1, zg + ew + 1) - _box(-h + lb_, h - lb_, -h + lb_, h - lb_, zb - ew - 1, zb + 1))
+    edge = edge - _box(-h - ew - 1, -h + lb_ + 1, -P["edge_gap_l"], P["edge_gap_l"], zb - ew - 1, zg + ew + 1)
+    edge = edge - _box(h - lb_ - 1, h + ew + 1, -P["edge_gap_r"], P["edge_gap_r"], zb - ew - 1, zg + ew + 1)
+    add("edge", "Edge channel (EPDM)", on_mirror(edge), "#111827", 1)
     rw, rd = P["rib"]
     rwall = P["rib_wall"]
     ribs = []
@@ -259,8 +274,7 @@ def build_components(el=None, az=None, P=PARAMS, below_ground=True):
     for k in range(3):                                           # left arm: spring can screws (outer side)
         a_ = _m.radians(90 + 120 * k)
         arms[0] = arms[0] - _xcyl(2.25, -xout - 1, -xout + 3, 20 * _m.cos(a_), 20 * _m.sin(a_))
-    for y in (-5, 5):                                            # left arm: Hall switch screws (inner side)
-        arms[0] = arms[0] - _xcyl(1.6, -xin - 3, -xin + 1, y, 30)
+    arms[0] = arms[0] - _box(-xin - 3, -xin + 1, -6.5, 6.5, 22.5, 38.5)   # left arm: window for the Hall switch (inner side)
     add("arm_r", "Right arm (drive side)", on_yoke(arms[1]), "#94A3B8", 3)
     add("arm_l", "Left arm (latch side)", on_yoke(arms[0]), "#94A3B8", 3)
     gus = []
@@ -393,7 +407,7 @@ def build_components(el=None, az=None, P=PARAMS, below_ground=True):
     # ---------------- 10 homing Hall switches
     zdb = D["tt_top"] - P["disc_t"]                               # underside of the turntable disc
     hall_az = _box(-62, -46, -8, 8, zc0, zdb - 9) + _box(-60, -48, -6, 6, zdb - 9, zdb - 4)
-    hall_el = on_yoke(_box(-xin, -xin + 3, -6, 6, 23, 38))
+    hall_el = on_yoke(_box(-xin - awall, -xin - awall + 3, -6, 6, 23, 38))   # in the arm wall's window, back on the plug, 1 mm proud
     add("hall_az", "Azimuth Hall switch on its post", hall_az, "#C2410C", 10)
     add("hall_el", "Elevation Hall switch", hall_el, "#C2410C", 10)
 
@@ -437,27 +451,28 @@ def build_components(el=None, az=None, P=PARAMS, below_ground=True):
     add("lug", "Stow lug", on_yoke(Rot(90 - el, 0, 0) * lug), "#B91C1C", 17)
     hw = P["lug_w"] / 2
     zlo, zhi = -27.5, 34.5
-    legA = (_box(-xin, -xin + 4, -83, -15, zlo, zhi) - _box(-xin - 1, -xin + 5, -62, -48, 12.5, 21.5)   # slot for the pawl
-            - _xcyl(21.0, -xin - 1, -xin + 5))                                                           # clear of the turning tube end
-    wall = _box(-xin + 4, lx + lt / 2 + 2, -83, -79, zlo, zhi)
-    block = _box(-xin + 4, lx + lt / 2 + 2, -70, -40, zlo, -hw - P["pad_t"] - 0.5)
+    bt = P["brk_t"]
+    legA = (_box(-xin, -xin + bt, -83, -15, zlo, zhi) - _box(-xin - 1, -xin + bt + 1, -62, -48, 12.5, 21.5)   # slot for the pawl
+            - _xcyl(21.0, -xin - 1, -xin + bt + 1))                                                           # clear of the turning tube end
+    wall = _box(-xin + bt, lx + lt / 2 + 2, -83, -83 + bt, zlo, zhi)
+    block = _box(-xin + bt, lx + lt / 2 + 2, -70, -40, zlo, -hw - P["pad_t"] - 0.5)
     brk = legA + wall + block
     for z in (-15.0, 22.0):
-        brk = brk - _xcyl(3.3, -xin - 1, -xin + 5, -22, z)
-    add("bracket", "Latch bracket and stop block", on_yoke(brk), "#7F1D1D", 17)
-    add("pad", "Stop pad", on_yoke(_box(-xin + 4, lx + lt / 2 + 2, -70, -40, -hw - P["pad_t"] - 0.5, -hw - 0.5)), "#EA580C", 17)
+        brk = brk - _xcyl(3.3, -xin - 1, -xin + bt + 1, -22, z)
+    add("bracket", "Latch bracket and stop block (aluminum)", on_yoke(brk), "#7F1D1D", 17)
+    add("pad", "Stop pad", on_yoke(_box(-xin + bt, lx + lt / 2 + 2, -70, -40, -hw - P["pad_t"] - 0.5, -hw - 0.5)), "#EA580C", 17)
     add("pawl", "Latch pawl", on_yoke(_box(-xin - 8, lx + lt / 2 + 1, -61, -49, hw + 0.5, hw + 8.5)), "#DC2626", 17)
     sol = _box(-xin - 32, -xin - 10, -63, -47, hw - 4.5, hw + 12.5) + _box(-xin - 34, -xin, -65, -45, hw - 6.5, hw - 4.5)
     add("solenoid", "Release solenoid on its strap", on_yoke(sol), "#991B1B", 17)
     lb = []
     for z in (-15.0, 22.0):
-        lb.append(_xcyl(3.0, -xin + 4, -xin - at, -22, z) + _xcyl(5.0, -xin - at - 4, -xin - at, -22, z))
+        lb.append(_xcyl(3.0, -xin + bt, -xin - at, -22, z) + _xcyl(5.0, -xin - at - 4, -xin - at, -22, z))
     add("latch_bolts", "Latch bracket screws (2, M6)", on_yoke(_fuse(lb)), "#111827", 13)
     return C
 
 
 GROUPS = [
-    (1, "Glass mirror, 600 x 600 mm", ["glass"], "#A9C7DA", (-250, -200, 700)),
+    (1, "Glass mirror, 600 x 600 mm, with edge channel", ["glass", "edge"], "#A9C7DA", (-250, -200, 700)),
     (2, "Backing panel, ribs and torque tube", ["panel", "ribs", "tube", "blocks", "stubs", "pins", "block_bolts"], "#6B7280", (-100, -100, 420)),
     (3, "Gimbal yoke, aluminum frame", ["crossbar", "arm_r", "arm_l", "gussets", "gusset_bolts", "plugs", "bushes", "cross_bolts"], "#B8C2CC", (0, 0, 170)),
     (4, "Elevation drive, NEMA17 on NMRV030", ["el_gb", "el_motor", "el_bolts"], "#1F2937", (420, 0, 220)),
@@ -492,7 +507,7 @@ FASTENERS = {"pins", "block_bolts", "gusset_bolts", "cross_bolts", "el_bolts", "
 # pairs that are meant to pass through each other in the model (a shaft in a bore is modelled with a bore,
 # so these are only the fasteners and cables, which pass through holes not drawn in thin walls)
 TOUCH = [  # parts that must touch (distance under 0.05 mm): one line per joint in the build plan
-    ("glass", "panel"), ("panel", "ribs"), ("panel", "tube"), ("blocks", "tube"), ("stubs", "blocks"),
+    ("glass", "panel"), ("edge", "glass"), ("edge", "panel"), ("panel", "ribs"), ("panel", "tube"), ("blocks", "tube"), ("stubs", "blocks"),
     ("crossbar", "arm_r"), ("crossbar", "arm_l"), ("gussets", "arm_r"), ("gussets", "arm_l"), ("gussets", "crossbar"),
     ("plugs", "arm_r"), ("plugs", "arm_l"), ("bushes", "arm_r"), ("bushes", "arm_l"), ("bushes", "stubs"), ("bushes", "tube"),
     ("el_gb", "arm_r"), ("el_motor", "el_gb"), ("stubs", "el_gb"), ("spring_el", "arm_l"), ("stubs", "spring_el"),
@@ -500,13 +515,15 @@ TOUCH = [  # parts that must touch (distance under 0.05 mm): one line per joint 
     ("washer", "az_gb"), ("hub", "washer"), ("disc", "hub"), ("shaft", "hub"), ("crossbar", "disc"),
     ("shaft", "spring_az"), ("spring_az", "mast"), ("mast", "anchor"),
     ("ctrl_plate", "ctrl"), ("ctrl_plate", "mast"), ("anemo_clamp", "mast"), ("anemo", "anemo_clamp"),
-    ("hall_az", "cap"), ("hall_el", "arm_l"), ("lug", "tube"), ("bracket", "arm_l"), ("pad", "bracket"), ("solenoid", "bracket"),
+    ("hall_az", "cap"), ("hall_el", "plugs"), ("lug", "tube"), ("bracket", "arm_l"), ("pad", "bracket"), ("solenoid", "bracket"),
 ]
 CLEAR = [  # (a, b, minimum gap mm): parts that must stay apart
     ("glass", "arm_r", 15), ("glass", "arm_l", 15), ("glass", "crossbar", 40), ("lug", "glass", 2), ("lug", "arm_l", 5),
-    ("hall_el", "lug", 4), ("pawl", "lug", 0.3), ("pad", "lug", 0.3), ("hall_az", "disc", 3), ("solenoid", "arm_l", 10),
+    ("hall_el", "lug", 4), ("hall_el", "tube", 0.5), ("pawl", "lug", 0.3), ("pad", "lug", 0.3), ("hall_az", "disc", 3), ("solenoid", "arm_l", 10),
     ("el_motor", "arm_r", 1), ("az_motor", "flange_screws", 1), ("cable", "disc", 2), ("cable", "az_motor", 2),
     ("ribs", "crossbar", 40), ("ctrl", "mast", 2),
+    ("edge", "arm_r", 15), ("edge", "arm_l", 15), ("edge", "crossbar", 40), ("edge", "lug", 0.5), ("edge", "tube", 0.5),
+    ("lug", "bracket", 2),
 ]
 
 
@@ -530,7 +547,7 @@ def check(P=PARAMS, verbose=True):
             v = 0.0
         (bad if v > 0.5 else ok).append(f"no overlap {a} / {b}: {v:.1f} mm3")
     # elevation sweep: the moving mirror parts never hit the fixed ones from stow to face-up
-    moving = ["glass", "panel", "ribs", "tube", "blocks", "lug"]
+    moving = ["glass", "edge", "panel", "ribs", "tube", "blocks", "lug"]
     for e in range(-90, 91, 15):
         Ce = build_components(el=float(e), az=0.0, P=P, below_ground=False)
         for mk in moving:
@@ -539,6 +556,26 @@ def check(P=PARAMS, verbose=True):
                     continue
                 d = Ce[mk][1].distance_to(Ce[fk][1])
                 (ok if d > 0.2 else bad).append(f"sweep el {e:+d}: {mk} / {fk} gap {d:.1f} mm")
+    # two-lift fitting at height (decided 2026-10-02): the yoke, drive and latch are on the mast; the mirror
+    # assembly, upright (elevation 0) with its end blocks fitted and no stubs, is lowered between the arms
+    from build123d import Pos as _Pos
+    C0 = build_components(el=0.0, az=0.0, P=P, below_ground=False)
+    mir = ["glass", "edge", "panel", "ribs", "tube", "blocks", "lug"]
+    fixed = ["arm_r", "arm_l", "crossbar", "gussets", "plugs", "bushes", "bracket", "pad", "pawl", "solenoid", "hall_el",
+             "el_gb", "el_bolts", "disc"]
+    for dz in range(0, 451, 25):
+        for mk in mir:
+            ms = _Pos(0, 0, dz) * C0[mk][1]
+            for fk in fixed:
+                if mk in ("tube", "blocks") and fk == "bushes":
+                    try:
+                        v = (ms & C0[fk][1]).volume       # tube ends pass the bush flanges (cut 1 mm short: 0.5 mm each side)
+                    except Exception:
+                        v = 0.0
+                    (bad if v > 0.5 else ok).append(f"lower dz {dz}: {mk} / {fk} overlap {v:.1f} mm3")
+                    continue
+                d = ms.distance_to(C0[fk][1])
+                (ok if d > 0.2 else bad).append(f"lower dz {dz}: {mk} / {fk} gap {d:.1f} mm")
     if verbose:
         for s in bad:
             print("FAIL", s)

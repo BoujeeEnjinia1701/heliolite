@@ -6,7 +6,7 @@ Figures quoted below are printed by docs/04-calcs/sizing.py (HLT-CAL-001); tags 
 
 Coordinates in mm, Z up, ground at Z = 0. The mast stands at the origin. The mirror
 turns in azimuth about the mast axis and in elevation about a horizontal torque tube
-close to its center of mass (13.7 mm offset, HLT-CAL-001 [H4]). The house wall with the target window is a
+close to its center of mass (12.5 mm offset, HLT-CAL-001 [H4]). The house wall with the target window is a
 context part shown only in the hero render.
 """
 import sys
@@ -43,19 +43,19 @@ context = [Part("House wall (context)", wall, "#E7E5E4"),
 
 render_all(
     parts, project="HelioLite", title="Two-axis mini heliostat concept", dwg_no="HLT-DWG-010",
-    date="2026-10-01",
-    key_figures=["Mirror 600 x 600 mm (0.36 m²), center 2.2 m above ground",
-                 "About 159 W of sunlight into the room at 800 W/m² DNI [A2]",
-                 "0.5 kWh (21 Dec) to 1.0 kWh (1 Feb) into the room, reference site [B3]",
+    date="2026-10-02",
+    key_figures=["Mirror 600 x 600 mm in an EPDM edge channel, center 2.2 m up",
+                 "About 155 W of sunlight into the room at 800 W/m² DNI [A2]",
+                 "0.49 kWh (21 Dec) to 0.98 kWh (1 Feb) into the room, site A [B3]",
                  "Open loop: sun-position algorithm and RTC, no sun sensor",
                  "Beam error 0.30° typical against 0.5° with preload springs [D5]",
                  "Face-down stow in 23 s; latch carries the storm load [F1, E7]",
-                 "Parts about $492; value-engineering target $455 [J1]"],
+                 "Parts about $499; value-engineering target $455 [J1]"],
     cut=False, context=context,
     flow={"title": "instantaneous power, sun to room at the design point, W (all values are estimates)",
           "unit": "W",
-          "stages": [("DNI x mirror area", 288), ("Intercepted by mirror", 244), ("Reflected beam", 216),
-                     ("Beam at window", 211), ("Into the room", 159)],
-          "losses": [(0, "Cosine loss (est.)", 44), (1, "Reflectance, soiling (est.)", 28),
-                     (2, "Edge, spill (est.)", 5), (3, "Glazing (est.)", 52)]},
+          "stages": [("DNI x clear aperture", 282), ("Intercepted by mirror", 239), ("Reflected beam", 211),
+                     ("Beam at window", 207), ("Into the room", 155)],
+          "losses": [(0, "Cosine loss (est.)", 43), (1, "Reflectance, soiling (est.)", 28),
+                     (2, "Edge, spill (est.)", 4), (3, "Glazing (est.)", 52)]},
 )

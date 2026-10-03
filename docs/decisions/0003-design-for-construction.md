@@ -3,7 +3,7 @@ doc_id: HLT-DDR-003
 title: HelioLite design for construction
 project: HelioLite
 doc_type: Design decision record
-version: "0.2"
+version: "0.3"
 status: Draft
 date: '2026-10-02'
 author: Amish Chadha
@@ -17,12 +17,16 @@ revisions:
   date: '2026-10-02'
   author: Amish Chadha
   change: "Table 3 items decided by Amish on 2026-10-02: A1 aluminum latch bracket (changed), A2 two-lift head fitting from a platform (changed), A3 renders updated; Table 1 acceptance still to be put to Amish"
+- version: "0.3"
+  date: '2026-10-02'
+  author: Amish Chadha
+  change: "Table 1 changes (P1 to P14) accepted by Amish on 2026-10-02"
 ---
 
 # 0003: Design for construction
 
 - **Date:** 2026-10-01
-- **Status:** draft. The changes in Table 1 were made under Amish's 2026-09-30 instruction to make the design physically buildable. The items in Table 3 were decided by Amish on 2026-10-02 ("i approve your recommendations for all 555 open decisions."), A1 and A2 on changed recommendations, and are recorded in the design decisions register (`docs/06-design-decisions.md`, HLT-DEC-001). Acceptance of Table 1 as a whole was not among the open decisions and is still to be put to Amish.
+- **Status:** accepted. Amish, 2026-10-02: "APPROVED: Design-for-construction changes in 10 repos (CityTwin, CoolShade, PalletPilot, Heliolite, PotholeLog, EarthPress, ReadyKit, CellCheck, CargoMule and ThermaCart)". This covers the whole change table, Table 1 (P1 to P14), made under Amish's 2026-09-30 instruction to make the design physically buildable, and is recorded in the design decisions register (`docs/06-design-decisions.md`, HLT-DEC-001). The items in Table 3 were decided by Amish earlier the same day ("i approve your recommendations for all 555 open decisions."), A1 and A2 on changed recommendations, and are recorded in the register too.
 
 ## Context
 

@@ -58,21 +58,21 @@ Two-axis mini heliostat on a mast that redirects sunlight to a fixed target, usi
 
 An ESP32 computes the sun's position from a real-time clock and the site location every 30 s, and two worm-driven steppers turn the mirror so its normal bisects the directions to the sun and to the target. A phone-based calibration at four points over about 4 h fits the mount alignment, and spiral preload springs keep the worm drives' backlash out of the beam. The mirror stows face-down at night, before storms (from a cup anemometer and a wind forecast) and, on a supercapacitor reserve, after a power loss; a spring latch then carries the storm load instead of the gearbox.
 
-At TRL 3 the paper checks meet 11 of 15 requirements with the design made constructable ([HLT-DDR-003](docs/decisions/0003-design-for-construction.md)). Value-engineering target: USD 455. Estimated cost of the constructable design: USD 492 (USD 37 over the target). Daily energy (R3) and pointing (R4) are at risk; see the [review note](docs/REVIEW.md).
+At TRL 3 the paper checks meet 11 of 15 requirements with the design made constructable ([HLT-DDR-003](docs/decisions/0003-design-for-construction.md)). Value-engineering target: USD 455. Estimated cost of the constructable design: USD 499 (USD 44 over the target). Daily energy (R3) and pointing (R4) are at risk; see the [review note](docs/REVIEW.md).
 
 Full design precis: [docs/02-concept.md](docs/02-concept.md)
 
 ## Key components
 
-- Glass mirror 60 x 60 cm
+- Glass mirror 60 x 60 cm with a black EPDM edge channel (decided 2026-10-02)
 - NEMA17 steppers on NMRV030-class 50:1 worm gearboxes (2)
 - ESP32 with RTC
 - Mast: 60.3 mm galvanized steel pipe (decided 2026-09-25)
 - Aluminum tube yoke with printed bearing plugs and bronze bushes (made constructable 2026-10-01)
 - Cup anemometer and supercapacitor stow reserve
-- Stow stop and spring latch on the yoke, and spiral preload springs on both drives (decided 2026-09-25)
+- Stow stop and spring latch on the yoke (aluminum bracket, decided 2026-10-02), and spiral preload springs on both drives (decided 2026-09-25)
 
-The priced bill of materials (USD 492 against the USD 455 value-engineering target, USD 37 over) is in [bom/bom.csv](bom/bom.csv). The parametric model is `cad/src/model.py`, with STEP and STL exports in `cad/step/` and `cad/stl/`.
+The priced bill of materials (USD 499 against the USD 455 value-engineering target, USD 44 over) is in [bom/bom.csv](bom/bom.csv). The parametric model is `cad/src/model.py`, with STEP and STL exports in `cad/step/` and `cad/stl/`.
 
 ## Building the prototype
 

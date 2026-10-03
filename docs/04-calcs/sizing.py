@@ -27,7 +27,8 @@ def out(tag, text):
 
 
 # ---------------------------------------------------------------- assumptions
-A_M = (P["mirror"] / 1000) ** 2          # mirror area, m2
+A_M = (P["mirror"] / 1000) ** 2          # mirror area, m2 (wind loads, masses)
+A_OPT = ((P["mirror"] - 2 * P["edge_lip"][0]) / 1000) ** 2   # clear aperture inside the edge channel's front lip (decided 2026-10-02), m2
 CHORD = P["mirror"] / 1000               # m
 RHO_MIR = 0.93                           # solar-weighted reflectance, clean silvered glass
 SOIL = 0.95                              # soiling factor
@@ -43,14 +44,15 @@ DIST_DP = 10.0                           # design point mirror to target, m
 WIN_W, WIN_H = 1.0, 1.2                  # target window, m
 LAT = 45.0
 
-print("HelioLite sizing, HLT-CAL-001 v0.4")
+print("HelioLite sizing, HLT-CAL-001 v0.5")
 print(f"Model: mirror {P['mirror']:.0f} mm, axis at {P['axis_z']:.0f} mm, mast {P['mast_od']} x {P['mast_wall']} mm, "
       f"length {P['mast_len']:.0f} mm, arms {P['arm_t']:.0f} x {P['arm_w']:.0f} mm")
 
 # ---------------------------------------------------------------- A. optics at the design point
-out("A1", f"Mirror area {A_M:.2f} m2; DNI x area {DNI_DP * A_M:.0f} W")
+out("A1", f"Mirror area {A_M:.2f} m2; clear aperture inside the edge channel's {P['edge_lip'][0]:.0f} mm front lip {A_OPT:.3f} m2; "
+          f"DNI x clear aperture {DNI_DP * A_OPT:.0f} W")
 cosf = cos(radians(INC_DP))
-p_int = DNI_DP * A_M * cosf
+p_int = DNI_DP * A_OPT * cosf
 p_ref = p_int * RHO_MIR * SOIL
 p_win = p_ref * EDGE
 p_room = p_win * TAU0
@@ -65,7 +67,7 @@ RES["R2"] = (f"{lux:.0f} lx mean added (UF 0.4 assumed)", "300 lx or more", "Met
 
 # Beam spot: projected mirror outline plus the sun's angular diameter
 def spot(d, inc_deg):
-    side = sqrt(A_M * cos(radians(inc_deg)))
+    side = sqrt(A_OPT * cos(radians(inc_deg)))
     return side + d * SUN
 
 POINT_BEAM = 0.5                          # R4 target, degrees
@@ -75,7 +77,7 @@ for d in (3.0, 10.0, 15.0, 20.0):
     fits = s + 2 * off <= WIN_W
     out("A5", f"Spot at {d:4.0f} m: {s:.2f} m square; 0.5 deg pointing offset {off * 1000:.0f} mm; "
               f"spot plus offset both sides {s + 2 * off:.2f} m against {WIN_W:.1f} m window: {'fits' if fits else 'spills'}")
-d_max = (WIN_W - sqrt(A_M * cosf)) / (SUN + 2 * tan(radians(POINT_BEAM)))
+d_max = (WIN_W - sqrt(A_OPT * cosf)) / (SUN + 2 * tan(radians(POINT_BEAM)))
 out("A6", f"Largest distance at which spot plus 0.5 deg error fits a 1.0 m wide window: {d_max:.1f} m")
 
 # ---------------------------------------------------------------- B. hourly energy at reference sites
@@ -152,9 +154,9 @@ def site_day(mx, my, day, step_h=1 / 12):
         if dni > 0 and not hits_box(m, s, HOUSE):
             n = (s + t) / np.linalg.norm(s + t)
             ci = float(n @ s)
-            side = sqrt(A_M * ci) + dist * SUN
+            side = sqrt(A_OPT * ci) + dist * SUN
             icpt = min(1, WIN_W * cos(radians(th_h)) / side) * min(1, WIN_H * cos(radians(th_v)) / side)
-            pw = dni * A_M * ci * RHO_MIR * SOIL * icpt
+            pw = dni * A_OPT * ci * RHO_MIR * SOIL * icpt
             e_win += pw * step_h; e_room += pw * tau * step_h
             hours += step_h; cos_sum += ci * step_h; peak = max(peak, pw * tau)
             naz.append(degrees(atan2(n[0], n[1])))
@@ -164,7 +166,7 @@ def site_day(mx, my, day, step_h=1 / 12):
 
 
 # Generic check with the TRL 2 assumptions: 6 h, mean DNI 650, mean cosine 0.80
-g_win = 650 * A_M * 0.80 * 6 * RHO_MIR * SOIL * EDGE / 1000
+g_win = 650 * A_OPT * 0.80 * 6 * RHO_MIR * SOIL * EDGE / 1000
 out("B1", f"TRL 2 generic day (6 h, mean DNI 650 W/m2, mean cosine 0.80): {g_win:.2f} kWh at the window, "
           f"{g_win * TAU0:.2f} kWh through the glazing")
 SITES = {"A": (6.0, 8.0), "B": (8.0, 5.0), "C": (0.0, 15.0)}
@@ -357,16 +359,26 @@ PW_B, PW_H, PW_L = 12.0, 8.0, 13.0               # width, depth, lever from the 
 sig_pawl = F_stop * PW_L / (PW_B * PW_H ** 2 / 6)
 # Bracket screws: two M6 through the -X arm, 37 mm apart, 33 mm from the contact line
 F_scr = F_stop / 2 + F_stop * 33.0 / 37.0
+# Latch bracket (aluminum, decided 2026-10-02): the pawl's moment F x lever bends the bracket leg across the slot line
+BRK_YIELD = 170.0                                # MPa, 6063-T6 minimum yield (aluminum angle)
+BRK_E, ST_E = 69.0, 200.0                        # GPa
+LEG_W = 62.0 - 9.0                               # leg height less the pawl slot, mm
+M_leg = F_stop * PW_L                            # N mm
+sig_leg = M_leg / (LEG_W * P["brk_t"] ** 2 / 6)
+stiff_ratio = (BRK_E * P["brk_t"] ** 3) / (ST_E * 4.0 ** 3)
 out("E7", f"Stow latch design moment {M_des:.1f} N m ({SF_COEF:.0f}x the assumed stowed moment, i.e. a stowed moment coefficient up to "
           f"{SF_COEF * C_MS:.2f}); force at the {P['stop_r']:.0f} mm contact radius {F_stop:.0f} N")
 out("E8", f"Stop pad {P['pad_t']:.0f} mm PU 90A (E {E_PU:.0f} MPa assumed) on {PAD_A:.0f} mm2: stress {F_stop / PAD_A:.1f} MPa, "
           f"deflection {d_pad:.2f} mm against {d_free:.2f} mm free travel with the worm backed off to mid-backlash, so the gearbox carries "
           f"{'no stowed moment' if d_pad < d_free else 'part of the moment'}; sliding pawl 12 x 8 mm bending {sig_pawl:.0f} MPa "
           f"(steel, 275 MPa yield); bracket screws up to {F_scr:.0f} N each in shear (M6 8.8 about 9 kN)")
+out("E9", f"Latch bracket, {P['brk_t']:.0f} mm aluminum angle (6063-T6, {BRK_YIELD:.0f} MPa minimum yield): the pawl's moment "
+          f"{M_leg / 1000:.1f} N m bends the leg across its {LEG_W:.0f} mm section at the slot to {sig_leg:.0f} MPa (factor "
+          f"{BRK_YIELD / sig_leg:.1f} on yield at the design moment); bending stiffness {stiff_ratio:.2f} times the 4 mm steel bracket it replaces")
 RES["R9"] = (f"Stowed moment {Mh_stow:.0f} N m at 35 m/s carried by the stow stop and latch (designed for {M_des:.0f} N m), not the gearbox; "
              f"stow trigger {rows[1][4]:.1f} N m within the {GB_RATED:.0f} N m rating; mast {sig_face:.0f} MPa worst case",
              "Hold R4 to 8 m/s; survive 35 m/s in stow",
-             "Met" if (d_pad < d_free and Mh_stow <= M_des) else "Not met")
+             "Met" if (d_pad < d_free and Mh_stow <= M_des and sig_leg * 2 <= BRK_YIELD) else "Not met")
 
 # ---------------------------------------------------------------- F. stow on power loss
 RATE = 10.0                                      # deg/s output slew in a stow
@@ -421,13 +433,16 @@ from model import build_components  # noqa: E402
 CC = build_components()
 vol = lambda *ks: sum(CC[k][1].volume for k in ks) / 1e3        # noqa: E731  cm3
 RHO_AL, RHO_ST, RHO_BR, RHO_ASA = 2.70e-3, 7.85e-3, 8.8e-3, 1.07e-3 * 0.60   # kg/cm3 (ASA at 60 % infill)
+RHO_EPDM = 1.30e-3                               # kg/cm3, dense EPDM edge channel (assumed)
 m_glass = A_M * P["glass_t"] / 1000 * 2500
 m_acp = A_M * 5.5
 m_tube = vol("tube") * RHO_AL
 m_ribs = vol("ribs") * RHO_AL
 m_trun = vol("blocks") * RHO_AL + vol("stubs", "block_bolts") * RHO_ST
 m_glue = 0.2
-m_mirror = m_glass + m_acp + m_tube + m_ribs + m_trun + m_glue
+m_edge = vol("edge") * RHO_EPDM
+L_edge = 4 * (P["mirror"] + 2 * P["edge_wall"]) - 2 * P["edge_gap_l"] - 2 * P["edge_gap_r"]
+m_mirror = m_glass + m_acp + m_tube + m_ribs + m_trun + m_glue + m_edge
 m_yoke_al = vol("crossbar", "arm_r", "arm_l", "gussets") * RHO_AL
 m_yoke = m_yoke_al + vol("gusset_bolts", "cross_bolts") * RHO_ST + vol("plugs") * RHO_ASA + vol("bushes") * RHO_BR
 M_GB, M_MOT, M_ADP = 1.2, 0.36, 0.10
@@ -436,27 +451,34 @@ m_tt = vol("disc", "hub") * RHO_AL + vol("shaft") * RHO_ST + vol("washer") * RHO
 m_lug = vol("lug") * RHO_ST
 M_SOL = 0.06                                     # pull solenoid (assumed)
 M_SPRING = 0.08                                  # each spiral spring in its can (assumed)
-m_latch = m_lug + vol("bracket", "pawl", "latch_bolts") * RHO_ST + M_SOL
+m_brk = vol("bracket") * RHO_AL
+m_brk_steel = vol("bracket") * RHO_ST * 4.0 / P["brk_t"]       # the same bracket in 4 mm steel (before 2026-10-02)
+m_latch = m_lug + m_brk + vol("pawl", "latch_bolts") * RHO_ST + M_SOL
 m_top = m_mirror + m_yoke + 2 * m_drive + m_tt + m_latch + 2 * M_SPRING
 M_LIMIT = 13.0                                   # R13 as relaxed on 2026-09-25 (HLT-DDR-002 N3)
 m_mast = pi / 4 * (P["mast_od"] ** 2 - (P["mast_od"] - 2 * P["mast_wall"]) ** 2) * P["mast_len"] * 7.85e-6
 m_cap = P["cap"] ** 2 * P["cap_t"] * 7.85e-6
 out("H1", f"Mirror assembly {m_mirror:.2f} kg (glass {m_glass:.2f}, panel {m_acp:.2f}, tube {m_tube:.2f}, ribs {m_ribs:.2f}, "
-          f"trunnion blocks, stubs and bolts {m_trun:.2f}, adhesive and film {m_glue:.2f})")
+          f"trunnion blocks, stubs and bolts {m_trun:.2f}, adhesive and film {m_glue:.2f}, EPDM edge channel {m_edge:.2f} for about {L_edge / 1000:.1f} m)")
 out("H2", f"Yoke {m_yoke:.2f} kg (aluminum tubes and gussets {m_yoke_al:.2f}, bolts, printed plugs and bushes); each drive {m_drive:.2f} kg "
           f"(gearbox {M_GB} kg assumed); turntable, hub and shaft {m_tt:.2f} kg")
-out("H3", f"Stow stop and latch {m_latch:.2f} kg (lug {m_lug:.2f}, solenoid {M_SOL} assumed); preload springs 2 x {M_SPRING} kg (assumed)")
-out("H3", f"On the mast top {m_top:.2f} kg against {M_LIMIT:.0f} kg (margin {M_LIMIT - m_top:.2f} kg); mast pipe {m_mast:.1f} kg; cap plate {m_cap:.1f} kg")
+out("H3", f"Stow stop and latch {m_latch:.2f} kg (lug {m_lug:.2f}, aluminum bracket and stop block {m_brk:.2f}, about {m_brk_steel - m_brk:.2f} kg "
+          f"less than in steel; solenoid {M_SOL} assumed); preload springs 2 x {M_SPRING} kg (assumed)")
+m_lift1 = m_yoke + m_drive + (m_latch - m_lug) + vol("disc", "hub") * RHO_AL   # first lift: yoke, elevation drive, latch, disc and hub
+out("H3", f"On the mast top {m_top:.2f} kg against {M_LIMIT:.0f} kg ({'margin' if m_top <= M_LIMIT else 'over by'} {abs(M_LIMIT - m_top):.2f} kg); "
+          f"fitted in two lifts from a platform: the yoke with its elevation drive, latch, disc and hub {m_lift1:.2f} kg, then the mirror assembly {m_mirror:.2f} kg (stubs and spring can fitted after it)")
+out("H3", f"Mast pipe {m_mast:.1f} kg; cap plate {m_cap:.1f} kg")
 zb = P["tube"] / 2
 com = (m_glass * (zb + P["back_t"] + P["glass_t"] / 2) + m_acp * (zb + P["back_t"] / 2) + m_ribs * (zb - P["rib"][1] / 2)
-       + m_glue * (zb + P["back_t"])) / m_mirror
+       + m_glue * (zb + P["back_t"]) + m_edge * (zb + (P["back_t"] + P["glass_t"]) / 2)) / m_mirror
 Mimb = m_mirror * 9.81 * com / 1000
 out("H4", f"Mirror center of mass {com:.1f} mm in front of the elevation axis; gravity moment up to {Mimb:.2f} N m")
 Mpre = Mh8 / 1000 + Mimb
 out("H5", f"Preload to keep the worm on one flank at 8 m/s: more than {Mpre:.1f} N m (hinge {Mh8 / 1000:.1f} plus imbalance "
           f"{Mimb:.1f}); motor torque with a 3 N m spring plus wind and imbalance, worm efficiency 0.4: "
           f"{(3 + Mpre) / 50 / 0.4:.2f} N m")
-RES["R13"] = (f"{m_top:.2f} kg on the mast top (margin {M_LIMIT - m_top:.2f} kg)", "13 kg or less; two people, hand tools, 4 h",
+RES["R13"] = (f"{m_top:.2f} kg on the mast top ({'margin' if m_top <= M_LIMIT else 'over by'} {abs(M_LIMIT - m_top):.2f} kg); heaviest lift {max(m_lift1, m_mirror):.2f} kg",
+              "13 kg or less; two people, hand tools, 4 h",
               "Met" if m_top <= M_LIMIT else "Not met")
 
 # ---------------------------------------------------------------- I. power
@@ -475,7 +497,8 @@ diff = total - VE_TARGET
 out("J1", f"BOM {len(rows_b)} lines, all priced: estimated cost ${total:,.2f} against the ${VE_TARGET:.0f} value-engineering target; "
           f"${abs(diff):.2f} {'over' if diff > 0 else 'under'} the target")
 out("J2", "Not in the BOM: tools, printer time, shipping. Lines 16 and 17 added under HLT-DDR-002; lines 2, 3, 5, 6, 9, 13, 14 and 17 "
-          "repriced under HLT-DDR-003 (design for construction)")
+          "repriced under HLT-DDR-003 (design for construction); lines 1, 9 and 17 changed by the decisions of 2026-10-02 "
+          "(EPDM edge channel, IP65 box with a clear lid, aluminum latch bracket)")
 RES["R15"] = (f"${total:,.0f} (${abs(diff):.0f} {'over' if diff > 0 else 'under'} the target)",
               "$455 value-engineering target (a hypothetical control target)",
               "Over the value-engineering target" if diff > 0 else "Met")
